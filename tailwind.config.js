@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,11 +9,13 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: {
-        "gradient-hover": "linear-gradient(145deg, #ffffff, #d9dde0)",
-        "gradient-pressed": "linear-gradient(145deg, #d9dde0, #ffffff)",
-        dark: {
-          "gradient-hover": "linear-gradient(145deg,  #10192d, #0e1526)",
-          "gradient-pressed": "linear-gradient(145deg, #0e1526, #10192d)",
+        "gradient-sunken": {
+          DEFAULT: "linear-gradient(145deg, #cbd1d8, #f2f8ff)",
+          dark: "linear-gradient(145deg, #0e1526, #10192d)",
+        },
+        "gradient-bulge": {
+          DEFAULT: "linear-gradient(145deg, #f2f8ff, #cbd1d8)",
+          dark: "linear-gradient(145deg, #10192d, #0e1526)",
         },
       },
       colors: {
@@ -38,8 +41,14 @@ module.exports = {
         },
       },
       boxShadow: {
-        DEFAULT: "box-shadow: 6px 6px 12px #bec2c5, -6px -6px 12px #ffffff",
-        dark: "6px 6px 9px #080c16, -6px -6px 9px #16223e",
+        DEFAULT: "8px 8px 16px #aeb3b9,-8px -8px 16px #ffffff",
+        pressed: "inset 8px 8px 16px #aeb3b9,inset -8px -8px 16px #ffffff",
+        dak: "8px 8px 16px #090d18,-8px -8px 16px #15213c",
+        dpressed: "inset 8px 8px 16px #090d18,inset -8px -8px 16px #15213c",
+        // dak: {
+        //   DEFAULT: "8px 8px 16px #090d18,-8px -8px 16px #15213c",
+        //   pressed: "inset 8px 8px 16px #090d18,inset -8px -8px 16px #15213c",
+        // },
       },
     },
   },

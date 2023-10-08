@@ -1,21 +1,29 @@
 import { useState } from "react";
-import { ButtonPrimary } from "../atoms/buttons";
-import { SVGmessage } from "../atoms/icons";
-import { InputText } from "../atoms/inputs";
+import { ButtonPrimary } from "./atoms/buttons";
+import { SVGmessage } from "./atoms/icons";
+import { InputText } from "./atoms/inputs";
+import ThemeToggler from "./atoms/themeToggle";
 
 export function Signin() {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   return (
-    <div className="flex flex-1 flex-col w-full items-center">
-      <div className="w-full sm:max-w-md p-4 mt-6">
+    <div className="flex flex-1 flex-col w-full items-center justify-center">
+      <div className="w-full sm:max-w-md p-4 mt-6 divide-y space-y-3 divide-emerald-800">
+        <p
+          className={`text-xl font-bold text-emerald-800 dark:text-emerald-600 text-center pb-6`}
+        >
+          Welcome
+        </p>
         <form
-          className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33]"
+          className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33]"
           action="#"
         >
-          <p className="text-xl font-bold text-center">
+          {/* <p
+            className={`text-xl font-bold text-emerald-800 dark:text-emerald-600 text-center`}
+          >
             Sign in to your account
-          </p>
+          </p> */}
           {/* INPUT FIELDS */}
           <div className="space-y-3">
             <InputText
@@ -23,13 +31,16 @@ export function Signin() {
               placeholder={"name@email.com"}
               icon={SVGmessage}
               value={email}
+              setFunc={setEmail}
             />
             <InputText label="Password" icon={SVGmessage} value={password} />
-            <ButtonPrimary />
           </div>
           {/* forgot passwords */}
+          <div className="mx-2 mt-12">
+            <ButtonPrimary label="Sign In" />
+          </div>
           <div className="flex items-center justify-between">
-            <div className="flex items-start">
+            {/* <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input
                   id="remember"
@@ -42,28 +53,29 @@ export function Signin() {
               <div className="ml-3 text-sm">
                 <label
                   htmlFor="remember"
-                  className="text-gray-500 dark:text-gray-300"
+                  className="text-font-inactive dark:text-font-dark-inactive"
                 >
                   Remember me
                 </label>
               </div>
-            </div>
+            </div> */}
             <a
               href="#"
-              className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+              className="text-font-inactive italic dark:text-font-dark-inactive dark:hover:text-font-dark-faded text-sm font-medium  hover:underline"
             >
               Forgot password?
             </a>
           </div>
-          <p className="text-sm font-light text-gray-500 dark:text-gray-400">
+          {/* Signup */}
+          {/* <p className="text-sm font-light text-font-inactive dark:text-font-dark-inactive">
             Don’t have an account yet?{" "}
             <a
               href="#"
-              className="font-medium text-primary-600 hover:underline dark:text-primary-500"
+              className="font-medium text-primary-600 hover:underline dark:text-primary-500 dark:hover:text-font-dark-faded"
             >
               Sign up
             </a>
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
