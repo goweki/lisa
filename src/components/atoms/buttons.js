@@ -29,10 +29,10 @@ export function ButtonPrimary({
       {!loading ? (
         label
       ) : (
-        <div class="items-center justify-center space-x-2 pt-1 loader [&>*:nth-child(even)]:bg-emerald-200 [&>*:nth-child(odd)]:bg-gray-200 rounded-full flex">
-          <div class="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] "></div>
-          <div class="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-200"></div>
-          <div class="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-400"></div>
+        <div className="items-center justify-center space-x-2 pt-1 loader [&>*:nth-child(even)]:bg-emerald-200 [&>*:nth-child(odd)]:bg-gray-200 rounded-full flex">
+          <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] "></div>
+          <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-200"></div>
+          <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-400"></div>
         </div>
       )}
     </button>

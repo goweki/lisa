@@ -18,7 +18,7 @@ export function InputText({
       )}
       <div className="relative mb-6 mt-0">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-          <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-600" />
+          <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
         </div>
         <input
           name={name}

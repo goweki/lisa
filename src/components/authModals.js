@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ButtonPrimary } from "./atoms/buttons";
-import { SVGemail, SVGpassword } from "./atoms/icons";
+import { SVGemail, SVGpassword } from "./atoms/svgs";
 import { InputText } from "./atoms/inputs";
 import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
 import useRealm from "./realmWeb";
@@ -74,10 +74,10 @@ export function Signin() {
   }, [email.error, password.error]);
 
   return (
-    <div className="flex flex-1 flex-col w-full items-center justify-center">
+    <div className="flex flex-1 flex-col w-full items-center">
       <div className="w-full sm:max-w-md p-4 mt-6 divide-y space-y-3 divide-emerald-800">
         <p
-          className={`text-xl font-bold text-emerald-800 dark:text-emerald-600 text-center pb-6`}
+          className={`text-xl font-bold text-emerald-800 dark:text-emerald-500 text-center pb-6`}
         >
           Welcome
         </p>
