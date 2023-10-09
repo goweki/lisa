@@ -22,11 +22,11 @@ export function Signin() {
       setEmail({ ...email, error: emailError });
       setPassword({ ...password, error: passwordError });
       console.log(` >> invalid form entries`);
-      console.log(
-        ` >>> email: ${JSON.stringify(email)} \n>>> password: ${JSON.stringify(
-          password
-        )}`
-      );
+      // console.log(
+      //   ` >>> email: ${JSON.stringify(email)} \n>>> password: ${JSON.stringify(
+      //     password
+      //   )}`
+      // );
       return;
     }
     // realm-web (signInUser)
@@ -35,16 +35,21 @@ export function Signin() {
       if (resp.user) {
         console.log(`HERE3`);
         console.log(`>> successful sign-in`);
-        console.log(`>>> user: ${JSON.stringify(resp.user)}`);
-        router.replace("/");
+        // console.log(`>>> user: ${JSON.stringify(resp.user)}`);
+        // console.log(`HERE1`);
+        toast.success("Successfully signed in");
+        router.refresh();
       } else {
+        console.log(`HERE2`);
         // console.log(`>> sign-in failed`);
         // console.log(`>>> error: ${JSON.stringify(err)}`);
         //stop loading
         throw resp;
       }
     } catch (err) {
+      console.log(`HERE3`);
       console.log(`>> sign-in failed, caught error`);
+      console.log(`>>> errorObj: ${err}`);
       console.log(`>>> error: ${JSON.stringify(err)}`);
       setEmail({ ...email, error: err.error || err });
     }
@@ -54,7 +59,12 @@ export function Signin() {
   const [password, setPassword] = useState({ value: "", error: "" });
   const [loading, setLoading] = useState(true);
   const { signInUser } = useRealm();
+  const router = useRouter();
 
+  //On component render
+  useEffect(() => {
+    setLoading(false);
+  }, []);
   //Notify on formError
   useEffect(() => {
     if (email.error || password.error) {
@@ -127,7 +137,12 @@ export function Signin() {
           </div>
           {/* forgot passwords */}
           <div className="mx-2 pt-4">
-            <ButtonPrimary label="Sign In" onClick={handleLogin} />
+            <ButtonPrimary
+              label="Sign In"
+              onClick={handleLogin}
+              disabled={!email.value || !password.value}
+              loading={loading}
+            />
           </div>
           <div className="flex items-center justify-center">
             {/* <div className="flex items-start">
