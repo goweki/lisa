@@ -10,12 +10,12 @@ module.exports = {
     extend: {
       backgroundImage: {
         "gradient-sunken": {
-          DEFAULT: "linear-gradient(145deg, #cbd1d8, #f2f8ff)",
-          dark: "linear-gradient(145deg, #0e1526, #10192d)",
+          DEFAULT: "linear-gradient(176deg, #cbd1d8, #f2f8ff)",
+          dark: "linear-gradient(176deg, #0e1526, #10192d)",
         },
         "gradient-bulge": {
-          DEFAULT: "linear-gradient(145deg, #f2f8ff, #cbd1d8)",
-          dark: "linear-gradient(145deg, #10192d, #0e1526)",
+          DEFAULT: "linear-gradient(176deg, #f2f8ff, #cbd1d8)",
+          dark: "linear-gradient(176deg, #10192d, #0e1526)",
         },
       },
       colors: {
@@ -41,8 +41,8 @@ module.exports = {
         },
       },
       boxShadow: {
-        DEFAULT: "8px 8px 16px #aeb3b9,-8px -8px 16px #ffffff",
-        pressed: "inset 8px 8px 16px #aeb3b9,inset -8px -8px 16px #ffffff",
+        DEFAULT: "6px 6px 12px #cbd1d8,-6px -6px 12px #f9ffff",
+        pressed: "inset 6px 6px 12px #cbd1d8,inset -6px -6px 12px #f9ffff",
         dak: "8px 8px 16px #090d18,-8px -8px 16px #15213c",
         dpressed: "inset 8px 8px 16px #090d18,inset -8px -8px 16px #15213c",
         // dak: {
@@ -52,5 +52,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/forms")],
 };

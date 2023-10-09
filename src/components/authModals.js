@@ -5,8 +5,8 @@ import { InputText } from "./atoms/inputs";
 import ThemeToggler from "./atoms/themeToggle";
 
 export function Signin() {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState({ value: "", error: "" });
+  const [password, setPassword] = useState({ value: "", error: "" });
   return (
     <div className="flex flex-1 flex-col w-full items-center justify-center">
       <div className="w-full sm:max-w-md p-4 mt-6 divide-y space-y-3 divide-emerald-800">
@@ -25,21 +25,30 @@ export function Signin() {
             Sign in to your account
           </p> */}
           {/* INPUT FIELDS */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <InputText
               label="Email"
+              name={email}
+              type="email"
               placeholder={"name@email.com"}
               icon={SVGmessage}
               value={email}
               setFunc={setEmail}
             />
-            <InputText label="Password" icon={SVGmessage} value={password} />
+            <InputText
+              label="Password"
+              name="password"
+              type="password"
+              icon={SVGmessage}
+              value={password}
+              setFunc={setPassword}
+            />
           </div>
           {/* forgot passwords */}
-          <div className="mx-2 mt-12">
+          <div className="mx-2 pt-4">
             <ButtonPrimary label="Sign In" />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             {/* <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input
