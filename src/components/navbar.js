@@ -1,10 +1,7 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { SVGlogo } from "./atoms/svgs";
-import { ButtonPrimary } from "./atoms/buttons";
 import ThemeToggler from "./atoms/themeToggle";
 
 export default function Navbar() {
@@ -68,7 +65,7 @@ export default function Navbar() {
           </div>
         </div>
         <div className="flex items-center">
-          <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-6 md:px-6">
+          <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4 md:px-4">
             {pathname === "/signin" && (
               <Link
                 href="/homepage"
@@ -77,15 +74,17 @@ export default function Navbar() {
                 about Lisa
               </Link>
             )}
-            {/* <Link
-              href="#"
-              className="block py-2 p-4 md:hover:text-emerald-700 md:p-0 dark:hover:text-emerald-500 "
-            >
-              Settings
-            </Link> */}
+            {pathname === "/" && (
+              <Link
+                href="/signin"
+                className="block py-2 p-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
+              >
+                Sign In
+              </Link>
+            )}
           </ul>
 
-          <div className="m-4">
+          <div className="mx-4">
             <ThemeToggler />
           </div>
         </div>
