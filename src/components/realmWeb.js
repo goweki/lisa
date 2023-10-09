@@ -39,6 +39,7 @@ export default function useRealm() {
       }
       throw "Sign in failed";
     } catch (e) {
+      console.log("ERROR: caught:" + JSON.stringify(e));
       return e;
     }
   }

@@ -1,12 +1,68 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { ButtonPrimary } from "./atoms/buttons";
-import { SVGmessage } from "./atoms/icons";
+import { SVGemail, SVGpassword } from "./atoms/icons";
 import { InputText } from "./atoms/inputs";
-import ThemeToggler from "./atoms/themeToggle";
+import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
+import useRealm from "./realmWeb";
 
 export function Signin() {
+  // login logic
+  async function handleLogin() {
+    setEmail({ ...email, error: "" });
+    setPassword({ ...password, error: "" });
+    setLoading(true);
+    console.log(`ACTION.........`);
+    console.log(`> pressed login`);
+    // Errors??
+    const emailError = emailValidator(email.value);
+    const passwordError = passwordValidator(password.value);
+    if (!!emailError || !!passwordError) {
+      setEmail({ ...email, error: emailError });
+      setPassword({ ...password, error: passwordError });
+      console.log(` >> invalid form entries`);
+      console.log(
+        ` >>> email: ${JSON.stringify(email)} \n>>> password: ${JSON.stringify(
+          password
+        )}`
+      );
+      return;
+    }
+    // realm-web (signInUser)
+    try {
+      const resp = await signInUser(email.value, password.value);
+      if (resp.user) {
+        console.log(`HERE3`);
+        console.log(`>> successful sign-in`);
+        console.log(`>>> user: ${JSON.stringify(resp.user)}`);
+        router.replace("/");
+      } else {
+        // console.log(`>> sign-in failed`);
+        // console.log(`>>> error: ${JSON.stringify(err)}`);
+        //stop loading
+        throw resp;
+      }
+    } catch (err) {
+      console.log(`>> sign-in failed, caught error`);
+      console.log(`>>> error: ${JSON.stringify(err)}`);
+      setEmail({ ...email, error: err.error || err });
+    }
+  }
+
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
+  const [loading, setLoading] = useState(true);
+  const { signInUser } = useRealm();
+
+  //Notify on formError
+  useEffect(() => {
+    if (email.error || password.error) {
+      setLoading(false);
+      toast.error(email.error || password.error);
+    }
+  }, [email.error, password.error]);
+
   return (
     <div className="flex flex-1 flex-col w-full items-center justify-center">
       <div className="w-full sm:max-w-md p-4 mt-6 divide-y space-y-3 divide-emerald-800">
@@ -30,23 +86,48 @@ export function Signin() {
               label="Email"
               name={email}
               type="email"
-              placeholder={"name@email.com"}
-              icon={SVGmessage}
+              placeholder="Enter your email address"
+              icon={SVGemail}
               value={email}
               setFunc={setEmail}
+              onChange={(e, email, setFunc) => {
+                if (email.error) {
+                  const error_ = emailValidator(e.target.value);
+                  if (!!error_) {
+                    setFunc({ value: e.target.value, error: error_ });
+                  } else {
+                    setFunc({ value: e.target.value, error: "" });
+                  }
+                } else {
+                  setEmail({ value: e.target.value, error: "" });
+                }
+              }}
             />
             <InputText
               label="Password"
               name="password"
               type="password"
-              icon={SVGmessage}
+              placeholder="Enter your password"
+              icon={SVGpassword}
               value={password}
               setFunc={setPassword}
+              onChange={(e, password, setFunc) => {
+                if (password.error) {
+                  const error_ = emailValidator(e.target.value);
+                  if (!!error_) {
+                    setFunc({ value: e.target.value, error: error_ });
+                  } else {
+                    setFunc({ value: e.target.value, error: "" });
+                  }
+                } else {
+                  setFunc({ value: e.target.value, error: "" });
+                }
+              }}
             />
           </div>
           {/* forgot passwords */}
           <div className="mx-2 pt-4">
-            <ButtonPrimary label="Sign In" />
+            <ButtonPrimary label="Sign In" onClick={handleLogin} />
           </div>
           <div className="flex items-center justify-center">
             {/* <div className="flex items-start">
