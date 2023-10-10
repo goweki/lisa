@@ -6,11 +6,14 @@ import { ButtonPrimary } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
 
-export default function AuthRoute() {
+export default function LandingPage() {
   //states
   const [showDemoReqModal, setToggleDemoReqModal] = useState(false);
   return (
-    <div id="homepage" className="flex pt-8 md:pt-12 lg:pt-16 justify-center">
+    <div
+      id="homepage"
+      className="bg-background-surface dark:bg-background-dark-surface flex pt-8 md:pt-12 lg:pt-16 justify-center"
+    >
       <div className="container">
         <div className="flex flex-wrap items-center">
           <div className="w-full px-4">
