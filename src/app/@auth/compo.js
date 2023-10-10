@@ -33,7 +33,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       aria-hidden="true"
       className={`${
         !isVisible ? `hidden` : ``
-      } fixed top-10 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background-raised dark:bg-background-dark-raised`}
+      } fixed top-10 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background dark:bg-background-dark`}
     >
       {/* Request Demo */}
       <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md border border-emerald-800">
@@ -55,7 +55,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
               <div className="grid gap-y-4">
                 {/* name FIELD */}
                 <InputText
-                  label="Preferred Name"
+                  label="Preferred Name *"
                   name="name"
                   type="text"
                   placeholder="Enter your prefered name"
@@ -76,7 +76,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                 />
                 {/* email FIELD */}
                 <InputText
-                  label="Email"
+                  label="Email *"
                   name="email"
                   type="email"
                   placeholder="Enter your email address"
@@ -97,7 +97,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                 />
                 {/* tel FIELD */}
                 <InputText
-                  label="Cell No."
+                  label="Cell No. (optional)"
                   name="tel"
                   type="tel"
                   placeholder="Enter your tel"
@@ -117,7 +117,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                   }}
                 />
                 <div className="my-6 flex flex-col">
-                  <ButtonPrimary label="Show interest" />
+                  <ButtonPrimary label="I'm interested" />
                   <div className="self-end">
                     <ButtonText label="Close" onClick={hideModal} />
                   </div>

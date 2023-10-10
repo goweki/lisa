@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { SVGlogoAnimation } from "@/components/atoms/svgs";
+import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
 
 export default function AuthRoute() {
@@ -74,7 +74,7 @@ export default function AuthRoute() {
                   alt="hero"
                   className="mx-auto max-w-full rounded-t-xl rounded-tr-xl"
                 /> */}
-                <SVGlogoAnimation />
+                <SVGlogoAnimation1 />
               </div>
             </div>
           </div>

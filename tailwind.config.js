@@ -18,9 +18,22 @@ module.exports = {
             transform: "translate3d(0, -0.5rem, 0)",
           },
         },
-        logoFadein: {
-          from: { opacity: 0 },
-          to: { opacity: 1 },
+        fadein: {
+          "0%": { opacity: 0 }, //from: { opacity: 0 }
+          "100%": { opacity: 1 }, //to: { opacity: 1 }
+        },
+        doodle: {
+          "90%": {
+            fillOpacity: 0.25,
+            strokeWidth: 1,
+            strokeOpacity: 0.5,
+            strokeDashoffset: 0,
+          },
+          "100%": {
+            fillOpacity: 1,
+            strokeOpacity: 0,
+            strokeDashoffset: 0,
+          },
         },
         logoRotate: {
           from: { transform: "rotate(90deg)" },
