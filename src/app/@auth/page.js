@@ -12,12 +12,12 @@ export default function LandingPage() {
   return (
     <div
       id="homepage"
-      className="bg-background-surface dark:bg-background-dark-surface flex md:pt-6 lg:pt-16 justify-center"
+      className="bg-background-surface pt-2 md:pt-6 dark:bg-background-dark-surface flex justify-center"
     >
       <div className="container">
         <div className="flex flex-wrap items-center">
           <div className="w-full px-4">
-            <div className="z-10 mx-auto max-w-[845px]">
+            <div className="z-10 p-16 mx-auto max-w-md min-w-sm">
               {/* <div className="mt-4"> */}
               {/* <img
                   src="assets/images/hero/hero-image.jpg"
@@ -30,8 +30,16 @@ export default function LandingPage() {
           </div>
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
-              <h1 className="mb-8 text-3xl font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
-                The Legal Intelligent Support Assistant
+              <h1 className="mb-8 text-3xl text-font-faded dark:text-font-dark-faded font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
+                The{" "}
+                <span className="text-emerald-900 dark:text-[#af9e85]">L</span>
+                egal{" "}
+                <span className="text-emerald-900 dark:text-[#af9e85]">I</span>
+                ntelligent{" "}
+                <span className="text-emerald-900 dark:text-[#af9e85]">S</span>
+                upport{" "}
+                <span className="text-emerald-900 dark:text-[#af9e85]">A</span>
+                ssistant
               </h1>
               <ul className="mb-10 flex flex-wrap items-center justify-center">
                 <li>

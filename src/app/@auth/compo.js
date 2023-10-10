@@ -33,7 +33,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       aria-hidden="true"
       className={`${
         !isVisible ? `hidden` : ``
-      } fixed top-10 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background dark:bg-background-dark`}
+      } fixed top-0 left-0 right-0 z-10 bg-opacity-90 flex items-center justify-center h-full p-4 bg-background dark:bg-background-dark`}
     >
       {/* Request Demo */}
       <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md border border-emerald-800">

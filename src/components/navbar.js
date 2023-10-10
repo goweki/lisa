@@ -8,7 +8,7 @@ export default function Navbar() {
   const pathname = usePathname();
   return (
     <nav
-      className={`sticky bg-background-surface dark:bg-background-dark-surface w-full z-20 top-0 left-0 border-b border-emerald-800`}
+      className={`sticky bg-background-surface dark:bg-background-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
     >
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">

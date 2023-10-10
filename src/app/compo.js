@@ -11,16 +11,15 @@ export default function Context({ routes, navbar: Navbar }) {
   useEffect(() => {
     setLoading(false);
   }, []);
-
-  return (
-    <ThemeProvider enableSystem={false} attribute="class">
-      <React.StrictMode>
-        <div id="root-div" className="flex w-full h-full flex-col">
-          <Navbar />
-          {!app?.currentUser ? auth : home}
-          <Toaster />
-        </div>
-      </React.StrictMode>
-    </ThemeProvider>
-  );
+    return (
+      <ThemeProvider enableSystem={false} attribute="class">
+        <React.StrictMode>
+          <div id="root-div" className="flex w-full h-full flex-col">
+            <Navbar />
+            {!app?.currentUser ? auth : home}
+            <Toaster />
+          </div>
+        </React.StrictMode>
+      </ThemeProvider>
+    );
 }
