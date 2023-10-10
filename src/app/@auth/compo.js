@@ -33,16 +33,16 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       aria-hidden="true"
       className={`${
         !isVisible ? `hidden` : ``
-      } fixed top-0 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background-surface bg-opacity-90 dark:bg-background-dark-surface dark:bg-opacity-90`}
+      } fixed top-10 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background-raised dark:bg-background-dark-raised`}
     >
       {/* Request Demo */}
-      <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md">
+      <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md border border-emerald-800">
         <div className="p-4 sm:p-7 space-y-6">
           <div className="text-center">
             {/* <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
               Interested in LISA?
             </h1> */}
-            <p className="mt-2 text-sm text-medium text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-sm text-medium">
               <span className="inline-block">Fill your details</span>{" "}
               <span className="inline-block">
                 and we will get back to you in a day
