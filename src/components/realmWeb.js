@@ -6,7 +6,7 @@ export default function useRealm() {
   const [app, setApp] = useState(null);
   // Run in useEffect so that App is not created in server-side environment
   useEffect(() => {
-    console.log(`CHECKPOINT: Instantiating a new Realm app`);
+    // console.log(`CHECKPOINT: Instantiating a new Realm app`);
     setApp(Realm.getApp(process.env.NEXT_PUBLIC_ATLAS_APPSERVE_ID));
   }, []);
 
