@@ -14,3 +14,14 @@ export function passwordValidator(password) {
     return "Password must be at least 5 characters long";
   } else return "";
 }
+
+export function nameValidator(name) {
+  const re = /[a-zA-Z]/;
+  if (!name) {
+    return "Name field can't be empty";
+  } else if (name.length < 3) {
+    return "Name too short";
+  } else if (!re.test(name)) {
+    return "Names should contain alphabets only";
+  } else return "";
+}

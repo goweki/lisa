@@ -1,11 +1,14 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ButtonPrimary } from "@/components/atoms/buttons";
+import { SVGlogo } from "@/components/atoms/svgs";
+import { ReqDemoModal } from "./modDemoReq";
 
 export default function AuthRoute() {
   //states
-  const [modal, setModal] = useState("signin");
+  const [showDemoReqModal, setToggleDemoReqModal] = useState(false);
   return (
     <div id="homepage" className="flex pt-8 md:pt-12 lg:pt-16 justify-center">
       <div className="container">
@@ -23,7 +26,12 @@ export default function AuthRoute() {
               </p>
               <ul className="mb-10 flex flex-wrap items-center justify-center">
                 <li>
-                  <ButtonPrimary label="Request Demo" />
+                  <ButtonPrimary
+                    label="Request Demo"
+                    onClick={() => {
+                      setToggleDemoReqModal(true);
+                    }}
+                  />
                 </li>
                 {/* <Link
                   href="#"
@@ -49,11 +57,11 @@ export default function AuthRoute() {
                 </Link>
               </ul>
               <div className="text-center">
-                <img
+                {/* <img
                   src="assets/images/hero/brand.svg"
                   alt="image"
                   className="mx-auto w-full max-w-[250px] opacity-50 transition duration-300 ease-in-out hover:opacity-100"
-                />
+                /> */}
               </div>
             </div>
           </div>
@@ -61,16 +69,23 @@ export default function AuthRoute() {
           <div className="w-full px-4">
             <div className="z-10 mx-auto max-w-[845px]">
               <div className="mt-16">
-                <img
+                {/* <img
                   src="assets/images/hero/hero-image.jpg"
                   alt="hero"
                   className="mx-auto max-w-full rounded-t-xl rounded-tr-xl"
-                />
+                /> */}
+                <SVGlogo />
               </div>
             </div>
           </div>
         </div>
       </div>
+      <ReqDemoModal
+        isVisible={showDemoReqModal}
+        hideModal={() => {
+          setToggleDemoReqModal(false);
+        }}
+      />
     </div>
   );
 }
