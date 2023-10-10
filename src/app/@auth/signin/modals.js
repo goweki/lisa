@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ButtonPrimary } from "./atoms/buttons";
-import { SVGemail, SVGpassword } from "./atoms/svgs";
-import { InputText } from "./atoms/inputs";
+import { ButtonPrimary } from "../../../components/atoms/buttons";
+import { SVGemail, SVGpassword } from "../../../components/atoms/svgs";
+import { InputText } from "../../../components/atoms/inputs";
 import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
-import useRealm from "./realmWeb";
+import useRealm from "../../../components/realmWeb";
 
 export function Signin() {
   // login logic

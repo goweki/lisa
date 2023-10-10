@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { SVGlogo } from "@/components/atoms/svgs";
-import { ReqDemoModal } from "./modDemoReq";
+import { ReqDemoModal } from "./modals";
 
 export default function AuthRoute() {
   //states

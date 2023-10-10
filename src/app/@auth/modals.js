@@ -33,7 +33,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       aria-hidden="true"
       className={`${
         !isVisible ? `hidden` : ``
-      } fixed top-0 left-0 right-0 z-50 flex items-center justify-center h-full p-4 bg-background-surface bg-opacity-90 dark:bg-background-dark-surface dark:bg-opacity-90`}
+      } fixed top-0 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background-surface bg-opacity-90 dark:bg-background-dark-surface dark:bg-opacity-90`}
     >
       {/* Request Demo */}
       <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md">
@@ -61,17 +61,16 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                   placeholder="Enter your prefered name"
                   icon={SVGuser}
                   value={firstName}
-                  setFunc={setFirstName}
-                  onChange={(e, name, setFunc) => {
-                    if (name.error) {
+                  onChange={(e) => {
+                    if (firstName.error) {
                       const error_ = nameValidator(e.target.value);
                       if (!!error_) {
-                        setFunc({ value: e.target.value, error: error_ });
+                        setFirstName({ value: e.target.value, error: error_ });
                       } else {
-                        setFunc({ value: e.target.value, error: "" });
+                        setFirstName({ value: e.target.value, error: "" });
                       }
                     } else {
-                      setEmail({ value: e.target.value, error: "" });
+                      setFirstName({ value: e.target.value, error: "" });
                     }
                   }}
                 />
@@ -83,14 +82,13 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                   placeholder="Enter your email address"
                   icon={SVGemail}
                   value={email}
-                  setFunc={setEmail}
-                  onChange={(e, email, setFunc) => {
+                  onChange={(e) => {
                     if (email.error) {
                       const error_ = emailValidator(e.target.value);
                       if (!!error_) {
-                        setFunc({ value: e.target.value, error: error_ });
+                        setEmail({ value: e.target.value, error: error_ });
                       } else {
-                        setFunc({ value: e.target.value, error: "" });
+                        setEmail({ value: e.target.value, error: "" });
                       }
                     } else {
                       setEmail({ value: e.target.value, error: "" });
@@ -105,21 +103,20 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                   placeholder="Enter your tel"
                   icon={SVGcell}
                   value={tel}
-                  setFunc={setTel}
-                  onChange={(e, tel, setFunc) => {
+                  onChange={(e) => {
                     if (tel.error) {
                       const error_ = emailValidator(e.target.value);
                       if (!!error_) {
-                        setFunc({ value: e.target.value, error: error_ });
+                        setTel({ value: e.target.value, error: error_ });
                       } else {
-                        setFunc({ value: e.target.value, error: "" });
+                        setTel({ value: e.target.value, error: "" });
                       }
                     } else {
-                      setEmail({ value: e.target.value, error: "" });
+                      setTel({ value: e.target.value, error: "" });
                     }
                   }}
                 />
-                <div className="overflow-hidden my-6">
+                <div className="my-6">
                   <ButtonPrimary label="Show interest" />
                 </div>
               </div>

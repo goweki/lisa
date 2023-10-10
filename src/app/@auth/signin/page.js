@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Signin } from "@/components/authModals";
+import { Signin } from "@/app/@auth/signin/modals";
 import ThemeToggler from "@/components/atoms/themeToggle";
 
 export default function SignInPage() {
