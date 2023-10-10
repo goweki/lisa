@@ -11,7 +11,7 @@ export function InputText({
   return (
     <div className="space-y-2">
       {label && (
-        <label htmlFor={name} className="block text-sm pl-2">
+        <label htmlFor={name} className="block text-xs pl-2">
           {label}
         </label>
       )}

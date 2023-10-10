@@ -1,4 +1,4 @@
-import { ButtonPrimary } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
@@ -39,10 +39,10 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md">
         <div className="p-4 sm:p-7 space-y-6">
           <div className="text-center">
-            <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+            {/* <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
               Interested in LISA?
-            </h1>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            </h1> */}
+            <p className="mt-2 text-sm text-medium text-gray-600 dark:text-gray-400">
               <span className="inline-block">Fill your details</span>{" "}
               <span className="inline-block">
                 and we will get back to you in a day
@@ -116,8 +116,11 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                     }
                   }}
                 />
-                <div className="my-6">
+                <div className="my-6 flex flex-col">
                   <ButtonPrimary label="Show interest" />
+                  <div className="self-end">
+                    <ButtonText label="Close" onClick={hideModal} />
+                  </div>
                 </div>
               </div>
             </form>

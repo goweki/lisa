@@ -23,7 +23,7 @@ module.exports = {
           to: { opacity: 1 },
         },
         logoRotate: {
-          from: { transform: "rotate(-90deg)" },
+          from: { transform: "rotate(90deg)" },
           to: { transform: "rotate(0deg)" },
         },
       },
