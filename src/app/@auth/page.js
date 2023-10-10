@@ -12,7 +12,7 @@ export default function LandingPage() {
   return (
     <div
       id="homepage"
-      className="bg-background-surface pt-2 md:pt-6 dark:bg-background-dark-surface flex justify-center"
+      className="bg-background-surface py-2 md:py-6 dark:bg-background-dark-surface flex justify-center"
     >
       <div className="container">
         <div className="flex flex-wrap items-center">
@@ -32,13 +32,21 @@ export default function LandingPage() {
             <div className="hero-content mx-auto max-w-[780px] text-center">
               <h1 className="mb-8 text-3xl text-font-faded dark:text-font-dark-faded font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
                 The{" "}
-                <span className="text-emerald-900 dark:text-[#af9e85]">L</span>
+                <span className="text-emerald-900 dark:text-[#af9e85] underline">
+                  L
+                </span>
                 egal{" "}
-                <span className="text-emerald-900 dark:text-[#af9e85]">I</span>
+                <span className="text-emerald-900 dark:text-[#af9e85] underline">
+                  I
+                </span>
                 ntelligent{" "}
-                <span className="text-emerald-900 dark:text-[#af9e85]">S</span>
+                <span className="text-emerald-900 dark:text-[#af9e85] underline">
+                  S
+                </span>
                 upport{" "}
-                <span className="text-emerald-900 dark:text-[#af9e85]">A</span>
+                <span className="text-emerald-900 dark:text-[#af9e85] underline">
+                  A
+                </span>
                 ssistant
               </h1>
               <ul className="mb-10 flex flex-wrap items-center justify-center">
