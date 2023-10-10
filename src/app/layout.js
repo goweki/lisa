@@ -1,21 +1,19 @@
 import { Inter } from "next/font/google";
 import "@/css/globals.css";
-import Context from "@/components/context";
+import Context from "@/app/compo";
 import Navbar from "@/components/navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "lisa",
+  title: "lisa - Welcome",
   description: "Legal Intelligent Support Assistant",
 };
 
 export default function RootLayout({ auth, home }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className}>
-        <Context routes={{ auth, home }}>
-          <Navbar />
-        </Context>
+        <Context routes={{ auth, home }} navbar={Navbar} />
       </body>
     </html>
   );

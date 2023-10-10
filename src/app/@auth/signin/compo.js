@@ -99,14 +99,13 @@ export function Signin() {
               placeholder="Enter your email address"
               icon={SVGemail}
               value={email}
-              setFunc={setEmail}
-              onChange={(e, email, setFunc) => {
+              onChange={(e) => {
                 if (email.error) {
                   const error_ = emailValidator(e.target.value);
                   if (!!error_) {
-                    setFunc({ value: e.target.value, error: error_ });
+                    setEmail({ value: e.target.value, error: error_ });
                   } else {
-                    setFunc({ value: e.target.value, error: "" });
+                    setEmail({ value: e.target.value, error: "" });
                   }
                 } else {
                   setEmail({ value: e.target.value, error: "" });
@@ -120,17 +119,16 @@ export function Signin() {
               placeholder="Enter your password"
               icon={SVGpassword}
               value={password}
-              setFunc={setPassword}
-              onChange={(e, password, setFunc) => {
+              onChange={(e) => {
                 if (password.error) {
                   const error_ = emailValidator(e.target.value);
                   if (!!error_) {
-                    setFunc({ value: e.target.value, error: error_ });
+                    setPassword({ value: e.target.value, error: error_ });
                   } else {
-                    setFunc({ value: e.target.value, error: "" });
+                    setPassword({ value: e.target.value, error: "" });
                   }
                 } else {
-                  setFunc({ value: e.target.value, error: "" });
+                  setPassword({ value: e.target.value, error: "" });
                 }
               }}
             />

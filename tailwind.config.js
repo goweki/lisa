@@ -18,6 +18,14 @@ module.exports = {
             transform: "translate3d(0, -0.5rem, 0)",
           },
         },
+        logoFadein: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        logoRotate: {
+          from: { transform: "rotate(-90deg)" },
+          to: { transform: "rotate(0deg)" },
+        },
       },
       backgroundImage: {
         "gradient-sunken": {
@@ -63,5 +71,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [require("@tailwindcss/forms"), require("tailwindcss-animate")],
 };
