@@ -12,21 +12,27 @@ export default function LandingPage() {
   return (
     <div
       id="homepage"
-      className="bg-background-surface dark:bg-background-dark-surface flex pt-8 md:pt-12 lg:pt-16 justify-center"
+      className="bg-background-surface dark:bg-background-dark-surface flex md:pt-6 lg:pt-16 justify-center"
     >
       <div className="container">
         <div className="flex flex-wrap items-center">
           <div className="w-full px-4">
+            <div className="z-10 mx-auto max-w-[845px]">
+              {/* <div className="mt-4"> */}
+              {/* <img
+                  src="assets/images/hero/hero-image.jpg"
+                  alt="hero"
+                  className="mx-auto max-w-full rounded-t-xl rounded-tr-xl"
+                /> */}
+              <SVGlogoAnimation1 />
+              {/* </div> */}
+            </div>
+          </div>
+          <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
               <h1 className="mb-8 text-3xl font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
-                LISA - The Legal Intelligent Support Assistant
+                The Legal Intelligent Support Assistant
               </h1>
-              <p className="mx-auto mb-10 max-w-[600px] text-base sm:text-lg sm:leading-relaxed md:text-xl md:leading-relaxed">
-                With Lisa, legal professionals now have a handy tool that
-                unifies resources and keeps track of activities. Lisa is much
-                more than an information manager, it is a research assistant and
-                more!
-              </p>
               <ul className="mb-10 flex flex-wrap items-center justify-center">
                 <li>
                   <ButtonPrimary
@@ -59,26 +65,20 @@ export default function LandingPage() {
                   </span>
                 </Link>
               </ul>
-              <div className="text-center">
-                {/* <img
+              <p className="mx-auto mb-10 max-w-[600px] text-base sm:text-lg sm:leading-relaxed md:text-xl md:leading-relaxed">
+                With Lisa, legal professionals now have a handy tool that
+                unifies resources and keeps track of activities. Lisa is much
+                more than an information manager, it is a research assistant and
+                more!
+              </p>
+
+              {/* <div className="text-center">
+                <img
                   src="assets/images/hero/brand.svg"
                   alt="image"
                   className="mx-auto w-full max-w-[250px] opacity-50 transition duration-300 ease-in-out hover:opacity-100"
-                /> */}
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full px-4">
-            <div className="z-10 mx-auto max-w-[845px]">
-              <div className="mt-16">
-                {/* <img
-                  src="assets/images/hero/hero-image.jpg"
-                  alt="hero"
-                  className="mx-auto max-w-full rounded-t-xl rounded-tr-xl"
-                /> */}
-                <SVGlogoAnimation1 />
-              </div>
+                />
+              </div> */}
             </div>
           </div>
         </div>
