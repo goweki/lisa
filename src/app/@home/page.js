@@ -1,7 +1,5 @@
 "use client";
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { useDate } from "@/components/datetime";
@@ -10,7 +8,8 @@ import useRealm from "@/components/realmWeb";
 export default function HomePage() {
   //states
   const { app: realmApp, signOutUser } = useRealm();
-  const { date, time, wish } = useDate();
+  const { wish } = useDate();
+  const router = useRouter();
   return (
     <div
       id="homepage"
@@ -50,13 +49,13 @@ export default function HomePage() {
                   <ButtonPrimary
                     label="Continue"
                     onClick={() => {
-                      console.log("ACTION: continue button pressed...");
+                      router.push("/home");
                     }}
                   />
                   <ButtonText
                     label="Sign Out"
                     onClick={() => {
-                      console.log("ACTION: exit button pressed...");
+                      signOutUser();
                     }}
                   />
                 </div>
