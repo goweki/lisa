@@ -61,8 +61,11 @@ async function sendSMS({ subject, message }) {
     message: subject + ": " + message,
   });
   //log response
-  console.log("HERE-A.........." + res_.SMSMessageData.Recipients);
-  console.log("HERE-B.........." + Object.keys(res_.SMSMessageData.Recipients));
+  console.log(
+    "HERE-A.........." + JSON.stringify(res_.SMSMessageData.Recipients)
+  );
+  console.log("HERE-B.........." + res_.SMSMessageData.Recipients);
+  //Response
   if (res_.SMSMessageData.Recipients.length === 0)
     return { error: "message not sent to any receipient" };
   else return { message: res_.SMSMessageData.Recipients };

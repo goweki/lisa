@@ -54,7 +54,7 @@ export default function LandingPage() {
                 </Link> */}
                 <Link
                   href="/signin"
-                  className="flex items-center py-4 px-6 hover:text-emerald-600 dark:hover:text-emerald-500 font-medium transition duration-150 ease-in-out sm:px-10"
+                  className="flex items-center py-1 px-6 hover:text-emerald-600 dark:hover:text-emerald-500 font-medium transition duration-150 ease-in-out sm:px-10"
                 >
                   Sign In
                   <span className="pl-2">
