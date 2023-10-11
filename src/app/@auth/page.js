@@ -30,11 +30,11 @@ export default function LandingPage() {
           </div>
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
-              <h1 className="mb-8 text-3xl text-font-faded dark:text-font-dark-faded font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
-                The <span className=" dark:text-[#af9e85]">L</span>
-                egal <span className=" dark:text-[#af9e85]">I</span>
-                ntelligent <span className=" dark:text-[#af9e85]">S</span>
-                upport <span className=" dark:text-[#af9e85]">A</span>
+              <h1 className="mb-8 text-3xl text-font-inactive dark:text-font-dark-inactive font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
+                The <span>L</span>
+                egal <span>I</span>
+                ntelligent <span>S</span>
+                upport <span>A</span>
                 ssistant
               </h1>
               <ul className="mb-10 flex flex-wrap items-center justify-center">

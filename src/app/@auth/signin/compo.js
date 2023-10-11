@@ -38,6 +38,7 @@ export function Signin() {
         // console.log(`>>> user: ${JSON.stringify(resp.user)}`);
         // console.log(`HERE1`);
         toast.success("Successfully signed in");
+        router.replace("/home");
         router.refresh();
       } else {
         console.log(`HERE2`);

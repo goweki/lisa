@@ -100,7 +100,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                 Fill out your details
               </span>{" "}
               <span className="inline-block">
-                and we will get back to you ASAP...
+                and we will get back to you...
               </span>
             </p>
           </div>

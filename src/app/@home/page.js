@@ -50,12 +50,14 @@ export default function HomePage() {
                     label="Continue"
                     onClick={() => {
                       router.push("/home");
+                      // router.refresh();
                     }}
                   />
                   <ButtonText
                     label="Sign Out"
-                    onClick={() => {
-                      signOutUser();
+                    onClick={async () => {
+                      await signOutUser();
+                      router.refresh();
                     }}
                   />
                 </div>
