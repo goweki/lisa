@@ -24,10 +24,10 @@ module.exports = {
         },
         doodle: {
           "90%": {
-            fillOpacity: 0.25,
+            fillOpacity: 0.5,
             strokeWidth: 1,
-            strokeOpacity: 0.5,
-            strokeDashoffset: 0,
+            strokeOpacity: 0.25,
+            strokeDashoffset: 500,
           },
           "100%": {
             fillOpacity: 1,

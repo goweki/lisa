@@ -39,7 +39,7 @@ export function ButtonText({
     <button
       disabled={disabled || loading}
       type={type}
-      className={`relative disabled:cursor-not-allowed disabled:opacity-50 focus:ring-4 focus:ring-emerald-300 font-medium text-sm px-5 py-2.5 mb-2 focus:outline-none dark:focus:ring-emerald-800 cursor-pointer transition-all duration-150 ease-in-out enabled:hover:scale-105 enabled:hover:text-red-700 enabled:dark:hover:text-red-500`}
+      className={`whitespace-nowrap relative disabled:cursor-not-allowed disabled:opacity-50 focus:ring-4 focus:ring-emerald-300 font-medium text-sm px-5 py-2.5 mb-2 focus:outline-none dark:focus:ring-emerald-800 cursor-pointer transition-all duration-150 ease-in-out enabled:hover:scale-105 enabled:hover:text-red-700 enabled:dark:hover:text-red-500`}
       onClick={(e) => {
         e.preventDefault();
         onClick();
