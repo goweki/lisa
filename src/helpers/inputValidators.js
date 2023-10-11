@@ -25,3 +25,13 @@ export function nameValidator(name) {
     return "Names should contain alphabets only";
   } else return "";
 }
+
+export function telValidator(tel) {
+  const re = /\+?(254|0)7\d{8}/;
+  if (!tel) {
+    return "Tel field can't be empty";
+  } else if (!re.test(tel)) {
+    // console.log(" > Parsed a non-Kenyan phone number: " + tel);
+    return "Sorry, we dont support non-Kenyan phone numbers";
+  } else return "";
+}

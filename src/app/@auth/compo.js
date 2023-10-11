@@ -1,9 +1,9 @@
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 
 export function ReqDemoModal({ isVisible, hideModal }) {
   const [firstName, setFirstName] = useState({ value: "", error: "" });
@@ -14,17 +14,70 @@ export function ReqDemoModal({ isVisible, hideModal }) {
   useEffect(() => {
     setModalState({ state: "OK", error: "" });
   }, []);
-  //onMount-component
+  //onError-component
   useEffect(() => {
     if (modalState.error) {
       toast.error(modalState.error);
       setModalState({ state: "OK", error: "" });
     }
   }, [modalState.error]);
+  //reset status when visibility is toggled
+  useEffect(() => {
+    setModalState({ state: "OK", error: "" });
+    setFirstName({ value: "", error: "" });
+    setEmail({ value: "", error: "" });
+    setTel({ value: "", error: "" });
+  }, [isVisible]);
   //handle sending message
-  function handleSend() {
-    setModalState({ state: "loading", error: "" });
-    // send SMS /email
+  //handle sending message
+  async function handleSend() {
+    try {
+      console.log(`ACTION.........`);
+      console.log(`> pressed 'Im Interested' `);
+      setModalState({ state: "loading", error: "" });
+      // validate inputs
+      if (!firstName.value || !email.value) {
+        setModalState({
+          ...modalState,
+          error: "Please fill out missing values",
+        });
+        return;
+      }
+      const emailError = emailValidator(email.value);
+      const nameError = nameValidator(firstName.value);
+      if (!!emailError || !!nameError) {
+        setEmail({ ...email, error: emailError });
+        setFirstName({ ...firstName, error: nameError });
+        setModalState({ ...modalState, error: emailError || nameError });
+        console.log(` >> invalid form entries`);
+        return;
+      }
+      const body = {
+        subject: "INTEREST IN LISA",
+        message: `The below user has expressed interest in Lisa via website \nName: ${
+          firstName.value
+        }  \nEmail: ${email.value}, ${tel.value ? `\nTel: ${tel.value} ` : ``}`,
+      };
+      const options = {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" },
+      };
+      // make API calls
+      const response = await fetch(
+        "http://localhost:3000/api/subscribe",
+        options
+      );
+      const data = await response.json();
+      if (data.some((elem) => "error" in elem)) {
+        throw { error: "OOPS... consider emailing lisa@goweki.com directly" };
+      } else {
+        toast.success("Your message has been sent...");
+        hideModal();
+      }
+    } catch (err) {
+      setModalState({ ...modalState, error: err.error || err });
+    }
   }
   return (
     <div
@@ -42,10 +95,12 @@ export function ReqDemoModal({ isVisible, hideModal }) {
             {/* <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
               Interested in LISA?
             </h1> */}
-            <p className="mt-2 text-sm text-medium">
-              <span className="inline-block">Fill your details</span>{" "}
+            <p className="text-start my-2 text-sm font-medium">
+              <span className="inline-block font-bold">
+                Fill out your details
+              </span>{" "}
               <span className="inline-block">
-                and we will get back to you in a day
+                and we will get back to you ASAP...
               </span>
             </p>
           </div>
@@ -117,7 +172,11 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                   }}
                 />
                 <div className="my-6 flex flex-col">
-                  <ButtonPrimary label="I'm interested" />
+                  <ButtonPrimary
+                    label="I'm interested"
+                    onClick={handleSend}
+                    loading={modalState.state === "loading"}
+                  />
                   <div className="self-end">
                     <ButtonText label="Close" onClick={hideModal} />
                   </div>
