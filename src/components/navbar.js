@@ -12,7 +12,7 @@ export default function Navbar() {
     return (
       <Menu>
         <Menu.Button className="flex items-center justify-center w-8 h-8">
-          <SVGprofileNavbarIcon className="w-6 h-6" />
+          <SVGprofileNavbarIcon className="w-6 h-6 hover:text-emerald-700 dark:hover:text-emerald-500" />
         </Menu.Button>
         <Transition
           as={Fragment}
@@ -118,33 +118,6 @@ export default function Navbar() {
               </Link>
             )}
           </ul>
-          {/* {pathname.includes("/home") && (
-            <button
-              data-collapse-toggle="navbar-sticky"
-              type="button"
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-              aria-controls="navbar-sticky"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 17 14"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M1 1h15M1 7h15M1 13h15"
-                />
-              </svg>
-            </button>
-          )} */}
-
           {pathname === "/home" && (
             <div className="flex items-center justify-center md:hidden w-8 h-8">
               <button className="text-font-inactive dark:text-font-dark-inactive hover:text-emerald-600 dark:hover:text-emerald-500 flex items-center justify-center p-3">
@@ -185,7 +158,7 @@ function menuItem({ label, icon: Icon, onClick }) {
         <button
           onClick={onClick}
           className={`${
-            active ? "bg-primary-light dark:bg-primary-dark" : ""
+            active ? "bg-emerald-800 dark:bg-emerald-200" : ""
           } flex w-full items-center rounded-md px-2 py-2 text-sm`}
         >
           {!!Icon && <Icon className="mr-2 h-5 w-5" />}

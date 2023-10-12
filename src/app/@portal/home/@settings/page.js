@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 export default function Portal() {
   const router = useRouter();
   return (
-    <>
-      <span onClick={() => router.back()}>Close modal</span>
-      <h1>Settings</h1>
-      ...
-    </>
+    <div className="grid grid-cols-2 gap-4">
+      <h1 className="col-span-2">This is the settings page...</h1>
+      <div className="col-span-2 md:col-span-1 bg-emerald-500 ">card A</div>
+      <div className="col-span-2 md:col-span-1 bg-emerald-500 ">card B</div>
+    </div>
   );
 }
