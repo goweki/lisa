@@ -65,7 +65,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       };
       // make API calls
       const response = await fetch(
-        "http://localhost:3000/api/subscribe",
+        process.env.NEXT_PUBLIC_SUBSCRIBE_ROUTE,
         options
       );
       const data = await response.json();
