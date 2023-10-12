@@ -23,7 +23,7 @@ export default function Navbar() {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 mt-2 px-2 origin-top-right divide-y divide-gray-400 rounded bg-background-raised dark:bg-background-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
+          <Menu.Items className="absolute right-0 origin-top-right divide-y divide-gray-400 rounded bg-background-raised dark:bg-background-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
             <div className="px-1 py-1 ">
               {menuItem({ label: "Profile" })}
               {menuItem({ label: "Settings" })}
@@ -158,8 +158,8 @@ function menuItem({ label, icon: Icon, onClick }) {
         <button
           onClick={onClick}
           className={`${
-            active ? "bg-emerald-800 dark:bg-emerald-200" : ""
-          } flex w-full items-center rounded-md px-2 py-2 text-sm`}
+            active ? "bg-emerald-300 dark:bg-emerald-900" : ""
+          } flex w-full items-center rounded pl-2 pr-4 py-2 text-sm`}
         >
           {!!Icon && <Icon className="mr-2 h-5 w-5" />}
           {label}
