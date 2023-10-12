@@ -77,7 +77,7 @@ export default function HomePage() {
               </div>
               <p className="mx-auto mb-10 max-w-[600px] text-base sm:text-lg sm:leading-relaxed md:text-xl md:leading-relaxed">
                 Lisa is much more than an information manager, it is a research
-                assistant, legal and more!
+                assistant, a digital secretary and more!
               </p>
             </div>
           </div>
