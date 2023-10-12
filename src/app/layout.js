@@ -9,11 +9,11 @@ export const metadata = {
   description: "Legal Intelligent Support Assistant",
 };
 
-export default function RootLayout({ auth, home }) {
+export default function RootLayout({ auth, portal }) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className}>
-        <Context routes={{ auth, home }} navbar={Navbar} />
+        <Context routes={{ auth, portal }} navbar={Navbar} />
       </body>
     </html>
   );

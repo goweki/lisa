@@ -39,7 +39,6 @@ export function Signin() {
         // console.log(`HERE1`);
         toast.success("Successfully signed in");
         router.replace("/home");
-        router.refresh();
       } else {
         console.log(`HERE2`);
         // console.log(`>> sign-in failed`);

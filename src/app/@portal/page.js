@@ -1,4 +1,5 @@
 "use client";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
@@ -7,10 +8,22 @@ import useRealm from "@/components/realmWeb";
 
 export default function HomePage() {
   //states
+  const [loading, setLoading] = useState(true);
   const { app: realmApp, signOutUser } = useRealm();
   const { wish } = useDate();
   const router = useRouter();
-  return (
+  // callback to memize function
+  const refResh = useCallback(() => {
+    router.refresh();
+  }, [router]);
+  // confirm user on mount
+  useEffect(() => {
+    if (realmApp?.currentUser) setLoading(false);
+    else {
+      refResh();
+    }
+  }, [realmApp?.currentUser, refResh]);
+  return !loading ? (
     <div
       id="homepage"
       className="flex flex-col flex-1 bg-background-surface dark:bg-background-dark-surface justify-start 
@@ -41,7 +54,7 @@ export default function HomePage() {
               </h1> */}
               <h1 className="mb-4 text-xl text-font-faded dark:text-font-dark-faded font-bold leading-snug sm:text-2xl sm:leading-snug md:text-[27px] md:leading-snug">
                 <p className="text-[#AB8044] dark:text-[#af9e85]">
-                  {wish()} {realmApp?.currentUser.customData.name}
+                  {wish()} {realmApp?.currentUser?.customData?.name}
                 </p>
               </h1>
               <div className="mb-8 flex flex-col items-center justify-center">
@@ -70,6 +83,13 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+    </div>
+  ) : (
+    <div className="flex flex-1 py-2 md:py-6 items-center justify-center space-x-2 pt-1 loader [&>*:nth-child(even)]:bg-emerald-600 [&>*:nth-child(odd)]:bg-gray-500">
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] "></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-200"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-400"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-600"></div>
     </div>
   );
 }

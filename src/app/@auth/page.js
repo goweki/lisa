@@ -1,15 +1,32 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
+import useRealm from "@/components/realmWeb";
 
 export default function LandingPage() {
   //states
+  const [loading, setLoading] = useState(true);
   const [showDemoReqModal, setToggleDemoReqModal] = useState(false);
-  return (
+  const { app: realmApp, signOutUser } = useRealm();
+  const router = useRouter();
+  // callback to memize function
+  const refResh = useCallback(() => {
+    router.refresh();
+  }, [router]);
+  // check if user exists on mount
+  useEffect(() => {
+    if (realmApp?.currentUser) refResh();
+    else {
+      setLoading(false);
+    }
+  }, [realmApp?.currentUser, refResh]);
+
+  return !loading ? (
     <div
       id="homepage"
       className="bg-background-surface py-2 md:py-6 dark:bg-background-dark-surface flex justify-center"
@@ -94,5 +111,13 @@ export default function LandingPage() {
         }}
       />
     </div>
+  ) : (
+    <div className="flex flex-1 py-2 md:py-6 items-center justify-center space-x-2 pt-1 loader [&>*:nth-child(even)]:bg-emerald-600 [&>*:nth-child(odd)]:bg-gray-500">
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] "></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-200"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-400"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-600"></div>
+    </div>
   );
+  s;
 }

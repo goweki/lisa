@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { SVGlightTheme } from "./svgs";
 
 export default function ThemeToggler() {
   const [mounted, setMounted] = useState(false);
@@ -10,7 +11,7 @@ export default function ThemeToggler() {
   if (!mounted) return null;
 
   return (
-    <div className="inline-block">
+    <>
       {theme === "dark" ? (
         <button
           onClick={() => setTheme("light")}
@@ -33,7 +34,7 @@ export default function ThemeToggler() {
           className="rounded-full outline-none focus:outline-none focus-visible:ring focus-visible:ring-gray-100 focus:ring-opacity-20"
         >
           <span className="sr-only">Dark Mode</span>
-          <svg
+          {/* <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
@@ -46,10 +47,11 @@ export default function ThemeToggler() {
             strokeLinejoin="round"
           >
             <circle cx="12" cy="12" r="5" />
-            <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-          </svg>
+            <path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg> */}
+          <SVGlightTheme className="w-6 h-6 text-font-faded dark:text-font-dark-faded hover:text-emerald-600 dark:hover:text-emerald-500" />
         </button>
       )}
-    </div>
+    </>
   );
 }

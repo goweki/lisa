@@ -6,8 +6,8 @@ import useRealm from "../components/realmWeb";
 
 export default function Context({ routes, navbar: Navbar }) {
   const [loading, setLoading] = useState(true);
-  const { app } = useRealm();
-  const { auth, home } = routes;
+  const { app: realmApp } = useRealm();
+  const { auth, portal } = routes;
   // onMount - delay
   useEffect(() => {
     setTimeout(() => {
@@ -26,8 +26,8 @@ export default function Context({ routes, navbar: Navbar }) {
               <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-400"></div>
               <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-600"></div>
             </div>
-          ) : app?.currentUser ? (
-            home
+          ) : realmApp?.currentUser ? (
+            portal
           ) : (
             auth
           )}
