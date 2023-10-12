@@ -1,0 +1,13 @@
+"use client";
+import { useRouter } from "next/navigation";
+
+export default function Portal() {
+  const router = useRouter();
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <h1 className="col-span-2">Ujenzi unaendelea...</h1>
+      <div className="col-span-2 md:col-span-1 bg-emerald-500 ">card 1</div>
+      <div className="col-span-2 md:col-span-1 bg-emerald-500 ">card 2</div>
+    </div>
+  );
+}
