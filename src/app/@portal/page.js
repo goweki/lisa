@@ -58,7 +58,7 @@ export default function HomePage() {
                 </p>
               </h1>
               <div className="mb-8 flex flex-col items-center justify-center">
-                <div className="flex flex-col min-w-[50%]">
+                <div className="flex flex-col min-w-[50%] space-y-1">
                   <ButtonPrimary
                     label="Continue"
                     onClick={() => {
