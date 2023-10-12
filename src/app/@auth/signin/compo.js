@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ButtonPrimary } from "../../../components/atoms/buttons";
@@ -38,7 +38,7 @@ export function Signin() {
         // console.log(`>>> user: ${JSON.stringify(resp.user)}`);
         // console.log(`HERE1`);
         toast.success("Successfully signed in");
-        router.replace("/home");
+        setNavin(true);
       } else {
         console.log(`HERE2`);
         // console.log(`>> sign-in failed`);
@@ -55,6 +55,7 @@ export function Signin() {
     }
   }
 
+  const [navin, setNavin] = useState(false);
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
   const [loading, setLoading] = useState(true);
@@ -65,6 +66,18 @@ export function Signin() {
   useEffect(() => {
     setLoading(false);
   }, []);
+  // callback to memize routing function
+  const refResh = useCallback(() => {
+    router.replace("/home");
+    router.refresh();
+  }, [router]);
+  // navihgate with memoized router
+  useEffect(() => {
+    if (navin) {
+      setLoading(false);
+      refResh();
+    }
+  }, [navin, refResh]);
   //Notify on formError
   useEffect(() => {
     if (email.error || password.error) {
@@ -137,7 +150,7 @@ export function Signin() {
           <div className="mx-2 pt-4">
             <ButtonPrimary
               label="Sign In"
-              onClick={handleLogin}
+              onClick={() => handleLogin()}
               disabled={!email.value || !password.value}
               loading={loading}
             />
