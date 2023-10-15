@@ -54,7 +54,7 @@ export default function Navbar() {
     <nav
       className={`sticky bg-background-surface dark:bg-background-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
     >
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <div className="max-w-4xl lg:max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">
           <Link href="/" className="flex items-center">
             <SVGlogo className="h-8 mr-3" />
