@@ -25,9 +25,9 @@ export default function Navbar() {
         >
           <Menu.Items className="absolute right-0 origin-top-right divide-y divide-gray-400 rounded bg-background-raised dark:bg-background-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
             <div className="px-1 py-1 ">
+              {menuItem({ label: "Settings" })}
               {menuItem({ label: "Profile" })}
-              {menuItem({ label: "Settings" })}
-              {menuItem({ label: "Settings" })}
+              {/* {menuItem({ label: "Settings" })} */}
             </div>
             <div className="px-2 py-1">
               <Menu.Item>
