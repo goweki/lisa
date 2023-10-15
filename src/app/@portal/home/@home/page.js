@@ -18,6 +18,7 @@ export default function Portal() {
       </div>
     </div>
   );
+
   function renderProfileCard() {
     return (
       <div className="max-w-lg m-auto w-full lg:max-w-full lg:flex">
@@ -26,7 +27,7 @@ export default function Portal() {
           title="Profile"
         ></div>
         <div className="bg-gradient-to-b from-background-surface to-background-raised dark:from-background-dark-surface dark:to-background-dark-raised border-r border-b border-l border-gray-300 dark:border-gray-800 lg:border-l-0 lg:border-t rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal lg:bg-gradient-to-r">
-          <div className="mb-6">
+          <div>
             <p className="text-sm flex items-center">
               <SVGtime className="w-4 h-4 mr-2 text-emerald-500" />
               {date()} {time()}
@@ -47,15 +48,18 @@ export default function Portal() {
               </ul>
             </p>
           </div>
+        </div>
+        <div className="mt-6 mb-2 mx-4">
           <ButtonSecondary label="view schedule" />
         </div>
       </div>
     );
   }
+
   function renderIssuesCard() {
     return (
       <>
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between">
           <h5 class="text-xl font-bold leading-none">Active Issues</h5>
           <a
             href="#"
@@ -65,48 +69,56 @@ export default function Portal() {
           </a>
         </div>
         <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
-          <thead class="text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <thead class="rounded uppercase border-b border-gray-500">
             <tr>
-              <th scope="col" class="px-6 py-3">
+              <th scope="col" class="px-1 py-3">
                 Issue
               </th>
-              <th scope="col" class="px-6 py-3">
+              <th scope="col" class="px-1 py-3">
                 Client
               </th>
-              <th scope="col" class="px-6 py-3">
+              <th scope="col" class="px-1 py-3">
                 Category
               </th>
-              <th scope="col" class="px-6 py-3">
+              <th scope="col" class="px-1 py-3">
                 Start
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr class="bg-white border-b dark:bg-gray-900 dark:border-gray-700">
-              <th
-                scope="row"
-                class="px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                div-Andeyo-2305
-              </th>
-              <td class="px-6 py-4">Betty Andeyo</td>
-              <td class="px-6 py-4">Marital</td>
-              <td class="px-6 py-4">23-05-2023</td>
-            </tr>
-            <tr class="border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-              <th
-                scope="row"
-                class="px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
-              >
-                land-Onyeiti-2305
-              </th>
-              <td class="px-6 py-4">Onyeiti</td>
-              <td class="px-6 py-4">Property</td>
-              <td class="px-6 py-4">15-06-2023</td>
-            </tr>
+            {issues.map((v, i) => {
+              return (
+                <tr
+                  key={i}
+                  class="border-b border-gray-300 dark:border-gray-800 hover:bg-background-raised dark:hover:bg-background-dark-raised "
+                >
+                  <th scope="row" class="px-1 py-2 whitespace-nowrap">
+                    {v.name}
+                  </th>
+                  <td class="px-1 py-2">{v.client}</td>
+                  <td class="px-1 py-2">{v.category}</td>
+                  <td class="px-1 py-2">{v.startDate}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </>
     );
   }
 }
+
+const issues = [
+  {
+    name: "div-Andeyo-2305",
+    client: "Betty Andeyo",
+    category: "Marital",
+    startDate: "23-05-2023",
+  },
+  {
+    name: "land-Onyeiti-2305",
+    client: "Albart Onyeiti",
+    category: "Property",
+    startDate: "12-03-2023",
+  },
+];
