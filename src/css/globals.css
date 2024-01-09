@@ -3,12 +3,20 @@
 @layer base {
   html,
   body {
-    @apply text-font dark:text-font-dark bg-background dark:bg-background-dark min-h-screen w-full;
+    @apply text-font dark:text-font-dark bg-backg dark:bg-backg-dark min-h-screen w-full;
+  }
+  a {
+    @apply hover:text-emerald-500;
   }
 }
 
 /* components layer */
 @tailwind components;
+/* @layer components {
+  #root-div {
+    @apply bflex min-h-screen w-full h-full flex-col; //currently implemented in-line
+  }
+} */
 
 /* utilities */
 @tailwind utilities;

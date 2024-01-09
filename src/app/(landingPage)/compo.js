@@ -5,42 +5,38 @@ import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
 
-export function ReqDemoModal({ isVisible, hideModal }) {
+export function ReqDemoModal({ funCloseModal }) {
   const [firstName, setFirstName] = useState({ value: "", error: "" });
   const [email, setEmail] = useState({ value: "", error: "" });
   const [tel, setTel] = useState({ value: "", error: "" });
-  const [modalState, setModalState] = useState({ state: "", error: "" });
+  const [UIstate, setUIstate] = useState("");
   //onMount-component
   useEffect(() => {
-    setModalState({ state: "OK", error: "" });
+    setUIstate("OK");
   }, []);
   //onError-component
   useEffect(() => {
-    if (modalState.error) {
-      toast.error(modalState.error);
-      setModalState({ state: "OK", error: "" });
+    if (UIstate && UIstate != "OK") {
+      toast.error(UIstate);
+      setUIstate("OK");
     }
-  }, [modalState.error]);
+  }, [UIstate]);
   //reset status when visibility is toggled
   useEffect(() => {
-    setModalState({ state: "OK", error: "" });
+    if (isVisible) setUIstate("OK");
     setFirstName({ value: "", error: "" });
     setEmail({ value: "", error: "" });
     setTel({ value: "", error: "" });
   }, [isVisible]);
   //handle sending message
-  //handle sending message
   async function handleSend() {
     try {
       console.log(`ACTION.........`);
-      console.log(`> pressed 'Im Interested' `);
-      setModalState({ state: "loading", error: "" });
+      console.log(` > pressed 'Im Interested' `);
+      setUIstate("loading");
       // validate inputs
       if (!firstName.value || !email.value) {
-        setModalState({
-          ...modalState,
-          error: "Please fill out missing values",
-        });
+        setUIstate("Please fill out missing values");
         return;
       }
       const emailError = emailValidator(email.value);
@@ -48,7 +44,7 @@ export function ReqDemoModal({ isVisible, hideModal }) {
       if (!!emailError || !!nameError) {
         setEmail({ ...email, error: emailError });
         setFirstName({ ...firstName, error: nameError });
-        setModalState({ ...modalState, error: emailError || nameError });
+        setUIstate({ ...UIstate, error: emailError || nameError });
         console.log(` >> invalid form entries`);
         return;
       }
@@ -73,10 +69,10 @@ export function ReqDemoModal({ isVisible, hideModal }) {
         throw { error: "OOPS... consider emailing lisa@goweki.com directly" };
       } else {
         toast.success("Your message has been sent...");
-        hideModal();
+        funCloseModal();
       }
     } catch (err) {
-      setModalState({ ...modalState, error: err.error || err });
+      setUIstate({ ...UIstate, error: err.error || err });
     }
   }
   return (
@@ -175,10 +171,10 @@ export function ReqDemoModal({ isVisible, hideModal }) {
                   <ButtonPrimary
                     label="I'm interested"
                     onClick={handleSend}
-                    loading={modalState.state === "loading"}
+                    loading={UIstate.state === "loading"}
                   />
                   <div className="self-end">
-                    <ButtonText label="Close" onClick={hideModal} />
+                    <ButtonText label="Close" onClick={funCloseModal} />
                   </div>
                 </div>
               </div>

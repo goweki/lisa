@@ -1,92 +1,50 @@
-import { useCallback, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
-import { ButtonPrimary } from "../../../components/atoms/buttons";
 import { SVGemail, SVGpassword } from "../../../components/atoms/svgs";
-import { InputText } from "../../../components/atoms/inputs";
+import { InputText } from "@/components/atoms/inputs";
 import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
-import useRealm from "../../../components/realmWeb";
+import { ButtonPrimary } from "@/components/atoms/buttons";
+import { Loader1 } from "@/components/atoms/loader";
 
-export function Signin() {
-  // login logic
-  async function handleLogin() {
-    setEmail({ ...email, error: "" });
-    setPassword({ ...password, error: "" });
-    setLoading(true);
-    console.log(`ACTION.........`);
-    console.log(`> pressed login`);
-    // Errors??
-    const emailError = emailValidator(email.value);
-    const passwordError = passwordValidator(password.value);
-    if (!!emailError || !!passwordError) {
-      setEmail({ ...email, error: emailError });
-      setPassword({ ...password, error: passwordError });
-      console.log(` >> invalid form entries`);
-      // console.log(
-      //   ` >>> email: ${JSON.stringify(email)} \n>>> password: ${JSON.stringify(
-      //     password
-      //   )}`
-      // );
-      return;
-    }
-    // realm-web (signInUser)
-    try {
-      const resp = await signInUser(email.value, password.value);
-      if (resp.user) {
-        console.log(`HERE3`);
-        console.log(`>> successful sign-in`);
-        // console.log(`>>> user: ${JSON.stringify(resp.user)}`);
-        // console.log(`HERE1`);
-        toast.success("Successfully signed in");
-        setNavin(true);
-      } else {
-        console.log(`HERE2`);
-        // console.log(`>> sign-in failed`);
-        // console.log(`>>> error: ${JSON.stringify(err)}`);
-        //stop loading
-        throw resp;
-      }
-    } catch (err) {
-      console.log(`HERE3`);
-      console.log(`>> sign-in failed, caught error`);
-      console.log(`>>> errorObj: ${err}`);
-      console.log(`>>> error: ${JSON.stringify(err)}`);
-      setEmail({ ...email, error: err.error || err });
-    }
-  }
-
-  const [navin, setNavin] = useState(false);
+export function Signin({ csrfToken }) {
+  // states
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
-  const [loading, setLoading] = useState(true);
-  const { signInUser } = useRealm();
-  const router = useRouter();
-
-  //On component render
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-  // callback to memize routing function
-  const refResh = useCallback(() => {
-    router.replace("/home");
-    router.refresh();
-  }, [router]);
-  // navihgate with memoized router
-  useEffect(() => {
-    if (navin) {
-      setLoading(false);
-      refResh();
-    }
-  }, [navin, refResh]);
-  //Notify on formError
+  const [UIstate, setUIstate] = useState("");
+  // Notify on input-Error
   useEffect(() => {
     if (email.error || password.error) {
-      setLoading(false);
+      setUIstate("OK");
       toast.error(email.error || password.error);
     }
   }, [email.error, password.error]);
-
-  return (
+  // handle SignIn
+  async function handleSubmit() {
+    if (!email.value || !password.value) {
+      setUIstate("ERROR: Email/Password is empty");
+    }
+    // validate inputs: email & password
+    const emailError_ = emailValidator(email.value);
+    const passwordError_ = passwordValidator(password.value);
+    if (emailError_ || passwordError_) {
+      if (emailError_) {
+        setEmail({ ...email, error: emailError_ });
+      } else {
+        setUIstate({ ...password, error: passwordError_ });
+      }
+      return;
+    }
+    //sign in
+    const res = await signIn("credentials", {
+      username: email.value,
+      password: password.value,
+      redirect: true,
+      callbackUrl: "/",
+    });
+  }
+  // Render
+  return UIstate === "OK" ? (
     <div className="flex flex-1 flex-col w-full items-center">
       <div className="w-full sm:max-w-md p-4 mt-6 divide-y space-y-3 divide-emerald-800">
         <p
@@ -95,14 +53,9 @@ export function Signin() {
           Welcome
         </p>
         <form
+          id="signin"
           className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33]"
-          action="#"
         >
-          {/* <p
-            className={`text-xl font-bold text-emerald-800 dark:text-emerald-600 text-center`}
-          >
-            Sign in to your account
-          </p> */}
           {/* INPUT FIELDS */}
           <div className="space-y-4">
             <InputText
@@ -150,9 +103,12 @@ export function Signin() {
           <div className="mx-2 pt-4">
             <ButtonPrimary
               label="Sign In"
-              onClick={() => handleLogin()}
+              type="button"
               disabled={!email.value || !password.value}
-              loading={loading}
+              loading={UIstate === "loading"}
+              onClick={(e) => {
+                e.preventDefault();
+              }}
             />
           </div>
           <div className="flex items-center justify-center">
@@ -195,5 +151,7 @@ export function Signin() {
         </form>
       </div>
     </div>
+  ) : (
+    <Loader1 />
   );
 }

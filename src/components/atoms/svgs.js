@@ -200,7 +200,7 @@ export function SVGcell({ className }) {
   );
 }
 
-export function SVGprofileNavbarIcon({ className }) {
+export function SVGprofile({ className }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

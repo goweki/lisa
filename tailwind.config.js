@@ -51,7 +51,7 @@ module.exports = {
         },
       },
       colors: {
-        background: {
+        backg: {
           DEFAULT: "#f1f5f9", //slate.100
           surface: "#e2e8f0", //slate.200
           raised: "#cbd5e1", //slate.300

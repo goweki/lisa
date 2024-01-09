@@ -2,17 +2,16 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { SVGlogo, SVGprofileNavbarIcon } from "./atoms/svgs";
-import ThemeToggler from "./atoms/themeToggle";
 import { Menu, Transition } from "@headlessui/react";
-import useRealm from "./realmWeb";
+import { SVGlogo, SVGprofile } from "../atoms/svgs";
+import ThemeToggler from "../atoms/themeToggle";
 
 export default function Navbar() {
   function optionsMenu() {
     return (
       <Menu>
         <Menu.Button className="flex items-center justify-center w-8 h-8">
-          <SVGprofileNavbarIcon className="w-6 h-6 hover:text-emerald-700 dark:hover:text-emerald-500" />
+          <SVGprofile className="w-6 h-6 hover:text-emerald-700 dark:hover:text-emerald-500" />
         </Menu.Button>
         <Transition
           as={Fragment}
@@ -35,8 +34,6 @@ export default function Navbar() {
                   label: "Logout",
                   onClick: async () => {
                     console.log("ACTION: clicked Logout option");
-                    await signOutUser();
-                    router.replace("/");
                   },
                 })}
               </Menu.Item>
@@ -48,13 +45,12 @@ export default function Navbar() {
   }
 
   const pathname = usePathname();
-  const { signOutUser } = useRealm();
   const router = useRouter();
   return (
     <nav
-      className={`sticky bg-background-surface dark:bg-background-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
+      className={`sticky bg-backg-surface dark:bg-backg-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
     >
-      <div className="max-w-4xl lg:max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
+      <div className="max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">
           <Link href="/" className="flex items-center">
             <SVGlogo className="h-8 mr-3" />
