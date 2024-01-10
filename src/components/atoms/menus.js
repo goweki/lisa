@@ -39,7 +39,7 @@ export function MenuDropdown({ menuIcon: MenuIcon, menuText, menuItems }) {
           <div className="px-2 py-1">
             <Menu.Item>
               {menuItem({
-                label: "Logout",
+                label: "Sign In",
                 onClick: async () => {
                   console.log("ACTION: clicked Logout option");
                 },
