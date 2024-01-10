@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
 import {
@@ -14,15 +15,19 @@ import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 
-export default function SigninPage({ csrfToken, callbackUrl }) {
+export default function SigninPage() {
   // states
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
   const [UIstate, setUIstate] = useState("");
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
   // onMount
   useEffect(() => {
-    setUIstate("OK");
-  }, []);
+    if (searchParams.has("error")) {
+      setUIstate("Authentication failed");
+    } else setUIstate("OK");
+  }, [searchParams]);
   // Notify on UIstate-error
   useEffect(() => {
     if (UIstate && UIstate !== "OK" && UIstate !== "loading") {

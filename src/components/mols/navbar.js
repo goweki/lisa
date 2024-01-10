@@ -83,7 +83,7 @@ export default function Navbar() {
               </Link>
             ) : (
               <Link
-                href="/auth/signin"
+                href="/signin"
                 className="block py-2 p-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
               >
                 Sign In
