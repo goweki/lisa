@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import db_cluster from "@/lib/mongodb";
+import { compareHash } from "@/helpers/passwordHandlers";
 
 export const authOptions = {
   // Configure one or more authentication providers
@@ -43,23 +44,31 @@ export const authOptions = {
         //run query on db
         user = await collection.findOne({
           email: credentials.email,
-          password: credentials.password,
+          // password: credentials.password,
         });
-        if (!user) {
-          return null;
-        } else {
-          console.log(`Found user:\n${JSON.stringify(user)}\n`);
+        if (user && compareHash(credentials.password, user.password)) {
+          // valid credentials
+          console.log(
+            `........................\nSUCCESS: Valid credentials\n > ${user}\n..................`
+          );
+          delete user.password;
           return user;
+        } else {
+          // invalid credentials
+          console.error(
+            `........................\nFAILED: Invalid credentials\n > ${`....  `}\n..................`
+          );
+          return "";
         }
       },
     }),
   ],
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error", // Error code passed in query string as ?error=
-    verifyRequest: "/auth/verify-request", // (used for check email message)
-    newUser: "/auth/new-user", // New users will be directed here on first sign in (leave the property out if not of interest)
+    //signOut: "/auth/signout",
+    //error: "/auth/error", // Error code passed in query string as ?error=
+    //verifyRequest: "/auth/verify-request", // (used for check email message)
+    //newUser: "/auth/new-user", // New users will be directed here on first sign in (leave the property out if not of interest)
   },
 };
 

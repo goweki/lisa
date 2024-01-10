@@ -1,40 +1,37 @@
 import bcrypt from "bcrypt";
-
-const saltRounds = 10;
-const myPlaintextPassword = "s0//P4$$w0rD";
-const someOtherPlaintextPassword = "not_bacon";
+const saltRounds = Number(process.env.BCRYPT_SALTROUNDS);
 
 // To hash a password
 export function hash(plaintext) {
   return bcrypt.hash(plaintext, saltRounds, (err, hash) => {
     // ifSuccess
     if (hash) {
-      return { success: hash };
+      return hash;
     }
     // ifError
     else {
       console.error(
-        `........................\nERROR: Hashing handler\n > ${err}\n..................`
+        `........................\nERROR: Hashing failed\n > ${err}\n..................`
       );
-      return { error: "hashing failed" };
+      return null;
     }
   });
 }
 
-// To check a password
-// Load hash from your password DB.
+// To compare input&hash
 export function compareHash(input, hash) {
   return bcrypt.compare(input, hash, (err, res) => {
-    // ifError
-    if (err) {
-      return { error: "Hashing failed" };
-    }
     // ifMatch
     if (res) {
-      return { success: true };
+      return true;
     } else {
-      // response is OutgoingMessage object that server response http request
-      return { failed: false };
+      // notMatch or error
+      console.error(
+        `........................\nFAILED: Hash comparison\n > ${
+          err || "hashes did not match"
+        }\n..................`
+      );
+      return false;
     }
   });
 }

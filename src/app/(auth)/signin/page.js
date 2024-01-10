@@ -1,22 +1,41 @@
+"use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
-import { SVGemail, SVGpassword } from "../../../components/atoms/svgs";
+import {
+  SVGback,
+  SVGemail,
+  SVGhome,
+  SVGpassword,
+} from "@/components/atoms/svgs";
 import { InputText } from "@/components/atoms/inputs";
 import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 
-export function Signin({ csrfToken }) {
+export default function SigninPage({ csrfToken, callbackUrl }) {
   // states
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
   const [UIstate, setUIstate] = useState("");
+  // onMount
+  useEffect(() => {
+    setUIstate("OK");
+  }, []);
+  // Notify on UIstate-error
+  useEffect(() => {
+    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
+      toast.error(UIstate);
+      setUIstate("OK");
+    }
+  }, [UIstate]);
   // Notify on input-Error
   useEffect(() => {
     if (email.error || password.error) {
       setUIstate("OK");
-      toast.error(email.error || password.error);
+      if (email.error) toast.error(email.error);
+      if (password.error) toast.error(password.error);
     }
   }, [email.error, password.error]);
   // handle SignIn
@@ -24,15 +43,13 @@ export function Signin({ csrfToken }) {
     if (!email.value || !password.value) {
       setUIstate("ERROR: Email/Password is empty");
     }
+    setUIstate("loading");
     // validate inputs: email & password
     const emailError_ = emailValidator(email.value);
     const passwordError_ = passwordValidator(password.value);
     if (emailError_ || passwordError_) {
-      if (emailError_) {
-        setEmail({ ...email, error: emailError_ });
-      } else {
-        setUIstate({ ...password, error: passwordError_ });
-      }
+      if (emailError_) setEmail({ ...email, error: emailError_ });
+      if (passwordError_) setPassword({ ...password, error: passwordError_ });
       return;
     }
     //sign in
@@ -40,13 +57,15 @@ export function Signin({ csrfToken }) {
       username: email.value,
       password: password.value,
       redirect: true,
-      callbackUrl: "/",
+      callbackUrl: callbackUrl ?? "/user",
     });
   }
   // Render
-  return UIstate === "OK" ? (
+  return !UIstate ? (
+    <Loader1 />
+  ) : (
     <div className="flex flex-1 flex-col w-full items-center">
-      <div className="w-full sm:max-w-md p-4 mt-6 divide-y space-y-3 divide-emerald-800">
+      <div className="w-full max-w-md p-4 m-auto divide-y space-y-3 divide-emerald-800">
         <p
           className={`text-xl font-bold text-emerald-800 dark:text-emerald-500 text-center pb-6`}
         >
@@ -65,18 +84,7 @@ export function Signin({ csrfToken }) {
               placeholder="Enter your email address"
               icon={SVGemail}
               value={email}
-              onChange={(e) => {
-                if (email.error) {
-                  const error_ = emailValidator(e.target.value);
-                  if (!!error_) {
-                    setEmail({ value: e.target.value, error: error_ });
-                  } else {
-                    setEmail({ value: e.target.value, error: "" });
-                  }
-                } else {
-                  setEmail({ value: e.target.value, error: "" });
-                }
-              }}
+              setValue={setEmail}
             />
             <InputText
               label="Password"
@@ -85,33 +93,23 @@ export function Signin({ csrfToken }) {
               placeholder="Enter your password"
               icon={SVGpassword}
               value={password}
-              onChange={(e) => {
-                if (password.error) {
-                  const error_ = emailValidator(e.target.value);
-                  if (!!error_) {
-                    setPassword({ value: e.target.value, error: error_ });
-                  } else {
-                    setPassword({ value: e.target.value, error: "" });
-                  }
-                } else {
-                  setPassword({ value: e.target.value, error: "" });
-                }
-              }}
+              setValue={setPassword}
             />
           </div>
           {/* forgot passwords */}
           <div className="mx-2 pt-4">
             <ButtonPrimary
               label="Sign In"
-              type="button"
+              type="submit"
               disabled={!email.value || !password.value}
               loading={UIstate === "loading"}
               onClick={(e) => {
                 e.preventDefault();
+                handleSubmit();
               }}
             />
           </div>
-          <div className="flex items-center justify-center">
+          <div className="flex flex-wrap items-center justify-between">
             {/* <div className="flex items-start">
               <div className="flex items-center h-5">
                 <input
@@ -131,12 +129,19 @@ export function Signin({ csrfToken }) {
                 </label>
               </div>
             </div> */}
-            <a
+            <Link href={callbackUrl ?? "/"}>
+              {callbackUrl ? (
+                <SVGback className="h-6 w-6" />
+              ) : (
+                <SVGhome className="h-6 w-6" />
+              )}
+            </Link>
+            <Link
               href="#"
               className="text-font-inactive italic dark:text-font-dark-inactive dark:hover:text-font-dark-faded text-sm font-medium  hover:underline"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
           {/* Signup */}
           {/* <p className="text-sm font-light text-font-inactive dark:text-font-dark-inactive">
@@ -151,7 +156,5 @@ export function Signin({ csrfToken }) {
         </form>
       </div>
     </div>
-  ) : (
-    <Loader1 />
   );
 }

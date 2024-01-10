@@ -5,7 +5,7 @@ import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
 
-export function ReqDemoModal({ funCloseModal }) {
+export function ReqDemoModal({ handleCloseModal }) {
   const [firstName, setFirstName] = useState({ value: "", error: "" });
   const [email, setEmail] = useState({ value: "", error: "" });
   const [tel, setTel] = useState({ value: "", error: "" });
@@ -21,13 +21,6 @@ export function ReqDemoModal({ funCloseModal }) {
       setUIstate("OK");
     }
   }, [UIstate]);
-  //reset status when visibility is toggled
-  useEffect(() => {
-    if (isVisible) setUIstate("OK");
-    setFirstName({ value: "", error: "" });
-    setEmail({ value: "", error: "" });
-    setTel({ value: "", error: "" });
-  }, [isVisible]);
   //handle sending message
   async function handleSend() {
     try {
@@ -69,7 +62,7 @@ export function ReqDemoModal({ funCloseModal }) {
         throw { error: "OOPS... consider emailing lisa@goweki.com directly" };
       } else {
         toast.success("Your message has been sent...");
-        funCloseModal();
+        handleCloseModal();
       }
     } catch (err) {
       setUIstate({ ...UIstate, error: err.error || err });
@@ -80,12 +73,10 @@ export function ReqDemoModal({ funCloseModal }) {
       id="requestDemoModal"
       tabIndex="-1"
       aria-hidden="true"
-      className={`${
-        !isVisible ? `hidden` : ``
-      } fixed top-0 left-0 right-0 z-10 bg-opacity-90 flex items-center justify-center h-full p-4 bg-background dark:bg-background-dark`}
+      className={`fixed top-0 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-backg/50 dark:bg-backg-dark/50 backdrop-blur-sm`}
     >
       {/* Request Demo */}
-      <div className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md border border-emerald-800">
+      <div className="bg-backg-surface dark:bg-backg-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md border border-emerald-800">
         <div className="p-4 sm:p-7 space-y-6">
           <div className="text-center">
             {/* <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
@@ -174,7 +165,7 @@ export function ReqDemoModal({ funCloseModal }) {
                     loading={UIstate.state === "loading"}
                   />
                   <div className="self-end">
-                    <ButtonText label="Close" onClick={funCloseModal} />
+                    <ButtonText label="Close" onClick={handleCloseModal} />
                   </div>
                 </div>
               </div>

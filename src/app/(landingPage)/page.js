@@ -55,7 +55,7 @@ export default function LandingPage() {
                   Download Now
                 </Link> */}
                 <Link
-                  href="/auth/signin"
+                  href="/signin"
                   className="flex items-center py-1 px-6 hover:text-emerald-600 dark:hover:text-emerald-500 font-medium transition duration-150 ease-in-out sm:px-10"
                 >
                   Sign In
@@ -92,7 +92,7 @@ export default function LandingPage() {
       <Footer />
       {showDemoReqModal && (
         <ReqDemoModal
-          funCloseModal={() => {
+          handleCloseModal={() => {
             setToggleDemoReqModal(false);
           }}
         />
