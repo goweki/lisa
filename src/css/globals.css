@@ -5,7 +5,7 @@
   body {
     @apply text-font dark:text-font-dark bg-backg dark:bg-backg-dark min-h-screen w-full;
   }
-  a {
+  a:not(.buttony) {
     @apply hover:text-emerald-500;
   }
 }

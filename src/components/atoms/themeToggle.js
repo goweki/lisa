@@ -14,6 +14,7 @@ export default function ThemeToggler() {
     <>
       {theme === "dark" ? (
         <button
+          id="theme-toggler"
           onClick={() => setTheme("light")}
           className="rounded-full outline-none focus:outline-none"
         >
@@ -30,6 +31,7 @@ export default function ThemeToggler() {
         </button>
       ) : (
         <button
+          id="theme-toggler"
           onClick={() => setTheme("dark")}
           className="rounded-full outline-none focus:outline-none focus-visible:ring focus-visible:ring-gray-100 focus:ring-opacity-20"
         >

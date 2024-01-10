@@ -5,7 +5,7 @@ export default function Footer() {
       <div className="mx-auto w-full max-w-screen-lg">
         <div className="px-4 py-6  md:flex md:items-center md:justify-between">
           <span className="text-sm sm:text-center">
-            © 2023 <a href="https://lisa.goweki.com/">LISA</a>. All Rights
+            © 2024 <a href="https://lisa.goweki.com/">LISA</a>. All Rights
             Reserved.
           </span>
           <div className="flex mt-4 sm:justify-center md:mt-0 space-x-5 rtl:space-x-reverse">
@@ -15,7 +15,7 @@ export default function Footer() {
               rel="noopener noreferrer"
             >
               <svg
-                className="w-4 h-4"
+                className="w-4 h-4 text-font dark:text-font hover:text-emerald-500 dark:hover:text-emerald-500"
                 viewBox="0 0 72 72"
                 xmlns="http://www.w3.org/2000/svg"
               >

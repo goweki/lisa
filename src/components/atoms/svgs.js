@@ -26,7 +26,7 @@ export function SVGlogo({ className }) {
         <path
           id="name"
           fill="currentColor"
-          className="text-[#354d3c] dark:text-background-raised"
+          className="text-emerald-800 dark:text-emerald-500"
           d="M104.5,88.9l-2.6,12.2H81.5c-0.2-7.5-0.2-15-0.2-21.3v-6.2c0-7.6,0-15.3,0.2-23l8.3-1v-3.5H79.5v59.3h29.4
 &#xA;&#x9;&#x9;l0.9-16.6H104.5z M132.6,50.7l8.3-1v-3.5H116v3.5l8.3,1c0.2,7.6,0.2,15.3,0.2,23V78c0,7.8,0,15.4-0.2,23l-8.3,1v3.5h24.8V102
 &#xA;&#x9;&#x9;l-8.3-1c-0.2-7.6-0.2-15.3-0.2-23v-4.4C132.4,65.9,132.4,58.2,132.6,50.7z M170.2,72l-3.5-1.3c-6.5-2.5-10.1-5.8-10.1-11.3
@@ -252,6 +252,26 @@ export function SVGtime({ className }) {
         stroke-linecap="round"
         stroke-linejoin="round"
         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+      />
+    </svg>
+  );
+}
+
+export function SVGhamburger({ className }) {
+  return (
+    <svg
+      className={className}
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      viewBox="0 0 17 14"
+    >
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M1 1h15M1 7h15M1 13h15"
       />
     </svg>
   );

@@ -20,9 +20,9 @@ export const metadata = {
   ],
   robots: {
     // index: false,
-    index: false,
-    follow: false,
-    nocache: true,
+    index: true,
+    follow: true,
+    // nocache: true,
     // googleBot: {
     //   index: true,
     //   follow: true,
