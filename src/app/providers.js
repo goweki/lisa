@@ -17,13 +17,14 @@ export default function Providers({ children }) {
     <ThemeProvider defaultTheme="system" attribute="class">
       <React.StrictMode>
         <SessionProvider>
-          <div
-            id="root-div"
-            className="flex min-h-screen w-full h-full flex-col"
-          >
-            {UIstate === "loading" ? <Loader1 /> : children}
-            <Toaster />
-          </div>
+          {UIstate === "loading" ? (
+            <div className="flex flex-col min-h-screen justify-center">
+              <Loader1 />
+            </div>
+          ) : (
+            children
+          )}
+          <Toaster />
         </SessionProvider>
       </React.StrictMode>
     </ThemeProvider>

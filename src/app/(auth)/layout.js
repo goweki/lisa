@@ -6,10 +6,6 @@ export default async function AuthLayout({ children }) {
   const session = await getServerSession(authOptions);
   if (session) {
     // signedIn
-    console.log(
-      `...................\nACTIVE SESSION: \n > ${session.user}\n....`
-    );
-    return <>You are logged in</>;
-    //redirect(`/`);
+    return redirect(`/user`);
   } else return children;
 }

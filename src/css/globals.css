@@ -5,6 +5,9 @@
   body {
     @apply text-font dark:text-font-dark bg-backg dark:bg-backg-dark min-h-screen w-full;
   }
+  body {
+    @apply flex flex-col;
+  }
   a:not(.buttony) {
     @apply hover:text-emerald-500;
   }
@@ -12,11 +15,11 @@
 
 /* components layer */
 @tailwind components;
-/* @layer components {
-  #root-div {
-    @apply bflex min-h-screen w-full h-full flex-col; //currently implemented in-line
+@layer components {
+  .card {
+    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4;
   }
-} */
+}
 
 /* utilities */
 @tailwind utilities;

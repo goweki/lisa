@@ -211,8 +211,8 @@ export function SVGback({ className }) {
       className={className}
     >
       <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
       />
     </svg>
@@ -282,13 +282,13 @@ export function SVGtime({ className }) {
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
-      stroke-width="1.5"
+      strokeWidth="1.5"
       stroke="currentColor"
       className={className}
     >
       <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>

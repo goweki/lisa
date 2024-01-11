@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signIn, signOut } from "next-auth/react";
 import { SVGhamburger, SVGlogo } from "../atoms/svgs";
 import ThemeToggler from "../atoms/themeToggle";
 import { MenuDropdown } from "../atoms/menus";
 
-export default function Navbar() {
+export default function Navbar(props) {
   const pathname = usePathname();
   return (
     <nav
@@ -34,44 +35,24 @@ export default function Navbar() {
           </div>
         </div>
         <div className="flex items-center space-x-2 px-2 md:px-6">
-          <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4 md:px-4">
+          <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4">
             {pathname.includes("/user") ? (
               <Link
                 href="/"
-                className="block py-2 p-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
+                className="block py-2 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
               >
                 Sign Out
               </Link>
             ) : (
               <Link
                 href="/signin"
-                className="block py-2 p-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
+                className="block py-2 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
               >
                 Sign In
               </Link>
             )}
           </ul>
-          {pathname.includes("/user") && (
-            <>
-              <div className="flex items-center justify-center md:hidden w-8 h-8">
-                <button className="text-font-inactive dark:text-font-dark-inactive hover:text-emerald-600 dark:hover:text-emerald-500 flex items-center justify-center p-3">
-                  <svg
-                    fill="currentColor"
-                    className="block h-5 w-5"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <title>Options</title>
-                    <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
-                  </svg>
-                </button>
-              </div>
-              {/* <div className="w-8 h-8 overflow-visible">
-                {optionsMenu()}
-              </div> */}
-            </>
-          )}
-          <div className="flex items-center justify-center mx-4 space-x-2">
+          <div className="flex items-center justify-center mx-4 space-x-4">
             {/* <button
               type="button"
               className="inline-flex md:hidden items-center w-8 h-8 justify-center rounded text-sm hover:text-emerald-500 dark:hover:text-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-500"
@@ -103,10 +84,14 @@ export default function Navbar() {
                   { label: "Contacts", type: "link", onClick: "/contacts" },
                 ]}
                 terminalButton={{
-                  label: "Sign In",
-                  onClick: async () => {
-                    console.log("ACTION: clicked Logout option");
-                  },
+                  label: props.user ? "Sign Out" : "Sign In",
+                  onClick: props.user
+                    ? async () => {
+                        await signOut();
+                      }
+                    : async () => {
+                        await signIn();
+                      },
                   type: "button",
                 }}
               />
