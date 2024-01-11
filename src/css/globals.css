@@ -17,7 +17,7 @@
 @tailwind components;
 @layer components {
   .card {
-    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4;
+    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4 rounded;
   }
 }
 

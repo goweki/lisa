@@ -1,11 +1,7 @@
 export function ButtonPrimary({
-  label = "PriButton",
+  label = "PrimaryButton",
   loading,
-  onClick = {
-    function() {
-      console.log("button clicked");
-    },
-  },
+  onClick = () => console.log("ButtonPrimary clicked"),
   disabled,
   type = "button",
 }) {
@@ -30,13 +26,9 @@ export function ButtonPrimary({
 }
 
 export function ButtonSecondary({
-  label = "SecButton",
+  label = "ButtonSecondary",
   loading,
-  onClick = {
-    function() {
-      console.log("button clicked");
-    },
-  },
+  onClick = () => console.log("ButtonSecondary clicked"),
   disabled,
   type = "button",
 }) {
@@ -61,13 +53,9 @@ export function ButtonSecondary({
 }
 
 export function ButtonText({
-  label = "Default",
+  label = "ButtonText",
   loading,
-  onClick = {
-    function() {
-      console.log("button clicked");
-    },
-  },
+  onClick = () => console.log("ButtonText clicked"),
   disabled,
   type = "button",
 }) {

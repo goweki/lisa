@@ -8,7 +8,7 @@ export default function UserHome() {
   // render
   return (
     <main className="flex flex-col flex-grow items-center">
-      <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 md:gap-4 md:grid-cols-2">
         {profileCard(date, time)}
         {scheduleBrief()}
       </div>
@@ -69,7 +69,7 @@ function scheduleBrief() {
 
 function profileCard(date, time) {
   return (
-    <div className="card max-w-lg w-full border-1 flex flex-col justify-between leading-normal rounded">
+    <div className="card m-auto max-w-lg w-full border-1 flex flex-col justify-between leading-normal">
       <div className="grid-cols-1">
         <p className="text-sm flex justify-center">
           <SVGtime className="w-4 h-4 mr-2 text-emerald-500" />
