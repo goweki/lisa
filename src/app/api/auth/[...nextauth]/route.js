@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import db_cluster from "@/lib/mongodb";
-import { compareHash } from "@/helpers/passwordHandlers";
+import { compareHash } from "@/helpers/bcryptHandlers";
 
 export const authOptions = {
   // Configure one or more authentication providers
@@ -39,17 +39,31 @@ export const authOptions = {
         //        */
         const collection = db_cluster.collection("users");
         // const collection = db().collection("users"); //reference to collection
-        // user variable
+        // run query on db
         let user = null;
-        //run query on db
         user = await collection.findOne({
           email: credentials.email,
           // password: credentials.password,
         });
-        if (user && compareHash(credentials.password, user.password)) {
+        // if (user)
+        //   console.log(
+        //     `........................\nSUCCESS: Found user\n > ${JSON.stringify(
+        //       user
+        //     )}\n..................`
+        //   );
+        // else console.log("No user found...");
+        console.log(
+          "COMPARE string , HASH : " +
+            credentials.password +
+            " , " +
+            user.password
+        );
+        if (user && (await compareHash(credentials.password, user.password))) {
           // valid credentials
           console.log(
-            `........................\nSUCCESS: Valid credentials\n > ${user}\n..................`
+            `........................\nSUCCESS: Valid credentials\n > ${JSON.stringify(
+              user
+            )}\n..................`
           );
           delete user.password;
           return user;

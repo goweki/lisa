@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
@@ -11,7 +12,11 @@ import {
   SVGpassword,
 } from "@/components/atoms/svgs";
 import { InputText } from "@/components/atoms/inputs";
-import { emailValidator, passwordValidator } from "@/helpers/inputValidators";
+import {
+  emailValidator,
+  nameValidator,
+  passwordValidator,
+} from "@/helpers/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 
@@ -20,12 +25,14 @@ export default function SigninPage() {
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
   const [UIstate, setUIstate] = useState("");
+  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
   // onMount
   useEffect(() => {
     if (searchParams.has("error")) {
-      setUIstate("Authentication failed");
+      const error_ = searchParams.get("error");
+      setUIstate(qParamsErrors[error_]);
     } else setUIstate("OK");
   }, [searchParams]);
   // Notify on UIstate-error
@@ -58,12 +65,24 @@ export default function SigninPage() {
       return;
     }
     //sign in
+    console.log(
+      `........................\nCHECKPOINT: validating user\n > ${email.value} , ${password.value}\n..................`
+    );
     const res = await signIn("credentials", {
-      username: email.value,
+      email: email.value,
       password: password.value,
-      redirect: true,
+      redirect: false,
       callbackUrl: callbackUrl ?? "/user",
     });
+    if (res.status === 200 && !res.error) router.replace("/user");
+    else {
+      console.log(
+        `........................\nFAILED: user not validated\n > ${JSON.stringify(
+          res
+        )}\n..................`
+      );
+      setUIstate(qParamsErrors[res.error]);
+    }
   }
   // Render
   return !UIstate ? (
@@ -90,6 +109,7 @@ export default function SigninPage() {
               icon={SVGemail}
               value={email}
               setValue={setEmail}
+              valValidator={nameValidator}
             />
             <InputText
               label="Password"
@@ -99,6 +119,7 @@ export default function SigninPage() {
               icon={SVGpassword}
               value={password}
               setValue={setPassword}
+              valValidator={passwordValidator}
             />
           </div>
           {/* forgot passwords */}
@@ -134,15 +155,11 @@ export default function SigninPage() {
                 </label>
               </div>
             </div> */}
-            <Link href={callbackUrl ?? "/"}>
-              {callbackUrl ? (
-                <SVGback className="h-6 w-6" />
-              ) : (
-                <SVGhome className="h-6 w-6" />
-              )}
+            <Link href={"/"} className="mt-3">
+              <SVGhome className="h-6 w-6" />
             </Link>
             <Link
-              href="#"
+              href="/forgot-password"
               className="text-font-inactive italic dark:text-font-dark-inactive dark:hover:text-font-dark-faded text-sm font-medium  hover:underline"
             >
               Forgot password?
@@ -163,3 +180,17 @@ export default function SigninPage() {
     </div>
   );
 }
+
+const qParamsErrors = {
+  OAuthSignin: "Error in constructing an authorization URL",
+  OAuthCallback: "Error in handling the response from OAuth provider",
+  OAuthCreateAccount: "Could not create user",
+  EmailCreateAccount: "Could not create user",
+  Callback: "Error in the OAuth callback handler route",
+  OAuthAccountNotLinked:
+    "Email is already linked, but not with this OAuth account",
+  EmailSignin: "Sending the e-mail with verification token failed",
+  CredentialsSignin: "Invalid credentials",
+  SessionRequired: "The content of this page requires you to be signed in",
+  Default: "An error occured",
+};

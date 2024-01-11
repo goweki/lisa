@@ -5,7 +5,8 @@ export function InputText({
   label = "Label",
   valValidator = {
     function(val) {
-      return "";
+      if (val) return "";
+      else return "Empty value";
     },
   },
   type = "text",
@@ -33,8 +34,10 @@ export function InputText({
           id={name}
           type={type}
           className={`${
-            value.error ? "border-red-500" : ""
-          } bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] border-none shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg focus:ring-emerald-800 focus:border-emerald-800 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 placeholder:italic dark:text-white dark:focus:ring-emerald-800 dark:focus:border-emerald-800`}
+            value.error
+              ? "border-red-500 dark:border-red-400"
+              : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
+          } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
           placeholder={placeholder}
           value={value.value}
           onChange={(e) => {

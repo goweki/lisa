@@ -1,50 +1,11 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Transition } from "@headlessui/react";
 import { SVGhamburger, SVGlogo } from "../atoms/svgs";
 import ThemeToggler from "../atoms/themeToggle";
 import { MenuDropdown } from "../atoms/menus";
 
 export default function Navbar() {
-  function optionsMenu({ menu: MainMenu, menuItems }) {
-    return (
-      <Menu>
-        <Menu.Button className="flex items-center justify-center w-8 h-8">
-          <MainMenu className="w-6 h-6 hover:text-emerald-700 dark:hover:text-emerald-500" />
-        </Menu.Button>
-        <Transition
-          as={Fragment}
-          enter="transition ease-out duration-100"
-          enterFrom="transform opacity-0 scale-95"
-          enterTo="transform opacity-100 scale-100"
-          leave="transition ease-in duration-75"
-          leaveFrom="transform opacity-100 scale-100"
-          leaveTo="transform opacity-0 scale-95"
-        >
-          <Menu.Items className="absolute right-0 origin-top-right divide-y divide-gray-400 rounded bg-background-raised dark:bg-background-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
-            <div className="px-1 py-1 ">
-              {["Settings", "Profile"].map((v) => menuItem({ label: v }))}
-              {/* {menuItem({ label: "Settings" })}
-              {menuItem({ label: "Profile" })} */
-              /* {menuItem({ label: "Settings" })} */}
-            </div>
-            <div className="px-2 py-1">
-              <Menu.Item>
-                {menuItem({
-                  label: "Logout",
-                  onClick: async () => {
-                    console.log("ACTION: clicked Logout option");
-                  },
-                })}
-              </Menu.Item>
-            </div>
-          </Menu.Items>
-        </Transition>
-      </Menu>
-    );
-  }
-
   const pathname = usePathname();
   return (
     <nav
@@ -76,7 +37,7 @@ export default function Navbar() {
           <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4 md:px-4">
             {pathname.includes("/user") ? (
               <Link
-                href=""
+                href="/"
                 className="block py-2 p-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
               >
                 Sign Out
@@ -141,6 +102,13 @@ export default function Navbar() {
                   { label: "Blog", type: "link", onClick: "/blog" },
                   { label: "Contacts", type: "link", onClick: "/contacts" },
                 ]}
+                terminalButton={{
+                  label: "Sign In",
+                  onClick: async () => {
+                    console.log("ACTION: clicked Logout option");
+                  },
+                  type: "button",
+                }}
               />
             </div>
             <ThemeToggler />
@@ -148,23 +116,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  );
-}
-
-function menuItem({ label, icon: Icon, onClick }) {
-  return (
-    <Menu.Item>
-      {({ active }) => (
-        <button
-          onClick={onClick}
-          className={`${
-            active ? "bg-emerald-300 dark:bg-emerald-900" : ""
-          } flex w-full items-center rounded pl-2 pr-4 py-2 text-sm`}
-        >
-          {!!Icon && <Icon className="mr-2 h-5 w-5" />}
-          {!!label && label}
-        </button>
-      )}
-    </Menu.Item>
   );
 }

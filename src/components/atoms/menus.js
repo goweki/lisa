@@ -2,7 +2,12 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { Menu, Transition } from "@headlessui/react";
 
-export function MenuDropdown({ menuIcon: MenuIcon, menuText, menuItems }) {
+export function MenuDropdown({
+  menuIcon: MenuIcon,
+  menuText,
+  menuItems,
+  terminalButton,
+}) {
   return (
     <Menu>
       <Menu.Button className="flex items-center justify-center w-8 h-8">
@@ -25,7 +30,7 @@ export function MenuDropdown({ menuIcon: MenuIcon, menuText, menuItems }) {
         leaveTo="transform opacity-0 scale-95"
       >
         <Menu.Items className="absolute right-0 origin-top-right divide-y divide-gray-400 rounded bg-backg-raised dark:bg-backg-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
-          <div className="px-1 py-1 ">
+          <div className="p-1 ">
             {menuItems.map((v, i) =>
               menuItem({
                 label: v.label || null,
@@ -36,17 +41,17 @@ export function MenuDropdown({ menuIcon: MenuIcon, menuText, menuItems }) {
               })
             )}
           </div>
-          <div className="px-2 py-1">
-            <Menu.Item>
-              {menuItem({
-                label: "Sign In",
-                onClick: async () => {
-                  console.log("ACTION: clicked Logout option");
-                },
-                type: "button",
-              })}
-            </Menu.Item>
-          </div>
+          {terminalButton && (
+            <div className="p-1">
+              <Menu.Item>
+                {menuItem({
+                  label: terminalButton.label,
+                  onClick: terminalButton.onClick,
+                  type: terminalButton.type,
+                })}
+              </Menu.Item>
+            </div>
+          )}
         </Menu.Items>
       </Transition>
     </Menu>
