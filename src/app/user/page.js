@@ -7,8 +7,8 @@ export default function UserHome() {
   const { date, time } = useDate();
   // render
   return (
-    <main className="flex flex-col flex-grow items-center">
-      <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 md:gap-4 md:grid-cols-2">
+    <main className="flex flex-col flex-grow items-center p-4">
+      <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         {profileCard(date, time)}
         {scheduleBrief()}
       </div>
@@ -18,7 +18,7 @@ export default function UserHome() {
 
 function scheduleBrief() {
   return (
-    <div className="card">
+    <div className="card m-auto w-full h-full border-1 justify-between leading-normal">
       <div className="flex items-center justify-between">
         <h5 className="text-xl font-bold leading-none">Active Issues</h5>
         <a
