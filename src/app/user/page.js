@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useDate } from "@/lib/dateTime";
-import { ButtonSecondary } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "./providers";
 
@@ -73,7 +73,9 @@ function profileCard(date, time, data_) {
                 : "text-red-500"
             }`}
           >
-            {data_.length} pending issue{data_.length > 1 && <>s</>}
+            {data_.length} issue{data_.length !== 1 && <>s</>} has{" "}
+            {data_.length === 1 && <>a</>} pending task
+            {data_.length !== 1 && <>s</>}
           </p>
           <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
             {data_ &&
@@ -91,10 +93,19 @@ function profileCard(date, time, data_) {
               })}
           </ul>
         </div>
-        <div className="mt-6 mb-2 mx-4">
-          <Link href="/user/new-issue">
-            <ButtonSecondary label="New Issue" onClick={() => ""} />
-          </Link>
+        <div className="mt-6 mb-2 mx-4 space-y-4">
+          {data_.length !== 0 && (
+            <div>
+              <Link href="/user/tasks">
+                <ButtonPrimary label="View Tasks" onClick={() => ""} />
+              </Link>
+            </div>
+          )}
+          <div>
+            <Link href="/user/new-issue">
+              <ButtonSecondary label="New Issue" onClick={() => ""} />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
