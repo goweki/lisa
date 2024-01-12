@@ -14,21 +14,26 @@ export default function Navbar(props) {
     >
       <div className="max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">
-          <Link href="/" className="flex items-center">
-            <SVGlogo className="h-8 mr-3" />
-          </Link>
+          <div className="flex items-center justify-center">
+            <Link href="/">
+              <SVGlogo className="h-8 mr-3" />
+            </Link>
+          </div>
           <div
             className="hidden md:flex w-full md:w-auto items-center justify-between"
             id="navbar-tab-items"
           >
             <ul className="flex flex-col p-4 ml-2 md:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-              {["", "blog", "contacts"].map((v, i) => (
+              {(pathname.includes("/user")
+                ? menuItemsOptions.auth
+                : menuItemsOptions.unauth
+              ).map((v, i) => (
                 <Link
                   key={i}
-                  href={`/${v}`}
+                  href={v.onClick}
                   className="block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
                 >
-                  {v.charAt(0).toUpperCase() + v.slice(1) || "Home"}
+                  {v.label}
                 </Link>
               ))}
             </ul>
@@ -78,11 +83,11 @@ export default function Navbar(props) {
             <div className="md:hidden">
               <MenuDropdown
                 menuIcon={SVGhamburger}
-                menuItems={[
-                  { label: "Home", type: "link", onClick: "/" },
-                  { label: "Blog", type: "link", onClick: "/blog" },
-                  { label: "Contacts", type: "link", onClick: "/contacts" },
-                ]}
+                menuItems={
+                  pathname.includes("/user")
+                    ? menuItemsOptions.auth
+                    : menuItemsOptions.unauth
+                }
                 terminalButton={{
                   label: props.user ? "Sign Out" : "Sign In",
                   onClick: props.user
@@ -103,3 +108,15 @@ export default function Navbar(props) {
     </nav>
   );
 }
+
+const menuItemsOptions = {
+  unauth: [
+    { label: "Home", type: "link", onClick: "/" },
+    { label: "Blog", type: "link", onClick: "/blog" },
+    { label: "Contacts", type: "link", onClick: "/contacts" },
+  ],
+  auth: [
+    { label: "Issues", type: "link", onClick: "/issues" },
+    { label: "Tasks", type: "link", onClick: "/tasks" },
+  ],
+};
