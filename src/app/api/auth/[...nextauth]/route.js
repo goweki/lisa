@@ -37,46 +37,47 @@ export const authOptions = {
         //        * (i.e., the request IP address)
         //        * check if user exists in db
         //        */
-        const collection = db_cluster.collection("users");
-        // const collection = db().collection("users"); //reference to collection
+
         // run query on db
+        const collection = db_cluster.collection("users");
         let user = null;
         user = await collection.findOne({
           email: credentials.email,
-          // password: credentials.password,
         });
-        // if (user)
-        //   console.log(
-        //     `........................\nSUCCESS: Found user\n > ${JSON.stringify(
-        //       user
-        //     )}\n..................`
-        //   );
-        // else console.log("No user found...");
-        console.log(
-          "COMPARE string , HASH : " +
-            credentials.password +
-            " , " +
-            user.password
-        );
+        // ifCredentialsValid
         if (user && (await compareHash(credentials.password, user.password))) {
+          delete user.password;
           // valid credentials
           console.log(
-            `........................\nSUCCESS: Valid credentials\n > ${JSON.stringify(
-              user
-            )}\n..................`
+            ` > SUCCESS: Valid credentials\n > ${JSON.stringify(user)}\n.`
           );
-          delete user.password;
           return user;
         } else {
           // invalid credentials
           console.error(
-            `........................\nFAILED: Invalid credentials\n > ${`....  `}\n..................`
+            ` > FAILED: Invalid credentials\n > by ${JSON.stringify(
+              credentials
+            )}\n`
           );
           return "";
         }
       },
     }),
   ],
+  callbacks: {
+    async jwt(params) {
+      // Persist role to the token right after signin
+      if (params.user?.role) {
+        params.token.role = params.user.role;
+      }
+      return params.token;
+    },
+    async session({ session, token }) {
+      // Append role to properties sent to the client
+      session.user.role = token.role;
+      return session;
+    },
+  },
   pages: {
     signIn: "/signin",
     //signOut: "/auth/signout",

@@ -15,6 +15,10 @@ export function useDate() {
     };
   }, []);
 
+  function rawDate() {
+    return today;
+  }
+
   function date() {
     const day = today.toLocaleDateString(locale, { weekday: "long" });
     const date = `${day}, ${today.getDate()} ${today.toLocaleDateString(
@@ -44,6 +48,7 @@ export function useDate() {
   }
 
   return {
+    rawDate,
     date,
     time,
     wish,
