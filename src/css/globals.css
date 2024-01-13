@@ -5,6 +5,12 @@
   body {
     @apply text-font dark:text-font-dark bg-backg dark:bg-backg-dark min-h-screen w-full;
   }
+  h1 {
+    @apply font-bold lg:text-4xl;
+  }
+  h2 {
+    @apply font-bold lg:text-2xl;
+  }
   body {
     @apply flex flex-col;
   }
@@ -17,7 +23,7 @@
 @tailwind components;
 @layer components {
   .card {
-    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4 md:m-6 rounded-lg;
+    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4 md:m-6 rounded-lg transition-all;
   }
 }
 

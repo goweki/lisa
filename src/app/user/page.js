@@ -1,12 +1,14 @@
 "use client";
 import { useContext, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDate } from "@/lib/dateTime";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "./providers";
 
 export default function UserHome() {
+  const router = useRouter();
   const [overdues, setOverdues] = useState("");
   const { date, time, rawDate } = useDate();
   const data = useContext(DataContext);
@@ -34,7 +36,7 @@ export default function UserHome() {
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         {profileCard(date, time, overdues)}
-        {scheduleBrief(data)}
+        {scheduleBrief(data, router)}
       </div>
     </main>
   );
@@ -53,7 +55,7 @@ function profileCard(date, time, data_) {
             data_.length < 1
               ? "text-emerald-500"
               : data_.length < 3
-              ? "text-red-800 dark:text-red-200"
+              ? "text-red-600 dark:text-red-300"
               : "text-red-500"
           }`}
         >
@@ -112,7 +114,7 @@ function profileCard(date, time, data_) {
   );
 }
 
-function scheduleBrief(data_) {
+function scheduleBrief(data_, router) {
   return (
     <div className="card m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal p-2 md:p-4">
       <div className="flex items-center justify-start">
@@ -149,7 +151,8 @@ function scheduleBrief(data_) {
               return (
                 <tr
                   key={i}
-                  className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised "
+                  className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised cursor-pointer"
+                  onClick={() => router.push(`/user/issues/${v._id}`)}
                 >
                   <th scope="row" className="px-1 py-2 whitespace-nowrap">
                     {v.name}

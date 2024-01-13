@@ -116,7 +116,7 @@ const menuItemsOptions = {
     { label: "Contacts", type: "link", onClick: "/contacts" },
   ],
   auth: [
-    { label: "Issues", type: "link", onClick: "/issues" },
-    { label: "Tasks", type: "link", onClick: "/tasks" },
+    { label: "Issues", type: "link", onClick: "/user/issues" },
+    { label: "Tasks", type: "link", onClick: "/user/tasks" },
   ],
 };
