@@ -216,6 +216,6 @@ export default function ContactsPage() {
       </section>
       {/* <!-- Section: Design Block --> */}
     </div>
-    // <!-- Container for demo purpose -->
+    // <!-- Container -->
   );
 }

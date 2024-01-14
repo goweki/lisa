@@ -1,12 +1,8 @@
 export const metadata = {
-  title: "Contacts",
-  description: "Contact - Legal Intelligent Support Assistant (LISA)",
   robots: {
     index: true,
     follow: true,
   },
-  // change with url of your image (recommended dimension = 1.91:1)
-  // used in twitter, facebook, etc. card when link copied in tweet/status
   openGraph: {
     title: "lisa | Contacts",
     description: "Contact - Legal Intelligent Support Assistant (LISA)",
