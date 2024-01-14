@@ -16,9 +16,9 @@ export default function CardIssue({ item, icon: Icon }) {
             A {item.type.type} by {item.petitioner.name} for{" "}
             {item.type.category}
           </p>
-          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
             <div
-              class={`bg-slate-500 h-2.5 rounded-full w-${
+              className={`bg-slate-500 h-2.5 rounded-full w-${
                 item.status.status === "complete"
                   ? "w-full"
                   : item.dueDates.filter((v) => v.task.status).length === 0 ||
@@ -43,9 +43,9 @@ export default function CardIssue({ item, icon: Icon }) {
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
               d="M14 5l7 7m0 0l-7 7m7-7H3"
             ></path>
           </svg>

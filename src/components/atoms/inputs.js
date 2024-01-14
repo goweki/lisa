@@ -2,7 +2,7 @@ export function InputText({
   value,
   setValue,
   name = "inputName",
-  label = "Label",
+  label,
   valValidator = {
     function(val) {
       if (val) return "";

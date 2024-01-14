@@ -10,7 +10,7 @@ export default function Navbar(props) {
   const pathname = usePathname();
   return (
     <nav
-      className={`sticky bg-backg-surface dark:bg-backg-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
+      className={`z-40 sticky bg-backg-surface dark:bg-backg-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
     >
       <div className="max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">
@@ -31,7 +31,11 @@ export default function Navbar(props) {
                 <Link
                   key={i}
                   href={v.onClick}
-                  className="block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
+                  className={`${
+                    pathname.includes("/" + v.label.toLowerCase())
+                      ? "font-black"
+                      : ""
+                  } block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
                 >
                   {v.label}
                 </Link>
@@ -44,9 +48,12 @@ export default function Navbar(props) {
             {pathname.includes("/user") ? (
               <Link
                 href="/"
-                className="block py-2 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700"
+                className={`block py-2 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
+                onClick={async () => {
+                  await signOut();
+                }}
               >
-                Sign Out
+                Sign Out, {props.user.name}
               </Link>
             ) : (
               <Link
@@ -58,28 +65,6 @@ export default function Navbar(props) {
             )}
           </ul>
           <div className="flex items-center justify-center mx-4 space-x-4">
-            {/* <button
-              type="button"
-              className="inline-flex md:hidden items-center w-8 h-8 justify-center rounded text-sm hover:text-emerald-500 dark:hover:text-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-500"
-              aria-controls="hamburger-menu-dropdown"
-            >
-              <span className="sr-only">Open hamburger menu</span>
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 17 14"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M1 1h15M1 7h15M1 13h15"
-                />
-              </svg>
-            </button> */}
             <div className="md:hidden">
               <MenuDropdown
                 menuIcon={SVGhamburger}

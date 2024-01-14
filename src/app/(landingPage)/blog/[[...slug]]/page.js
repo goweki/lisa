@@ -1,10 +1,24 @@
+"use client";
+import { useState } from "react";
+import { InputText } from "@/components/atoms/inputs";
+
 export default function IssuePage({ slug }) {
-  // if (slug[0])
+  const [searchPhrase, setSearchPhrase] = useState("");
   //render
   return (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="max-w-screen-lg mx-auto px-4 md:px-6">
-        <h2>BLOG</h2>
+        <div className="space-y-2 pt-6 md:space-y-5 mb-4">
+          <h1 className="text-center">BLOG</h1>
+          <div className="relative max-w-lg m-auto">
+            <InputText
+              name="searchPhrase"
+              value={searchPhrase}
+              setValue={setSearchPhrase}
+              placeholder="Search for blog-posts"
+            />
+          </div>
+        </div>
         <ul className="grid grid-cols-1 xl:grid-cols-3 gap-y-10 gap-x-6 items-start p-8">
           <li className="relative flex flex-col sm:flex-row xl:flex-col items-start">
             <div className="order-1 sm:ml-6 xl:ml-0">
@@ -35,9 +49,9 @@ export default function IssuePage({ slug }) {
                   viewBox="0 0 3 6"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
                   <path d="M0 0L3 3L0 6"></path>
                 </svg>
@@ -81,9 +95,9 @@ export default function IssuePage({ slug }) {
                   viewBox="0 0 3 6"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
                   <path d="M0 0L3 3L0 6"></path>
                 </svg>
@@ -127,9 +141,9 @@ export default function IssuePage({ slug }) {
                   viewBox="0 0 3 6"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
                   <path d="M0 0L3 3L0 6"></path>
                 </svg>

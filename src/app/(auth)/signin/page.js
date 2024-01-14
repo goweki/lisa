@@ -74,12 +74,14 @@ export default function SigninPage() {
       redirect: false,
       callbackUrl: callbackUrl ?? "/user",
     });
-    if (res.status === 200 && !res.error) router.replace("/user");
+    if (!res) {
+      setUIstate("ERROR: Check internet connection then retry.");
+    } else if (res.status === 200 && !res.error) router.replace("/user");
     else {
       console.log(
-        `........................\nFAILED: user not validated\n > ${JSON.stringify(
+        `........................\n > FAILED: user not validated\n > ${JSON.stringify(
           res
-        )}\n..................`
+        )}\n`
       );
       setUIstate(qParamsErrors[res.error]);
     }

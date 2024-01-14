@@ -6,10 +6,10 @@
     @apply text-font dark:text-font-dark bg-backg dark:bg-backg-dark min-h-screen w-full;
   }
   h1 {
-    @apply font-bold lg:text-4xl;
+    @apply font-bold text-xl md:text-2xl lg:text-4xl;
   }
   h2 {
-    @apply font-bold lg:text-2xl;
+    @apply font-bold text-lg md:text-xl lg:text-2xl;
   }
   body {
     @apply flex flex-col;
