@@ -4,6 +4,9 @@ export default function robots() {
       userAgent: "*",
       disallow: "/user",
     },
-    sitemap: "https://lisa.goweki.com/sitemap.xml",
+    sitemap:
+      process.env.NODE_ENV === "development"
+        ? `https://lisa.goweki.com/sitemap.xml`
+        : NEXTAUTH_URL + "/sitemap.xml",
   };
 }
