@@ -17,7 +17,7 @@ export default function UserHome() {
   // );
   const rawDateMemo = useCallback(() => rawDate(), []);
   useEffect(() => {
-    const _overdues = data
+    const _overdues = data.issues
       .map((issue) => {
         return {
           ...issue,
@@ -36,7 +36,7 @@ export default function UserHome() {
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         {profileCard(date, time, overdues)}
-        {scheduleBrief(data, router)}
+        {scheduleBrief(data.issues, router)}
       </div>
     </main>
   );
@@ -104,7 +104,7 @@ function profileCard(date, time, data_) {
             </div>
           )}
           <div>
-            <Link href="/user/new-issue">
+            <Link href="/user/issues/new">
               <ButtonSecondary label="New Issue" onClick={() => ""} />
             </Link>
           </div>

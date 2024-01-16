@@ -4,6 +4,7 @@ import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
+import { httpCodes } from "@/lib/configs";
 
 export function ReqDemoModal({ handleCloseModal }) {
   const [firstName, setFirstName] = useState({ value: "", error: "" });
@@ -16,7 +17,7 @@ export function ReqDemoModal({ handleCloseModal }) {
   }, []);
   //onError-component
   useEffect(() => {
-    if (UIstate && UIstate != "OK") {
+    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
       toast.error(UIstate);
       setUIstate("OK");
     }
@@ -24,12 +25,12 @@ export function ReqDemoModal({ handleCloseModal }) {
   //handle sending message
   async function handleSend() {
     try {
-      console.log(`ACTION.........`);
-      console.log(` > pressed 'Im Interested' `);
       setUIstate("loading");
       // validate inputs
       if (!firstName.value || !email.value) {
-        setUIstate("Please fill out missing values");
+        setUIstate(
+          `Please provide your ${!firstName.value ? "name" : "email"}`
+        );
         return;
       }
       const emailError = emailValidator(email.value);
@@ -37,35 +38,53 @@ export function ReqDemoModal({ handleCloseModal }) {
       if (!!emailError || !!nameError) {
         setEmail({ ...email, error: emailError });
         setFirstName({ ...firstName, error: nameError });
-        setUIstate({ ...UIstate, error: emailError || nameError });
-        console.log(` >> invalid form entries`);
+        setUIstate(`Invalid ${emailError ? "email" : "name"}`);
+        console.log(` >> Invalid ${emailError ? "email" : "name"}`);
         return;
       }
       const body = {
         subject: "INTEREST IN LISA",
-        message: `The below user has expressed interest in Lisa via website \nName: ${
+        text: `The below user has expressed interest in Lisa via website \nName: ${
           firstName.value
         }  \nEmail: ${email.value}, ${tel.value ? `\nTel: ${tel.value} ` : ``}`,
       };
-      const options = {
+      const fetchOptions = {
         method: "POST",
         body: JSON.stringify(body),
         headers: { "Content-Type": "application/json" },
       };
-      // make API calls
-      const response = await fetch(
-        process.env.NEXT_PUBLIC_SUBSCRIBE_ROUTE,
-        options
+      // make API call
+      const response = await fetch("/api/mailer", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            setUIstate(httpCodes[res_.status]);
+          }
+        }
       );
-      const data = await response.json();
-      if (data.some((elem) => "error" in elem)) {
-        throw { error: "OOPS... consider emailing lisa@goweki.com directly" };
-      } else {
-        toast.success("Your message has been sent...");
+      if (response?.success) {
+        console.log(
+          "SUCCESS: info sent\n > " +
+            JSON.stringify(response.success) +
+            "\n.............."
+        );
+        toast.success("Info submitted!");
+        setFirstName("");
+        setEmail("");
+        setTel("");
         handleCloseModal();
+      } else {
+        console.error(
+          "ERROR: failed sending info at contacts /page\n > " +
+            JSON.stringify(response) +
+            "\n.............."
+        );
+        setUIstate(response?.error ?? "No Response, check internet connection");
       }
     } catch (err) {
-      setUIstate({ ...UIstate, error: err.error || err });
+      setUIstate("Sending info failed: consider emailing lisa@goweki.com");
     }
   }
   return (
@@ -103,18 +122,7 @@ export function ReqDemoModal({ handleCloseModal }) {
                   placeholder="Enter your prefered name"
                   icon={SVGuser}
                   value={firstName}
-                  onChange={(e) => {
-                    if (firstName.error) {
-                      const error_ = nameValidator(e.target.value);
-                      if (!!error_) {
-                        setFirstName({ value: e.target.value, error: error_ });
-                      } else {
-                        setFirstName({ value: e.target.value, error: "" });
-                      }
-                    } else {
-                      setFirstName({ value: e.target.value, error: "" });
-                    }
-                  }}
+                  setValue={setFirstName}
                 />
                 {/* email FIELD */}
                 <InputText
@@ -124,18 +132,7 @@ export function ReqDemoModal({ handleCloseModal }) {
                   placeholder="Enter your email address"
                   icon={SVGemail}
                   value={email}
-                  onChange={(e) => {
-                    if (email.error) {
-                      const error_ = emailValidator(e.target.value);
-                      if (!!error_) {
-                        setEmail({ value: e.target.value, error: error_ });
-                      } else {
-                        setEmail({ value: e.target.value, error: "" });
-                      }
-                    } else {
-                      setEmail({ value: e.target.value, error: "" });
-                    }
-                  }}
+                  setValue={setEmail}
                 />
                 {/* tel FIELD */}
                 <InputText
@@ -145,24 +142,13 @@ export function ReqDemoModal({ handleCloseModal }) {
                   placeholder="Enter your tel"
                   icon={SVGcell}
                   value={tel}
-                  onChange={(e) => {
-                    if (tel.error) {
-                      const error_ = emailValidator(e.target.value);
-                      if (!!error_) {
-                        setTel({ value: e.target.value, error: error_ });
-                      } else {
-                        setTel({ value: e.target.value, error: "" });
-                      }
-                    } else {
-                      setTel({ value: e.target.value, error: "" });
-                    }
-                  }}
+                  setValue={setTel}
                 />
                 <div className="my-6 flex flex-col">
                   <ButtonPrimary
                     label="I'm interested"
                     onClick={handleSend}
-                    loading={UIstate.state === "loading"}
+                    loading={UIstate === "loading"}
                   />
                   <div className="self-end">
                     <ButtonText label="Close" onClick={handleCloseModal} />

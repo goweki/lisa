@@ -10,14 +10,14 @@ export async function GET(req) {
     );
     // target COLLECTIONS
     const colle_issues = db_cluster.collection("issues");
+    const colle_templates = db_cluster.collection("issue-templates");
     // FIND Docs
     const issues = await colle_issues
       .find(institution === "lisa" ? {} : { institution: institution })
       .toArray();
-    // console.log(` > Success`);
-    // console.log(` >> ${JSON.stringify(issues)}\n........................`);
+    const templates = await colle_templates.find({}).toArray();
     // HTTP response
-    return Response.json({ success: issues });
+    return Response.json({ success: { templates, issues } });
   } catch (error) {
     // handle ERROR if caught
     console.log(`> Error caught at api/user/data GET \n >> ${error}\n`);
