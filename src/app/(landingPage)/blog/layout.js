@@ -1,3 +1,5 @@
+import BlogProvider from "./providers";
+
 export const metadata = {
   robots: {
     index: true,
@@ -15,5 +17,5 @@ export const metadata = {
 };
 
 export default function BlogLayout({ children }) {
-  return children;
+  return <BlogProvider>{children}</BlogProvider>;
 }

@@ -16,7 +16,7 @@ export default function Providers({ children }) {
       };
       //   console.log(`...........................\nCHECKPOINT: fetching ui data:`);
       fetch(
-        `/api/data?institution=${Object.keys(session.user.role)[0]}`,
+        `/api/user/data?institution=${Object.keys(session.user.role)[0]}`,
         fetchOptions
       )
         .then((res_) => res_.json())
