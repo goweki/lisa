@@ -49,7 +49,8 @@ export default function Navbar(props) {
               <Link
                 href="/"
                 className={`block py-2 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.preventDefault();
                   await signOut();
                 }}
               >

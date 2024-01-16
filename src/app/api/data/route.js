@@ -3,24 +3,19 @@ export const revalidate = 0; // false | 'force-cache' | 0 | number
 
 export async function GET(req) {
   const url = new URL(req.url);
-  const institution = url.searchParams.get("institution");
+  const collection_ = url.searchParams.get("colle");
   try {
     console.log(
-      `........................\nGET REQUEST for ${institution} UI data`
+      `........................\nGET REQUEST /api/data\n > collection: ${collection_}`
     );
-    // target COLLECTIONS
-    const colle_issues = db_cluster.collection("issues");
+    // target COLLECTION
+    const collection = db_cluster.collection(collection_);
     // FIND Docs
-    const issues = await colle_issues
-      .find(institution === "lisa" ? {} : { institution: institution })
-      .toArray();
-    // console.log(` > Success`);
-    // console.log(` >> ${JSON.stringify(issues)}\n........................`);
-    // HTTP response
-    return Response.json({ success: issues });
+    const data_ = await collection.find({}).toArray();
+    return Response.json({ success: data_ });
   } catch (error) {
     // handle ERROR if caught
-    console.log(`> Error caught at api/data GET \n >> ${error}\n`);
+    console.log(` > Error caught at api/data GET \n >> ${error}\n`);
     return Response.json({
       error: "Could not fetch data",
     });

@@ -11,7 +11,6 @@ export default function Providers({ children }) {
   useEffect(() => {
     setTimeout(() => setUIstate("OK"), 2000);
   }, []);
-
   //Render
   return (
     <ThemeProvider defaultTheme="system" attribute="class">

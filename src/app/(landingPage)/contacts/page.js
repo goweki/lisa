@@ -1,79 +1,130 @@
+"use client";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { ButtonPrimary } from "@/components/atoms/buttons";
+import { Loader1 } from "@/components/atoms/loader";
+import { httpCodes } from "@/lib/configs";
+
 export default function ContactsPage() {
-  return (
+  const [UIstate, setUIstate] = useState("OK");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [ccCheckbox, setCcCheckbox] = useState(false);
+  //onUIerror
+  useEffect(() => {
+    if (UIstate !== "OK" && UIstate !== "loading") {
+      toast.error(UIstate);
+      setUIstate("OK");
+    }
+  }, [UIstate]);
+  //onClick Send
+  async function handleSend() {
+    // confirm fields filled
+    if (!name || !email) {
+      setUIstate(`Please provide your ${!name ? " name " : " email "}`);
+      return;
+    }
+    // fetch options
+    let fetchOptions = {
+      method: "POST",
+      // headers: {
+      //   "Content-Type": "application/json",
+      //   'Content-Type': 'application/x-www-form-urlencoded',
+      // },
+      body: JSON.stringify({
+        subject: `Thank you for contacting LISA!`,
+        text: `Hi: ${name} \nWe have received your message and will contact you soon via: ${email} \n Message: ${message}\nSource: website`,
+        cc: ccCheckbox ? email : null,
+      }),
+    };
+    setUIstate("loading");
+    // POST request using fetch
+    const _res = await fetch("/api/mailer", fetchOptions).then(async (res_) => {
+      if (res_.ok) {
+        return await res_.json();
+      } else {
+        console.log(`ERROR: ` + JSON.stringify(res_));
+        setUIstate(httpCodes[res_.status]);
+      }
+    });
+    if (_res?.success) {
+      console.log(
+        "SUCCESS: info sent\n > " +
+          JSON.stringify(_res.success) +
+          "\n.............."
+      );
+      toast.success("Info submitted!");
+      setName("");
+      setEmail("");
+      setMessage("");
+      setUIstate("OK");
+    } else {
+      console.error(
+        "ERROR: failed sending info at contacts /page\n > " +
+          JSON.stringify(_res) +
+          "\n.............."
+      );
+      setUIstate(_res?.error ?? "No Response, check internet connection");
+    }
+  }
+  //render
+  return UIstate === "loading" ? (
+    <div className="flex flex-col min-h-screen justify-center">
+      <Loader1 />
+    </div>
+  ) : (
     <div className="container my-24 mx-auto md:px-6">
       {/* <!-- Section: Design Block --> */}
       <section className="mb-32">
-        <div className="relative h-[300px] overflow-hidden bg-cover bg-[50%] bg-no-repeat bg-[url('https://mdbcdn.b-cdn.net/img/new/textures/full/284.jpg')]"></div>
+        <div className="relative h-[300px] overflow-hidden bg-cover bg-[50%] bg-no-repeat bg-[url('https://i.postimg.cc/nrV7ytdv/og-image.jpg')]"></div>
         <div className="container px-6 md:px-12">
-          <div className="block rounded-lg bg-[hsla(0,0%,100%,0.8)] px-6 py-12 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] dark:bg-[hsla(0,0%,5%,0.7)] dark:shadow-black/20 md:py-16 md:px-12 -mt-[100px] backdrop-blur-[30px]">
+          <div className="block bg-backg-surface/75 dark:bg-backg-dark-surface/75 rounded-lg px-6 py-12 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]  dark:shadow-black/20 md:py-16 md:px-12 -mt-[100px] backdrop-blur-[30px]">
             <div className="flex flex-wrap">
               <div className="mb-12 w-full shrink-0 grow-0 basis-auto md:px-3 lg:mb-0 lg:w-5/12 lg:px-6">
                 <form>
-                  <div className="relative mb-6" data-te-input-wrapper-init>
-                    <input
-                      type="text"
-                      className="peer block min-h-[auto] w-full rounded border-0 bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 peer-focus:text-primary data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-neutral-200 dark:placeholder:text-neutral-200 dark:peer-focus:text-primary [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
-                      id="exampleInput90"
-                      placeholder="Name"
-                    />
-                    <label
-                      className="pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[0.9rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-state-active]:-translate-y-[0.9rem] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-200 dark:peer-focus:text-primary"
-                      for="exampleInput90"
-                    >
-                      Name
-                    </label>
-                  </div>
-                  <div className="relative mb-6" data-te-input-wrapper-init>
-                    <input
-                      type="email"
-                      className="peer block min-h-[auto] w-full rounded border-0 bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 peer-focus:text-primary data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-neutral-200 dark:placeholder:text-neutral-200 dark:peer-focus:text-primary [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
-                      id="exampleInput91"
-                      placeholder="Email address"
-                    />
-                    <label
-                      className="pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[0.9rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-state-active]:-translate-y-[0.9rem] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-200 dark:peer-focus:text-primary"
-                      for="exampleInput91"
-                    >
-                      Email address
-                    </label>
-                  </div>
-                  <div className="relative mb-6" data-te-input-wrapper-init>
+                  {renderInput(name, setName, "text", "name")}
+                  {renderInput(email, setEmail, "email", "email")}
+                  <div className="relative mb-6">
                     <textarea
-                      className="peer block min-h-[auto] w-full rounded border-0 bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-neutral-200 dark:placeholder:text-neutral-200 [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
-                      id="exampleFormControlTextarea1"
+                      className={`peer block min-h-[auto] w-full rounded border-0 border-b-2 border-l-2 border-font/50 dark:border-font-dark/50 focus:border-emerald-500 dark:focus:border-emerald-500 bg-transparent autofill:!bg-emerald-500 focus:ring-transparent py-2 px-3 outline-none transition-all duration-200 ease-linear peer-focus:text-emerald-500  dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+                      id="message"
+                      value={message}
                       rows="3"
-                      placeholder="Your message"
-                    ></textarea>
+                      onChange={(e) => setMessage(e.target.value)}
+                    />
                     <label
-                      for="exampleFormControlTextarea1"
-                      className="pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[0.9rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-state-active]:-translate-y-[0.9rem] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-200 dark:peer-focus:text-primary"
+                      className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${
+                        message ? "scale-[0.8] -translate-y-5" : ""
+                      } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+                      htmlFor="message"
                     >
-                      Message
+                      Message / Inquiry
                     </label>
                   </div>
                   <div className="mb-6 inline-block min-h-[1.5rem] justify-center pl-[1.5rem] md:flex">
                     <input
                       className="relative float-left mt-[0.15rem] mr-[6px] -ml-[1.5rem] h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem] border-[0.125rem] border-solid border-neutral-300 outline-none before:pointer-events-none before:absolute before:h-[0.875rem] before:w-[0.875rem] before:scale-0 before:rounded-full before:bg-transparent before:opacity-0 before:shadow-[0px_0px_0px_13px_transparent] before:content-[''] checked:border-primary checked:bg-primary checked:before:opacity-[0.16] checked:after:absolute checked:after:ml-[0.25rem] checked:after:-mt-px checked:after:block checked:after:h-[0.8125rem] checked:after:w-[0.375rem] checked:after:rotate-45 checked:after:border-[0.125rem] checked:after:border-t-0 checked:after:border-l-0 checked:after:border-solid checked:after:border-white checked:after:bg-transparent checked:after:content-[''] hover:cursor-pointer hover:before:opacity-[0.04] hover:before:shadow-[0px_0px_0px_13px_rgba(0,0,0,0.6)] focus:shadow-none focus:transition-[border-color_0.2s] focus:before:scale-100 focus:before:opacity-[0.12] focus:before:shadow-[0px_0px_0px_13px_rgba(0,0,0,0.6)] focus:before:transition-[box-shadow_0.2s,transform_0.2s] focus:after:absolute focus:after:z-[1] focus:after:block focus:after:h-[0.875rem] focus:after:w-[0.875rem] focus:after:rounded-[0.125rem] focus:after:content-[''] checked:focus:before:scale-100 checked:focus:before:shadow-[0px_0px_0px_13px_#3b71ca] checked:focus:before:transition-[box-shadow_0.2s,transform_0.2s] checked:focus:after:ml-[0.25rem] checked:focus:after:-mt-px checked:focus:after:h-[0.8125rem] checked:focus:after:w-[0.375rem] checked:focus:after:rotate-45 checked:focus:after:rounded-none checked:focus:after:border-[0.125rem] checked:focus:after:border-t-0 checked:focus:after:border-l-0 checked:focus:after:border-solid checked:focus:after:border-white checked:focus:after:bg-transparent dark:border-neutral-600 dark:checked:border-primary dark:checked:bg-primary dark:focus:before:shadow-[0px_0px_0px_13px_rgba(255,255,255,0.4)] dark:checked:focus:before:shadow-[0px_0px_0px_13px_#3b71ca]"
                       type="checkbox"
-                      value=""
-                      id="exampleCheck96"
-                      checked
+                      id="checkbox-cc"
+                      onChange={(e) => setCcCheckbox(e.target.checked)}
                     />
                     <label
                       className="inline-block pl-[0.15rem] hover:cursor-pointer"
-                      for="exampleCheck96"
+                      htmlFor="checkbox-cc"
                     >
                       Send me a copy of this message
                     </label>
                   </div>
-                  <button
-                    type="button"
-                    data-te-ripple-init
-                    data-te-ripple-color="light"
-                    className="mb-6 inline-block w-full rounded bg-primary px-6 pt-2.5 pb-2 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] lg:mb-0"
-                  >
-                    Send
-                  </button>
+                  <ButtonPrimary
+                    label="Send"
+                    type="submit"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      await handleSend();
+                    }}
+                  />
                 </form>
               </div>
               <div className="w-full shrink-0 grow-0 basis-auto lg:w-7/12">
@@ -103,11 +154,13 @@ export default function ContactsPage() {
                           Technical support
                         </p>
                         <p className="text-neutral-500 dark:text-neutral-200">
-                          support@example.com
+                          <Link href="mailto:support@goweki.com">
+                            support@goweki.com
+                          </Link>
                         </p>
-                        <p className="text-neutral-500 dark:text-neutral-200">
+                        {/* <p className="text-neutral-500 dark:text-neutral-200">
                           +1 234-567-89
-                        </p>
+                        </p> */}
                       </div>
                     </div>
                   </div>
@@ -133,18 +186,20 @@ export default function ContactsPage() {
                       </div>
                       <div className="ml-6 grow">
                         <p className="mb-2 font-bold dark:text-white">
-                          Sales questions
+                          Business & Operations
                         </p>
                         <p className="text-neutral-500 dark:text-neutral-200">
-                          sales@example.com
+                          <Link href="mailto: m.omungalah@gmail.com">
+                            m.omungalah@gmail.com
+                          </Link>
                         </p>
-                        <p className="text-neutral-500 dark:text-neutral-200">
+                        {/* <p className="text-neutral-500 dark:text-neutral-200">
                           +1 234-567-89
-                        </p>
+                        </p> */}
                       </div>
                     </div>
                   </div>
-                  <div className="mb-12 w-full shrink-0 grow-0 basis-auto md:mb-0 md:w-6/12 md:px-3 lg:mb-12 lg:w-full lg:px-6 xl:w-6/12">
+                  {/* <div className="mb-12 w-full shrink-0 grow-0 basis-auto md:mb-0 md:w-6/12 md:px-3 lg:mb-12 lg:w-full lg:px-6 xl:w-6/12">
                     <div className="align-start flex">
                       <div className="shrink-0">
                         <div className="inline-block rounded-md bg-primary-100 p-4 text-primary">
@@ -196,7 +251,9 @@ export default function ContactsPage() {
                         </div>
                       </div>
                       <div className="ml-6 grow">
-                        <p className="mb-2 font-bold dark:text-white">Bug report</p>
+                        <p className="mb-2 font-bold dark:text-white">
+                          Bug report
+                        </p>
                         <p className="text-neutral-500 dark:text-neutral-200">
                           bugs@example.com
                         </p>
@@ -205,7 +262,7 @@ export default function ContactsPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -214,6 +271,27 @@ export default function ContactsPage() {
       </section>
       {/* <!-- Section: Design Block --> */}
     </div>
-    // <!-- Container for demo purpose -->
+    // <!-- Container -->
+  );
+}
+function renderInput(value, setValue, type = "text", name = "inputField") {
+  return (
+    <div className="relative mb-8">
+      <input
+        type={type}
+        className={`peer block min-h-[auto] w-full rounded border-0 border-b-2 border-l-2 border-font/50 dark:border-font-dark/50 focus:border-emerald-500 dark:focus:border-emerald-500 bg-transparent autofill:!bg-emerald-500 focus:ring-transparent py-2 px-3 outline-none transition-all duration-200 ease-linear peer-focus:text-emerald-500  dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+        id={name}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <label
+        className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${
+          value ? "scale-[0.8] -translate-y-5" : ""
+        } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+        htmlFor={name}
+      >
+        Your {name}*
+      </label>
+    </div>
   );
 }
