@@ -12,12 +12,10 @@ export async function sendSMS(data) {
       message: data.subject + ": " + data.text,
       //   from: '[Your_sender_ID_goes_here]'
     });
-    console.log(
-      "SUCCESS: sms sent " + JSON.stringify(result) + "\n............"
-    );
+    console.log(" > SUCCESS: sms sent " + JSON.stringify(result));
     return { success: result };
   } catch (err) {
-    console.log("ERROR: sms not sent " + err + "\n............");
+    console.error(" > ERROR: sms not sent ");
     return { error: err };
   }
 }
