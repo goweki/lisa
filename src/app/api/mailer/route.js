@@ -6,12 +6,12 @@ export async function POST(request) {
     return Response.json({ error: "no notify channels defined" });
   else {
     console.log(
-      "Sending to channels: " + process.env.SENDING_CHANNELS.split(" ")
+      "Sending to channels: " + process.env.NOTIFY_CHANNELS.split(" ")
     );
   }
   try {
     // sending channels
-    const channels = process.env.SENDING_CHANNELS.split(" ");
+    const channels = process.env.NOTIFY_CHANNELS.split(" ");
     // request body
     const doc = await request.json();
     console.log(`POST REQUEST: to send an email/sms.`);

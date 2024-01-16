@@ -1,14 +1,14 @@
 import AfricasTalking from "africastalking";
 
 const africastalking = AfricasTalking({
-  apiKey: process.env.AFRICAS_TALKING_KEY,
-  username: process.env.AFRICAS_TALKING_USERNAME,
+  apiKey: process.env.AFRICASTALKING_KEY,
+  username: process.env.AFRICASTALKING_USERNAME,
 });
 
 export async function sendSMS(data) {
   try {
     const result = await africastalking.SMS.send({
-      to: process.env.AFRICAS_TALKING_TO,
+      to: process.env.AFRICASTALKING_TO,
       message: data.subject + ": " + data.text,
       //   from: '[Your_sender_ID_goes_here]'
     });

@@ -31,17 +31,16 @@ export default function ContactsPage() {
       method: "POST",
       // headers: {
       //   "Content-Type": "application/json",
-      //   // 'Content-Type': 'application/x-www-form-urlencoded',
+      //   'Content-Type': 'application/x-www-form-urlencoded',
       // },
       body: JSON.stringify({
         subject: `Thank you for contacting LISA!`,
         text: `Hi: ${name} \nWe have received your message and will contact you soon via: ${email} \n Message: ${message}\nSource: website`,
-        // cc: ccCheckbox ? email : null,
+        cc: ccCheckbox ? email : null,
       }),
     };
     setUIstate("loading");
     // POST request using fetch
-    console.log(`AAAAAAAAAAAAAAAAAA`);
     const _res = await fetch("/api/mailer", fetchOptions).then(async (res_) => {
       if (res_.ok) {
         return await res_.json();
@@ -50,7 +49,6 @@ export default function ContactsPage() {
         setUIstate(httpCodes[res_.status]);
       }
     });
-    console.log(`BBBBBBBBBBBBBBBBBB`);
     if (_res?.success) {
       console.log(
         "SUCCESS: info sent\n > " +
@@ -64,7 +62,7 @@ export default function ContactsPage() {
       setUIstate("OK");
     } else {
       console.error(
-        "ERROR: failed sending info\n > " +
+        "ERROR: failed sending info at contacts /page\n > " +
           JSON.stringify(_res) +
           "\n.............."
       );
