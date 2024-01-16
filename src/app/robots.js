@@ -7,6 +7,6 @@ export default function robots() {
     sitemap:
       process.env.NODE_ENV === "development"
         ? `https://lisa.goweki.com/sitemap.xml`
-        : NEXTAUTH_URL + "/sitemap.xml",
+        : process.env.NEXTAUTH_URL + "/sitemap.xml",
   };
 }
