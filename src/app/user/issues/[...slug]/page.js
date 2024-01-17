@@ -7,7 +7,8 @@ import { ButtonPrimary } from "@/components/atoms/buttons";
 
 export default function IssueForm({ params }) {
   const { slug } = params;
-  const { issues } = useContext(DataContext);
+  const { issues, templates } = useContext(DataContext);
+  const [menuItems, setMenuItems] = useState({});
   const [selected, setSelected] = useState("");
   const [newIssue, setNewIssue] = useState({
     name: "",
@@ -19,6 +20,17 @@ export default function IssueForm({ params }) {
     if (slug[0] !== "new")
       setSelected(issues.find(({ _id }) => _id === slug[0]));
   }, [issues, slug]);
+  // check issue-type select
+  useEffect(() => {
+    if (newIssue.type.type)
+      setMenuItems((prev) => {
+        return {
+          ...prev,
+          categories: templates.find((v) => v.type === newIssue.type.type)
+            .categories,
+        };
+      });
+  }, [newIssue.type.type, templates]);
   //render
   return slug[0] === "new" ? (
     <main className="flex flex-col flex-grow items-center px-4">
@@ -29,22 +41,30 @@ export default function IssueForm({ params }) {
           {/* Inputs */}
           <div
             className={`relative max-w-lg mx-auto grid grid-cols-1 gap-4 ${
-              newIssue.type.type ? "md:grid-cols-2 md:gap-6" : ""
+              menuItems.categories ? "md:grid-cols-2 md:gap-6" : ""
             } card pt-3 pb-6 px-12`}
           >
-            {inputSelect(optionItems, newIssue.type.type, (e) => {
-              setNewIssue({
-                ...newIssue,
-                type: { type: e.target.value, category: "" },
-              });
-            })}
-            {newIssue.type.type &&
-              inputSelect(optionItems, newIssue.type.type, (e) => {
-                setNewIssue({
-                  ...newIssue,
-                  type: { type: e.target.value, category: "" },
-                });
-              })}
+            {!(newIssue.type.type && newIssue.type.category) && (
+              <>
+                {inputSelect(issueTypes, newIssue.type.type, (e) => {
+                  setNewIssue({
+                    ...newIssue,
+                    type: { type: e.target.value, category: "" },
+                  });
+                })}
+                {menuItems.categories &&
+                  inputSelect(
+                    menuItems.categories.map((v)=>{return{value:v,text:v}}),
+                    newIssue.type.category,
+                    (e) => {
+                      setNewIssue({
+                        ...newIssue,
+                        type: { ...newIssue.type, category: "" },
+                      });
+                    }
+                  )}
+              </>
+            )}
             {/* <Link className="mt-2" href="/user/issues/new">
               <ButtonPrimary label="+new Issue" onClick={() => ""} />
             </Link> */}
@@ -158,9 +178,14 @@ function inputSelect(
   );
 }
 
-const optionItems = [
-  { value: "", text: "Issue type..." },
-  { value: "apple", text: "Apple 🍏" },
-  { value: "banana", text: "Banana 🍌" },
-  { value: "kiwi", text: "Kiwi 🥝" },
+const issueTypes = [
+  { value: "", text: "Issue types..." },
+  { value: "petition", text: "A petition" },
 ];
+
+// const optionItems = [
+//   { value: "", text: "Issue type..." },
+//   { value: "petition", text: "Apple 🍏" },
+//   { value: "banana", text: "Banana 🍌" },
+//   { value: "kiwi", text: "Kiwi 🥝" },
+// ];

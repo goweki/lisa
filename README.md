@@ -2,23 +2,25 @@
 
 Source code for Lisa. 
 
-## Live site
+## Live site#
+-  [`lisa`](https://lisa.goweki.com)
 
 #### Public Pages
 
-- Home: [`/`]
-- 
+- Home [`lisa`](https://lisa.goweki.com)
+- Blog [`lisa/blog`](https://lisa.goweki.com/blog)
+- Contacts [`lisa/contacts`](https://lisa.goweki.com/contacts)
 
 #### Admin Pages
 
-- Admin: [`/admin`]
+- 
 - 
 
 #### Backend routes
 
 - Authentication: [`/api/auth`]
 - Mailing: [`/api/mailer`]
-- 
+- User routes: [`/api/user`]
 
 ## Toolchain
 
