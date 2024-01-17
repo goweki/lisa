@@ -32,9 +32,7 @@ export default function Navbar(props) {
                   key={i}
                   href={v.onClick}
                   className={`${
-                    pathname.includes("/" + v.label.toLowerCase())
-                      ? "font-black"
-                      : ""
+                    pathname === v.onClick ? "underline font-bold" : ""
                   } block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
                 >
                   {v.label}
@@ -102,6 +100,7 @@ const menuItemsOptions = {
     { label: "Contacts", type: "link", onClick: "/contacts" },
   ],
   auth: [
+    { label: "Home", type: "link", onClick: "/user" },
     { label: "Issues", type: "link", onClick: "/user/issues" },
     { label: "Tasks", type: "link", onClick: "/user/tasks" },
   ],

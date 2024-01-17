@@ -5,9 +5,11 @@ import Link from "next/link";
 import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
+import { useDate } from "@/lib/dateTime";
 
 export default function LandingPage() {
   // states
+  const { wish, date, time } = useDate();
   const { data: session } = useSession();
   const [showDemoReqModal, setToggleDemoReqModal] = useState(false);
   // Render
@@ -63,9 +65,8 @@ export default function LandingPage() {
         ) : (
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
-              <h1 className="mb-8 text-3xl text-font-inactive dark:text-font-dark-inactive font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
-                The <span>L</span>egal <span>I</span>ntelligent <span>S</span>
-                upport <span>A</span>ssistant
+              <h1 className="mb-8 text-font-inactive dark:text-font-dark-inactive font-bold">
+                {`${wish()} ${session.user.name}`}
               </h1>
               <div className="mb-10 flex flex-wrap items-center justify-center space-x-4">
                 <ButtonText
@@ -78,12 +79,6 @@ export default function LandingPage() {
                   <ButtonPrimary label="Continue" onClick={() => ""} />
                 </Link>
               </div>
-              <p className="mx-auto mb-10 max-w-[600px] text-base sm:text-lg sm:leading-relaxed md:text-xl md:leading-relaxed">
-                With Lisa, legal professionals now have a handy tool that
-                unifies resources and keeps track of activities. Lisa is much
-                more than an information manager, it is a research assistant and
-                more!
-              </p>
             </div>
           </div>
         )}

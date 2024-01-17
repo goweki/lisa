@@ -16,6 +16,7 @@ export async function sendEmail(data) {
       to: process.env.GMAIL_ACCOUNT_TO,
       subject: data.subject,
       text: data.text,
+      cc: data.cc,
     };
     // console.log(` > CHECKPOINT: Sending email`);
     // send email
