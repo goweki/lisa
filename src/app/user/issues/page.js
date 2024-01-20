@@ -1,5 +1,6 @@
 "use client";
 import { useContext, useState } from "react";
+import Link from "next/link";
 import { DataContext } from "../providers";
 import CardIssue from "@/components/mols/cards";
 import {
@@ -9,10 +10,8 @@ import {
 } from "@/components/atoms/svgs";
 import { InputText } from "@/components/atoms/inputs";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
-import Link from "next/link";
 
 export default function IssuesPage() {
-  const { issues } = useContext(DataContext);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   //render
   return (
