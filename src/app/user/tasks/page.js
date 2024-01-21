@@ -45,6 +45,10 @@ export default function TasksPage() {
       .filter((issue) => issue.dueDates.length);
 
     //completes
+    console.log(
+      "> Issues with Completes: ",
+      JSON.stringify(issues_withCompletetasks)
+    );
     const completes = issues_withCompletetasks.map((issue) => {
       for (const dueDate of issue.dueDates) {
         return {
@@ -59,6 +63,10 @@ export default function TasksPage() {
     console.log("> Completes: ", JSON.stringify(completes));
     setCompletes(completes);
     //pendings
+    console.log(
+      "> Issues with inCompletes: ",
+      JSON.stringify(issues_withIncompletetasks)
+    );
     const pendings = issues_withIncompletetasks.map((issue) => {
       for (const dueDate of issue.dueDates) {
         return {
