@@ -6,6 +6,7 @@ import { useDate } from "@/lib/dateTime";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "./providers";
+import { isDatePassed } from "@/helpers/dateHandlers";
 
 export default function UserHome() {
   const router = useRouter();
@@ -20,8 +21,7 @@ export default function UserHome() {
         return {
           ...issue,
           dueDates: issue.dueDates.filter(
-            (obj) =>
-              obj.task.status.length < 1 && rawDateMemo() > new Date(obj.date)
+            (obj) => !obj.task.complete && isDatePassed(new Date(obj.date))
           ),
         };
       })
@@ -50,14 +50,14 @@ function profileCard(date, time, data_) {
         </div>
         <p
           className={`font-bold text-xl mt-2 mb-4 text-center ${
-            data_.length < 1
+            !data_.length
               ? "text-emerald-500"
               : data_.length < 3
               ? "text-red-600 dark:text-red-300"
               : "text-red-500"
           }`}
         >
-          {data_.length < 1
+          {!data_.length
             ? "Your schedule is clean"
             : data_.length < 3
             ? "You have overdue tasks"
@@ -73,9 +73,7 @@ function profileCard(date, time, data_) {
                 : "text-red-500"
             }`}
           >
-            {data_.length} issue{data_.length !== 1 && <>s</>} has{" "}
-            {data_.length === 1 && <>a</>} pending task
-            {data_.length !== 1 && <>s</>}
+            {data_.length} issue{data_.length !== 1 && <>s</>} has pending tasks
           </p>
           <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
             {data_ &&
