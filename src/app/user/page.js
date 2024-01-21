@@ -11,13 +11,11 @@ export default function UserHome() {
   const router = useRouter();
   const [overdues, setOverdues] = useState("");
   const { date, time, rawDate } = useDate();
-  const data = useContext(DataContext);
-  // const overdues = data.filter(
-  //   (issue) => new Date(issue.dueDates.date) > rawDate()
-  // );
+  const { issues } = useContext(DataContext);
+  //useEffects
   const rawDateMemo = useCallback(() => rawDate(), []);
   useEffect(() => {
-    const _overdues = data.issues
+    const _overdues = issues
       .map((issue) => {
         return {
           ...issue,
@@ -29,14 +27,14 @@ export default function UserHome() {
       })
       .filter((issue) => issue.dueDates.length !== 0);
     setOverdues(_overdues);
-  }, [data, rawDateMemo]);
+  }, [issues, rawDateMemo]);
 
   // render
   return (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         {profileCard(date, time, overdues)}
-        {scheduleBrief(data.issues, router)}
+        {scheduleBrief(issues, router)}
       </div>
     </main>
   );

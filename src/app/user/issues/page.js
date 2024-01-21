@@ -12,13 +12,14 @@ import { InputText } from "@/components/atoms/inputs";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 
 export default function IssuesPage() {
+  const { issues } = useContext(DataContext);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   //render
   return (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="max-w-screen-lg mx-auto px-4 sm:px-4 lg:px-6">
         <div className="space-y-2 pt-6 md:space-y-5 mb-4">
-          <h1 className="text-center">ISSUES</h1>
+          <h1 className="text-center uppercase">Issues</h1>
           <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 card pt-3 pb-6 px-12">
             <InputText
               name="searchPhrase"
