@@ -87,6 +87,7 @@ export function ReqDemoModal({ handleCloseModal }) {
       setUIstate("Sending info failed: consider emailing lisa@goweki.com");
     }
   }
+  //render UI
   return (
     <div
       id="requestDemoModal"

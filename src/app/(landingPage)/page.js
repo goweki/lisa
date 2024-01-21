@@ -65,7 +65,7 @@ export default function LandingPage() {
         ) : (
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
-              <h1 className="mb-8 text-font-inactive dark:text-font-dark-inactive font-bold">
+              <h1 className="mb-4 text-font-inactive dark:text-font-dark-inactive font-bold">
                 {`${wish()} ${session.user.name}`}
               </h1>
               <div className="mb-10 flex flex-wrap items-center justify-center space-x-4">
