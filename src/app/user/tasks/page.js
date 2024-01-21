@@ -87,7 +87,9 @@ export default function TasksPage() {
           .length
       )
         setOverdues(
-          inCompletes.filter((task) => isDatePassed(new Date(task.dueDate)))
+          inCompletes
+            .filter((task) => isDatePassed(new Date(task.dueDate)))
+            .map((task) => ({ ...task, status: "overdue" }))
         );
       // if almost overdue
       if (
@@ -98,11 +100,13 @@ export default function TasksPage() {
         ).length
       )
         setAlmOverdues(
-          inCompletes.filter(
-            (task) =>
-              !isDatePassed(new Date(task.dueDate)) &&
-              hoursDifference(new Date(task.dueDate), rawDateMemo()) <= 72
-          )
+          inCompletes
+            .filter(
+              (task) =>
+                !isDatePassed(new Date(task.dueDate)) &&
+                hoursDifference(new Date(task.dueDate), rawDateMemo()) <= 72
+            )
+            .map((task) => ({ ...task, status: "late" }))
         );
       //if pending
       if (
@@ -113,11 +117,13 @@ export default function TasksPage() {
         ).length
       )
         setPendings(
-          inCompletes.filter(
-            (task) =>
-              !isDatePassed(new Date(task.dueDate)) &&
-              hoursDifference(new Date(task.dueDate), rawDateMemo()) > 72
-          )
+          inCompletes
+            .filter(
+              (task) =>
+                !isDatePassed(new Date(task.dueDate)) &&
+                hoursDifference(new Date(task.dueDate), rawDateMemo()) > 72
+            )
+            .map((task) => ({ ...task, status: "pending" }))
         );
     }
     //stop loading
@@ -263,7 +269,7 @@ export default function TasksPage() {
                   ))}
               </tbody>
             </table>
-            {/* <!-- Edit user modal --> */}
+            {/* <!-- editTaskModal --> */}
             {selectedTask && (
               <div
                 id="editTaskModal"
@@ -277,7 +283,7 @@ export default function TasksPage() {
                     {/* <!-- Modal header --> */}
                     <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        Edit user
+                        Task
                       </h3>
                       <button
                         type="button"
@@ -304,147 +310,86 @@ export default function TasksPage() {
                       </button>
                     </div>
                     {/* <!-- Modal body --> */}
-                    <div className="p-6 space-y-6">
-                      <div className="grid grid-cols-6 gap-6">
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="first-name"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            First Name
-                          </label>
-                          <input
-                            type="text"
-                            name="first-name"
-                            id="first-name"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Bonnie"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="last-name"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Last Name
-                          </label>
-                          <input
-                            type="text"
-                            name="last-name"
-                            id="last-name"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Green"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="email"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Email
-                          </label>
-                          <input
-                            type="email"
-                            name="email"
-                            id="email"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="example@company.com"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="phone-number"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Phone Number
-                          </label>
-                          <input
-                            type="number"
-                            name="phone-number"
-                            id="phone-number"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="e.g. +(12)3456 789"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="department"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Department
-                          </label>
-                          <input
-                            type="text"
-                            name="department"
-                            id="department"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Development"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="company"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Company
-                          </label>
-                          <input
-                            type="number"
-                            name="company"
-                            id="company"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="123456"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="current-password"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Current Password
-                          </label>
-                          <input
-                            type="password"
-                            name="current-password"
-                            id="current-password"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="••••••••"
-                            required=""
-                          />
-                        </div>
-                        <div className="col-span-6 sm:col-span-3">
-                          <label
-                            htmlFor="new-password"
-                            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            New Password
-                          </label>
-                          <input
-                            type="password"
-                            name="new-password"
-                            id="new-password"
-                            className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="••••••••"
-                            required=""
-                          />
-                        </div>
-                      </div>
+                    <div className="py-6 px-12 md:px-16">
+                      <ul className="grid grid-cols-6 gap-6 [&>*]:col-span-6 [&>*]:md:col-span-3">
+                        <li className="flex flex-col">
+                          <div className="text-xs">
+                            <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
+                              Task name:
+                            </span>
+                          </div>
+                          <div className="flex h-full items-start py-1 px-3 text-base font-bold">
+                            {selectedTask.task.name}
+                          </div>
+                        </li>
+                        <li className="flex flex-col">
+                          <div className="text-xs">
+                            <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
+                              Parent issue:
+                            </span>
+                          </div>
+                          <div className="flex h-full items-start py-1 px-3 text-base">
+                            {`${selectedTask.issueType.category}, ${selectedTask.issueType.type} - ${selectedTask.issueName}`}
+                          </div>
+                        </li>
+                        <li className="flex flex-col">
+                          <div className="text-xs">
+                            <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
+                              Due date:
+                            </span>
+                          </div>
+                          <div className="flex h-full items-start py-1 px-3 text-base">
+                            {dateShort(new Date(selectedTask.dueDate))}
+                          </div>
+                        </li>
+                        <li className="flex flex-col">
+                          <div className="text-xs">
+                            <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
+                              Status:
+                            </span>
+                          </div>
+                          <div className="flex h-full items-start py-1 px-3 text-base">
+                            <div className="flex items-center">
+                              <div
+                                className={`h-2.5 w-2.5 rounded-full ${
+                                  selectedTask.status === "overdue"
+                                    ? "bg-red-500"
+                                    : selectedTask.status === "late"
+                                    ? "bg-yellow-500"
+                                    : selectedTask.status === "pending"
+                                    ? "bg-blue-500"
+                                    : selectedTask.task.complete
+                                    ? "bg-green-500"
+                                    : "bg-neutral-500"
+                                } me-2`}
+                              ></div>
+                              {selectedTask.status ?? "complete"}
+                            </div>
+                          </div>
+                        </li>
+                      </ul>
                     </div>
                     {/* <!-- Modal footer --> */}
                     <div className="flex flex-col md:flex-row items-center p-6 rounded-b border-t border-gray-200 dark:border-gray-600 [&>*]:mx-6 [&>*]:my-3">
-                      <Link href="/user/issues" className="w-full">
+                      <Link
+                        href={`/user/issues/${selectedTask.issueId}`}
+                        className="w-full"
+                      >
                         <ButtonSecondary
                           label="View Parent Issue"
                           onClick={(e) => ""}
                         />
                       </Link>
-                      <ButtonPrimary label="Update Issue" onClick={(e) => ""} />
+                      {!completeTasks.some(
+                        (e) =>
+                          e.issueName === selectedTask.issueName &&
+                          e.task.name === selectedTask.task.name
+                      ) && (
+                        <ButtonPrimary
+                          label="Mark as complete"
+                          onClick={(e) => ""}
+                        />
+                      )}
                     </div>
                   </form>
                 </div>
