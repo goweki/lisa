@@ -1,6 +1,7 @@
 "use client";
 import { useContext, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { DataContext } from "../providers";
 import { useDate } from "@/lib/dateTime";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
@@ -22,6 +23,7 @@ export default function TasksPage() {
   const [almOverdueTasks, setAlmOverdues] = useState("");
   const [pendingTasks, setPendings] = useState("");
   const [selectedTask, setSelected] = useState(null);
+  const [fileUpload, setFileUpload] = useState(null);
   const rawDateMemo = useCallback(() => rawDate(), []);
   //onMount / onUpdate- set task categories
   useEffect(() => {
@@ -371,23 +373,40 @@ export default function TasksPage() {
                     </div>
                     {/* <!-- Modal footer --> */}
                     <div className="flex flex-col md:flex-row items-center p-6 rounded-b border-t border-gray-200 dark:border-gray-600 [&>*]:mx-6 [&>*]:my-3">
-                      <Link
-                        href={`/user/issues/${selectedTask.issueId}`}
-                        className="w-full"
-                      >
-                        <ButtonSecondary
-                          label="View Parent Issue"
-                          onClick={(e) => ""}
+                      <div className="w-full">
+                        <label
+                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          for="file_input"
+                        >
+                          Upload report/file *
+                        </label>
+                        <input
+                          className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                          id="file_input"
+                          type="file"
+                          accept=".doc,.docx,.pdf"
+                          onChange={(e) => {
+                            if (
+                              e.target.files[0] &&
+                              e.target.files[0].size < 2100000
+                            )
+                              setFileUpload(e.target.files[0]);
+                            else
+                              toast.error("File must not exceed 2MB pdf,word");
+                          }}
                         />
-                      </Link>
-                      {!completeTasks.some(
-                        (e) =>
-                          e.issueName === selectedTask.issueName &&
-                          e.task.name === selectedTask.task.name
-                      ) && (
+                        <p
+                          class="mt-1 text-xs text-gray-500 dark:text-gray-300"
+                          id="file_input_help"
+                        >
+                          pdf,word (2MB max)
+                        </p>
+                      </div>
+                      {!selectedTask.task.complete && (
                         <ButtonPrimary
-                          label="Mark as complete"
+                          label="Complete task"
                           onClick={(e) => ""}
+                          disabled={!fileUpload}
                         />
                       )}
                     </div>
