@@ -3,7 +3,9 @@ import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { DataContext } from "../../providers";
 import { SVGpenscilSquare } from "@/components/atoms/svgs";
-import { ButtonPrimary } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
+import { InputText } from "@/components/atoms/inputs";
+import { nameValidator } from "@/helpers/inputValidators";
 
 export default function IssueForm({ params }) {
   const { slug } = params;
@@ -11,8 +13,8 @@ export default function IssueForm({ params }) {
   const [menuItems, setMenuItems] = useState({});
   const [selected, setSelected] = useState("");
   const [newIssue, setNewIssue] = useState({
-    name: "",
     type: { type: "", category: "" },
+    name: { value: "", error: "" },
   });
   const [searchPhrase, setSearchPhrase] = useState("");
   // check slug and update selected
@@ -34,7 +36,7 @@ export default function IssueForm({ params }) {
   //render
   return slug[0] === "new" ? (
     <main className="flex flex-col flex-grow items-center px-4">
-      <div className="flex flex-col flex-grow max-w-screen-lg mx-auto px-4 sm:px-4 lg:px-6">
+      <div className="flex flex-col flex-grow max-w-screen-lg mx-auto px-4 sm:px-4 lg:px-6 w-full">
         {/* heading */}
         <div className="space-y-2 pt-6 md:space-y-5 mb-4">
           <h1 className="text-center uppercase">New Issue</h1>
@@ -44,101 +46,108 @@ export default function IssueForm({ params }) {
               menuItems.categories ? "md:grid-cols-2 md:gap-6" : ""
             } card pt-3 pb-6 px-12`}
           >
-            {inputSelect(issueTypes, newIssue.type.type, (e) => {
-              setNewIssue({
-                ...newIssue,
-                type: { type: e.target.value, category: "" },
-              });
-            })}
-            {newIssue.type.type &&
-              menuItems.categories &&
-              inputSelect(
-                menuItems.categories.map((v) => {
-                  return { value: v, text: v };
-                }),
-                newIssue.type.category,
-                (e) => {
-                  setNewIssue((prev) => {
-                    return {
-                      ...prev,
-                      type: { ...prev.type, category: e.target.value },
-                    };
+            {!newIssue.type.type || !newIssue.type.category ? (
+              <>
+                {inputSelect(issueTypes, newIssue.type.type, (e) => {
+                  setNewIssue({
+                    ...newIssue,
+                    type: { type: e.target.value, category: "" },
                   });
-                },
-                "category",
-                "category"
-              )}
+                })}
+                {newIssue.type.type &&
+                  menuItems.categories &&
+                  inputSelect(
+                    menuItems.categories.map((v) => {
+                      return { value: v, text: v };
+                    }),
+                    newIssue.type.category,
+                    (e) => {
+                      setNewIssue((prev) => {
+                        return {
+                          ...prev,
+                          type: { ...prev.type, category: e.target.value },
+                        };
+                      });
+                    },
+                    "category",
+                    "category"
+                  )}
+              </>
+            ) : (
+              <>
+                <div className="m-auto">
+                  <p className="mr-4">
+                    {newIssue.type.category} - {newIssue.type.type}
+                  </p>
+                </div>
+                <div className="text-red-800 dark:text-red-300 inline m-auto">
+                  <ButtonText
+                    label="Cancel"
+                    onClick={() =>
+                      setNewIssue({
+                        type: { type: "", category: "" },
+                        name: { value: "", error: "" },
+                      })
+                    }
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
         {/* chat */}
-        <div id="prompt" className="flex flex-col flex-grow min-h-[400px]">
-          <div
-            id="prompt-log"
-            className="overscroll-none flex flex-col flex-grow"
-          >
-            <div className="overscroll-none mt-0 w-full h-16 pt-2 flex justify-center">
-              <div className="relative">
-                <label htmlFor="issue-type" className="sr-only">
-                  issue type
-                </label>
-                <select
-                  className="appearance-none w-full py-1 px-2 bg-transparent border:transparent pr-4"
-                  name="issue-type"
-                  id="issue-type"
+        {newIssue.type.type && newIssue.type.category && (
+          <div id="prompt" className="flex flex-col flex-grow min-h-[400px]">
+            <div
+              id="prompt-log"
+              className="overscroll-none flex flex-col flex-grow"
+            >
+              <div className="flex-grow">
+                <div className="clearfix">
+                  <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg">
+                    this is a basic mobile chat layout, build with tailwind css
+                  </div>
+                </div>
+
+                <div className="clearfix">
+                  <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
+                    It will be used for a full tutorial about building a chat
+                    app with vue, tailwind and firebase.
+                  </div>
+                </div>
+                <div className="clearfix">
+                  <div className="bg-green-300 float-right w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
+                    check my twitter to see when it will be released.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="prompt-input" className="flex">
+              <textarea
+                className="outline-none flex-grow m-2 py-2 px-4 mr-1 rounded-full border border-gray-300 bg-gray-200 resize-none"
+                rows="1"
+                placeholder="Message..."
+              ></textarea>
+              <button className="m-2 outline-none">
+                <svg
+                  className="svg-inline--fa text-green-400 fa-paper-plane fa-w-16 w-12 h-12 py-2 mr-2"
+                  aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fas"
+                  data-icon="paper-plane"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
                 >
-                  <option value="">Issue&hellip;</option>
-                  <option value="1">Item 1</option>
-                  <option value="2">Item 2</option>
-                  <option value="3">Item 3</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex-grow">
-              <div className="clearfix">
-                <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg">
-                  this is a basic mobile chat layout, build with tailwind css
-                </div>
-              </div>
-
-              <div className="clearfix">
-                <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
-                  It will be used for a full tutorial about building a chat app
-                  with vue, tailwind and firebase.
-                </div>
-              </div>
-              <div className="clearfix">
-                <div className="bg-green-300 float-right w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
-                  check my twitter to see when it will be released.
-                </div>
-              </div>
+                  <path
+                    fill="currentColor"
+                    d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
-          <div id="prompt-input" className="flex">
-            <textarea
-              className="outline-none flex-grow m-2 py-2 px-4 mr-1 rounded-full border border-gray-300 bg-gray-200 resize-none"
-              rows="1"
-              placeholder="Message..."
-            ></textarea>
-            <button className="m-2 outline-none">
-              <svg
-                className="svg-inline--fa text-green-400 fa-paper-plane fa-w-16 w-12 h-12 py-2 mr-2"
-                aria-hidden="true"
-                focusable="false"
-                data-prefix="fas"
-                data-icon="paper-plane"
-                role="img"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  fill="currentColor"
-                  d="M476 3.2L12.5 270.6c-18.1 10.4-15.8 35.6 2.2 43.2L121 358.4l287.3-253.2c5.5-4.9 13.3 2.6 8.6 8.3L176 407v80.5c0 23.6 28.5 32.9 42.5 15.8L282 426l124.6 52.2c14.2 6 30.4-2.9 33-18.2l72-432C515 7.8 493.3-6.8 476 3.2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </main>
   ) : (
