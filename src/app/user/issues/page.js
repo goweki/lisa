@@ -33,18 +33,24 @@ export default function IssuesPage() {
             </Link>
           </div>
         </div>
-        <div className="grid gap-8 md:grid-cols-2 lg:gap-12 p-6 md:p-10">
-          {issues.map((v) => (
-            <div key={v._id}>
-              <CardIssue
-                item={v}
-                icon={
-                  v.type.type === "petition" ? SVGpenscilSquare : SVGbriefcase
-                }
-              />
-            </div>
-          ))}
-        </div>
+        {issues.length > 0 ? (
+          <div className="grid gap-8 md:grid-cols-2 lg:gap-12 p-6 md:p-10">
+            {issues.map((v) => (
+              <div key={v._id}>
+                <CardIssue
+                  item={v}
+                  icon={
+                    v.type.type === "petition" ? SVGpenscilSquare : SVGbriefcase
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 italic">
+            No existing issues found
+          </div>
+        )}
       </div>
     </main>
   );

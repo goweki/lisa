@@ -142,7 +142,7 @@ function scheduleBrief(data_, router) {
           </tr>
         </thead>
         <tbody>
-          {data_ &&
+          {data_.length > 0 ? (
             data_.map((v, i) => {
               return (
                 <tr
@@ -158,7 +158,14 @@ function scheduleBrief(data_, router) {
                   <td className="px-1 py-2">{v.status.status}</td>
                 </tr>
               );
-            })}
+            })
+          ) : (
+            <tr>
+              <td colSpan={4} className="text-center py-6 italic">
+                No active issues found
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
