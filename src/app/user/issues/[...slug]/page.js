@@ -105,7 +105,7 @@ export default function IssueForm({ params }) {
             >
               <div className="flex-grow">
                 <div className="clearfix">
-                  <div className="card w-3/4 mx-4 my-2 p-2 rounded-lg overflow-hidden">
+                  <div className="card w-4/5 mx-4 my-2 p-2 rounded-lg overflow-hidden">
                     <p
                       className={`font-mono animate-[typing_2s_steps(20)_forwards] overflow-hidden whitespace-nowrap`}
                     >
