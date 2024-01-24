@@ -77,7 +77,7 @@ export default function IssueForm({ params }) {
               <>
                 <div className="m-auto">
                   <div className="mr-4">
-                    <p className="font-bold">issue:</p>
+                    <p className="italic">issue:</p>
                     {newIssue.type.category} - {newIssue.type.type}
                   </div>
                 </div>
@@ -105,8 +105,12 @@ export default function IssueForm({ params }) {
             >
               <div className="flex-grow">
                 <div className="clearfix">
-                  <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg">
-                    this is a basic mobile chat layout, build with tailwind css
+                  <div className="card w-3/4 mx-4 my-2 p-2 rounded-lg overflow-hidden">
+                    <p
+                      className={`font-mono animate-[typing_2s_steps(20)_forwards] overflow-hidden whitespace-nowrap`}
+                    >
+                      {chatText}
+                    </p>
                   </div>
                 </div>
 
@@ -193,9 +197,4 @@ function inputSelect(
 
 const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
 
-// const optionItems = [
-//   { value: "", text: "Issue type..." },
-//   { value: "petition", text: "Apple 🍏" },
-//   { value: "banana", text: "Banana 🍌" },
-//   { value: "kiwi", text: "Kiwi 🥝" },
-// ];
+const chatText = " this is a basic mobile chat layout, built with tailwind css";

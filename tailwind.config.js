@@ -8,9 +8,6 @@ module.exports = {
   ],
   theme: {
     extend: {
-      animation: {
-        loader: "loader 0.6s infinite alternate",
-      },
       keyframes: {
         loader: {
           to: {
@@ -35,9 +32,13 @@ module.exports = {
             strokeDashoffset: 0,
           },
         },
-        logoRotate: {
-          from: { transform: "rotate(90deg)" },
-          to: { transform: "rotate(0deg)" },
+        typing: {
+          "0%": {
+            width: "0%",
+          },
+          "100%": {
+            width: "100%",
+          },
         },
       },
       backgroundImage: {
