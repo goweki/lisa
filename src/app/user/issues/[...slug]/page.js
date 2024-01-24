@@ -76,13 +76,14 @@ export default function IssueForm({ params }) {
             ) : (
               <>
                 <div className="m-auto">
-                  <p className="mr-4">
+                  <div className="mr-4">
+                    <p className="font-bold">issue:</p>
                     {newIssue.type.category} - {newIssue.type.type}
-                  </p>
+                  </div>
                 </div>
                 <div className="text-red-800 dark:text-red-300 inline m-auto">
                   <ButtonText
-                    label="Cancel"
+                    label="Cancel issue creation"
                     onClick={() =>
                       setNewIssue({
                         type: { type: "", category: "" },
