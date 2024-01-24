@@ -44,30 +44,30 @@ export default function IssueForm({ params }) {
               menuItems.categories ? "md:grid-cols-2 md:gap-6" : ""
             } card pt-3 pb-6 px-12`}
           >
-            {!(newIssue.type.type && newIssue.type.category) && (
-              <>
-                {inputSelect(issueTypes, newIssue.type.type, (e) => {
-                  setNewIssue({
-                    ...newIssue,
-                    type: { type: e.target.value, category: "" },
+            {inputSelect(issueTypes, newIssue.type.type, (e) => {
+              setNewIssue({
+                ...newIssue,
+                type: { type: e.target.value, category: "" },
+              });
+            })}
+            {newIssue.type.type &&
+              menuItems.categories &&
+              inputSelect(
+                menuItems.categories.map((v) => {
+                  return { value: v, text: v };
+                }),
+                newIssue.type.category,
+                (e) => {
+                  setNewIssue((prev) => {
+                    return {
+                      ...prev,
+                      type: { ...prev.type, category: e.target.value },
+                    };
                   });
-                })}
-                {menuItems.categories &&
-                  inputSelect(
-                    menuItems.categories.map((v)=>{return{value:v,text:v}}),
-                    newIssue.type.category,
-                    (e) => {
-                      setNewIssue({
-                        ...newIssue,
-                        type: { ...newIssue.type, category: "" },
-                      });
-                    }
-                  )}
-              </>
-            )}
-            {/* <Link className="mt-2" href="/user/issues/new">
-              <ButtonPrimary label="+new Issue" onClick={() => ""} />
-            </Link> */}
+                },
+                "category",
+                "category"
+              )}
           </div>
         </div>
         {/* chat */}
@@ -148,10 +148,10 @@ export default function IssueForm({ params }) {
 
 function inputSelect(
   optionItems_,
-  value = "state",
+  value,
   onChange = () => "",
   name = "inputName",
-  Icon
+  defaultOption = "type"
 ) {
   return (
     <div className="space-y-2">
@@ -167,6 +167,9 @@ function inputSelect(
           value={value}
           onChange={onChange}
         >
+          <option value="" className="italic font-light">
+            Select a {defaultOption}...
+          </option>
           {optionItems_.map((option) => (
             <option key={option.value} value={option.value}>
               {option.text}
@@ -178,10 +181,7 @@ function inputSelect(
   );
 }
 
-const issueTypes = [
-  { value: "", text: "Issue types..." },
-  { value: "petition", text: "A petition" },
-];
+const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
 
 // const optionItems = [
 //   { value: "", text: "Issue type..." },
