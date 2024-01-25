@@ -76,13 +76,14 @@ export default function IssueForm({ params }) {
             ) : (
               <>
                 <div className="m-auto">
-                  <p className="mr-4">
+                  <div className="mr-4">
+                    <p className="italic">issue:</p>
                     {newIssue.type.category} - {newIssue.type.type}
-                  </p>
+                  </div>
                 </div>
                 <div className="text-red-800 dark:text-red-300 inline m-auto">
                   <ButtonText
-                    label="Cancel"
+                    label="Cancel issue creation"
                     onClick={() =>
                       setNewIssue({
                         type: { type: "", category: "" },
@@ -104,12 +105,16 @@ export default function IssueForm({ params }) {
             >
               <div className="flex-grow">
                 <div className="clearfix">
-                  <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg">
-                    this is a basic mobile chat layout, build with tailwind css
+                  <div className="card w-4/5 mx-4 my-2 p-2 rounded-lg overflow-hidden">
+                    <p
+                      className={`font-mono animate-[typing_2s_steps(20)_forwards] overflow-hidden whitespace-nowrap`}
+                    >
+                      {chatText}
+                    </p>
                   </div>
                 </div>
 
-                <div className="clearfix">
+                {/* <div className="clearfix">
                   <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
                     It will be used for a full tutorial about building a chat
                     app with vue, tailwind and firebase.
@@ -119,7 +124,7 @@ export default function IssueForm({ params }) {
                   <div className="bg-green-300 float-right w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
                     check my twitter to see when it will be released.
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
             <div id="prompt-input" className="flex">
@@ -192,9 +197,4 @@ function inputSelect(
 
 const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
 
-// const optionItems = [
-//   { value: "", text: "Issue type..." },
-//   { value: "petition", text: "Apple 🍏" },
-//   { value: "banana", text: "Banana 🍌" },
-//   { value: "kiwi", text: "Kiwi 🥝" },
-// ];
+const chatText = "To intiualize the issue, Kindly provide a name for new issue";
