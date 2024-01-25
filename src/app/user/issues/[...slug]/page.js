@@ -104,15 +104,7 @@ export default function IssueForm({ params }) {
               className="overscroll-none flex flex-col flex-grow"
             >
               <div className="flex-grow">
-                <div className="clearfix">
-                  <div className="card w-4/5 mx-4 my-2 p-2 rounded-lg overflow-hidden">
-                    <p
-                      className={`font-mono animate-[typing_2s_steps(20)_forwards] overflow-hidden whitespace-nowrap`}
-                    >
-                      {chatText}
-                    </p>
-                  </div>
-                </div>
+                {lisaMessage(chatText)}
 
                 {/* <div className="clearfix">
                   <div className="bg-gray-300 w-3/4 mx-4 my-2 p-2 rounded-lg clearfix">
@@ -160,6 +152,20 @@ export default function IssueForm({ params }) {
   );
 }
 
+function lisaMessage(message) {
+  return (
+    <div className="clearfix">
+      <div className="card inline-block mx-4 my-2 p-2 rounded-lg overflow-hidden">
+        <p
+          className={`font-mono animate-[typing_2s_steps(${message.length})_forwards] overflow-hidden whitespace-nowrap`}
+        >
+          {message}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function inputSelect(
   optionItems_,
   value,
@@ -197,4 +203,4 @@ function inputSelect(
 
 const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
 
-const chatText = "Provide a name for the issue";
+const chatText = "Provide a name for the issue to initialize it";
