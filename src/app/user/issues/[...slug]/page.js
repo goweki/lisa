@@ -261,12 +261,13 @@ export default function IssueForm({ params }) {
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
+                        <div className="flex flex-row items-center h-16 rounded-xl bg-transparent w-full px-4">
                           <div className="flex-grow">
                             <div className="relative w-full">
                               <input
                                 type="text"
-                                className="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
+                                className="flex w-full border border-emerald-100 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-transparent placeholder:italic dark:placeholder:text-font-dark-faded pl-4 h-10 dark:bg-slate-500"
+                                placeholder="Type message..."
                               />
                             </div>
                           </div>
