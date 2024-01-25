@@ -197,4 +197,4 @@ function inputSelect(
 
 const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
 
-const chatText = "To intiualize the issue, Kindly provide a name for new issue";
+const chatText = "Provide a name for the issue";
