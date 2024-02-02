@@ -1,28 +1,41 @@
 "use client";
 import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { DataContext } from "../../providers";
 import { SVGlogoSymbol, SVGpenscilSquare } from "@/components/atoms/svgs";
-import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
+import Typewriter from "@/helpers/useTyping";
 import { InputText } from "@/components/atoms/inputs";
-import { nameValidator } from "@/helpers/inputValidators";
+import { strPascalcase } from "@/helpers/stringHandlers";
+import toast from "react-hot-toast";
 
 export default function IssueForm({ params }) {
+  const { data: session } = useSession();
   const { slug } = params;
   const { issues, templates } = useContext(DataContext);
+  const router = useRouter();
   const [menuItems, setMenuItems] = useState({});
   const [selected, setSelected] = useState("");
+  const [UIstate, setUIstate] = useState("loading");
   const [newIssue, setNewIssue] = useState({
     type: { type: "", category: "" },
     name: { value: "", error: "" },
+    source: { value: "", error: "" },
+    institution: {
+      value: session.user.role.lisa ? "" : Object.keys(session.user.role)[0],
+      error: "",
+    },
   });
-  const [searchPhrase, setSearchPhrase] = useState("");
   // check slug and update selected
   useEffect(() => {
-    if (slug[0] !== "new")
+    if (slug[0] !== "new") {
       setSelected(issues.find(({ _id }) => _id === slug[0]));
+    }
+    setUIstate("OK");
   }, [issues, slug]);
-  // check issue-type select
+  //update Categories after issue-type is updates
   useEffect(() => {
     if (newIssue.type.type)
       setMenuItems((prev) => {
@@ -33,303 +46,223 @@ export default function IssueForm({ params }) {
         };
       });
   }, [newIssue.type.type, templates]);
+  //submit new issue
+  async function initializeIssue() {
+    if (
+      !newIssue.name.value ||
+      !newIssue.source.value ||
+      !newIssue.institution.value
+    ) {
+      if (!newIssue.name.value) {
+        setNewIssue((prev) => ({
+          ...prev,
+          name: { value: "", error: "Please provide a name" },
+        }));
+      } else if (!newIssue.source.value) {
+        setNewIssue((prev) => ({
+          ...prev,
+          source: { value: "", error: "Please provide a source" },
+        }));
+      } else {
+        setNewIssue((prev) => ({
+          ...prev,
+          institution: { value: "", error: "Please provide an institution" },
+        }));
+      }
+    } else {
+      // fetch options
+      let fetchOptions = {
+        method: "POST",
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   'Content-Type': 'application/x-www-form-urlencoded',
+        // },
+        body: JSON.stringify({
+          type: newIssue.type,
+          name: newIssue.name.value,
+          source: { name: newIssue.source.value },
+          institution: newIssue.institution.value,
+          status: { status: "open" },
+        }),
+      };
+      setUIstate("loading");
+      // POST request using fetch
+      const _res = await fetch("/api/user/issue", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            setUIstate(httpCodes[res_.status]);
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: issue initialized\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Issue initialized!");
+        router.push(`/user/issues/${_res.success.insertedId}`);
+      } else {
+        console.error(
+          "ERROR: failed to initialize issue at /user/issues/new /page\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
+        );
+        setUIstate(_res?.error ?? "No Response, check internet connection");
+      }
+    }
+  }
+  //
   //render
-  return slug[0] === "new" ? (
+  return (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="flex flex-col flex-grow max-w-screen-lg mx-auto px-4 sm:px-4 lg:px-6 w-full">
         {/* heading */}
         <div className="space-y-2 pt-6 md:space-y-5">
-          <h1 className="text-center uppercase">New Issue</h1>
+          <h1 className="text-center uppercase">
+            {slug[0] === "new" ? "New Issue" : selected.name ?? "ERROR"}
+          </h1>
           {/* Inputs */}
-          <div className="px-6 sm:px-20 md:px-12">
-            <div
-              className={`relative max-w-lg mx-auto grid grid-cols-1 gap-4 ${
-                menuItems.categories ? "md:grid-cols-2 md:gap-6" : ""
-              } card pt-3 pb-6 px-3 sm:px-6`}
-            >
-              {!newIssue.type.type || !newIssue.type.category ? (
-                <>
-                  {inputSelect(issueTypes, newIssue.type.type, (e) => {
-                    setNewIssue({
-                      ...newIssue,
-                      type: { type: e.target.value, category: "" },
-                    });
-                  })}
-                  {newIssue.type.type &&
-                    menuItems.categories &&
-                    inputSelect(
-                      menuItems.categories.map((v) => {
-                        return { value: v, text: v };
-                      }),
-                      newIssue.type.category,
-                      (e) => {
-                        setNewIssue((prev) => {
-                          return {
-                            ...prev,
-                            type: { ...prev.type, category: e.target.value },
-                          };
-                        });
-                      },
-                      "category",
-                      "category"
-                    )}
-                </>
-              ) : (
-                <>
-                  <div className="m-auto">
-                    <div className="mr-4">
-                      <p className="italic">issue:</p>
-                      {newIssue.type.category} - {newIssue.type.type}
+          {slug[0] === "new" ? (
+            <div className="px-6 sm:px-20 md:px-12">
+              <div
+                className={`relative max-w-lg mx-auto grid grid-cols-1 gap-4 card p-6`}
+              >
+                {!newIssue.type.type || !newIssue.type.category ? (
+                  <>
+                    {inputSelect(issueTypes, newIssue.type.type, (e) => {
+                      setNewIssue({
+                        ...newIssue,
+                        type: { type: e.target.value, category: "" },
+                      });
+                    })}
+                    {newIssue.type.type &&
+                      menuItems.categories &&
+                      inputSelect(
+                        menuItems.categories.map((v) => {
+                          return { value: v, text: v };
+                        }),
+                        newIssue.type.category,
+                        (e) => {
+                          setNewIssue((prev) => {
+                            return {
+                              ...prev,
+                              type: { ...prev.type, category: e.target.value },
+                            };
+                          });
+                        },
+                        "category",
+                        "category"
+                      )}
+                  </>
+                ) : (
+                  <>
+                    <div className="m-auto">
+                      <div className="mr-4">
+                        {strPascalcase(newIssue.type.category)} -{" "}
+                        {newIssue.type.type}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-red-800 dark:text-red-300 inline m-auto">
-                    <ButtonText
-                      label="Cancel issue creation"
-                      onClick={() =>
+                    <div className="inline m-auto"></div>
+                    <div className="mb-6 space-y-3">
+                      <InputText
+                        label={`${strPascalcase(newIssue.type.type)} name*`}
+                        name="issueName"
+                        placeholder={`${strPascalcase(
+                          newIssue.type.type
+                        )} name`}
+                        value={newIssue.name}
+                        setValue={({ value, error }) =>
+                          setNewIssue((prev) => ({
+                            ...prev,
+                            name: { value, error },
+                          }))
+                        }
+                      />
+                      <InputText
+                        label={
+                          newIssue.type.type === "petition"
+                            ? "Petitioner*"
+                            : "Source*"
+                        }
+                        name="source"
+                        placeholder={
+                          newIssue.type.type === "petition"
+                            ? "Petitioner"
+                            : "Source"
+                        }
+                        value={newIssue.source}
+                        setValue={({ value, error }) =>
+                          setNewIssue((prev) => ({
+                            ...prev,
+                            source: { value, error },
+                          }))
+                        }
+                      />
+                      {session.user.role.lisa && (
+                        <InputText
+                          label="Institution"
+                          name="institution"
+                          placeholder="Institution"
+                          value={newIssue.institution}
+                          setValue={({ value, error }) =>
+                            setNewIssue((prev) => ({
+                              ...prev,
+                              institution: { value, error },
+                            }))
+                          }
+                        />
+                      )}
+                    </div>
+                    <ButtonPrimary
+                      label={`Initialize ${newIssue.type.type}`}
+                      onClick={initializeIssue}
+                    />
+                    <ButtonSecondary
+                      label={`Cancel ${newIssue.type.type}`}
+                      onClick={() => {
                         setNewIssue({
                           type: { type: "", category: "" },
                           name: { value: "", error: "" },
-                        })
-                      }
+                        });
+                        setChat([]);
+                        setNewIssue({
+                          type: { type: "", category: "" },
+                          name: { value: "", error: "" },
+                          source: { value: "", error: "" },
+                          institution: { value: "", error: "" },
+                        });
+                      }}
                     />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* chat */}
-        {newIssue.type.type && newIssue.type.category && (
-          <div id="prompt" className="flex flex-col flex-grow min-h-[400px]">
-            <div
-              id="prompt-log"
-              className="overscroll-none flex flex-col flex-grow"
-            >
-              <div className="flex-grow">
-                {/* prompt container */}
-                <div className="flex h-screen antialiased text-gray-800">
-                  <div className="flex flex-row h-full w-full overflow-x-hidden">
-                    <div className="flex flex-col flex-auto h-full pb-6 px-3">
-                      <div className="flex flex-col flex-auto flex-shrink-0 rounded-lg card m-0 h-full p-4">
-                        <div className="flex flex-col h-full overflow-x-auto mb-4">
-                          <div className="flex flex-col h-full">
-                            <div className="grid grid-cols-12 gap-y-2">
-                              {lisaMessage(initMessage)}
-                              {/* <div className="col-start-1 col-end-8 p-3 rounded-lg">
-                                <div className="flex flex-row items-center">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                                    <div>
-                                      Lorem ipsum dolor sit amet, consectetur
-                                      adipisicing elit. Vel ipsa commodi illum
-                                      saepe numquam maxime asperiores voluptate
-                                      sit, minima perspiciatis.
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-start-6 col-end-13 p-3 rounded-lg">
-                                <div className="flex items-center justify-start flex-row-reverse">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
-                                    <div>Im ok what about you?</div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-start-6 col-end-13 p-3 rounded-lg">
-                                <div className="flex items-center justify-start flex-row-reverse">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
-                                    <div>
-                                      Lorem ipsum dolor sit, amet consectetur
-                                      adipisicing. ?
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-start-1 col-end-8 p-3 rounded-lg">
-                                <div className="flex flex-row items-center">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                                    <div>Lorem ipsum dolor sit amet !</div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-start-6 col-end-13 p-3 rounded-lg">
-                                <div className="flex items-center justify-start flex-row-reverse">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
-                                    <div>
-                                      Lorem ipsum dolor sit, amet consectetur
-                                      adipisicing. ?
-                                    </div>
-                                    <div className="absolute text-xs bottom-0 right-0 -mb-5 mr-2 text-gray-500">
-                                      Seen
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-start-1 col-end-8 p-3 rounded-lg">
-                                <div className="flex flex-row items-center">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                                    <div>
-                                      Lorem ipsum dolor sit amet consectetur
-                                      adipisicing elit. Perspiciatis, in.
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="col-start-1 col-end-8 p-3 rounded-lg">
-                                <div className="flex flex-row items-center">
-                                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0">
-                                    A
-                                  </div>
-                                  <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                                    <div className="flex flex-row items-center">
-                                      <button className="flex items-center justify-center bg-indigo-600 hover:bg-indigo-800 rounded-full h-8 w-10">
-                                        <svg
-                                          className="w-6 h-6 text-white"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="1.5"
-                                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                          ></path>
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="1.5"
-                                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                          ></path>
-                                        </svg>
-                                      </button>
-                                      <div className="flex flex-row items-center space-x-px ml-4">
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-4 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-12 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-6 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-5 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-4 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-3 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-10 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-1 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-1 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-8 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-2 w-1 bg-gray-500 rounded-lg"></div>
-                                        <div className="h-4 w-1 bg-gray-500 rounded-lg"></div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div> */}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-row items-center h-16 rounded-xl bg-transparent w-full px-4">
-                          <div className="flex-grow">
-                            <div className="relative w-full">
-                              <input
-                                type="text"
-                                className="flex w-full border border-emerald-100 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-transparent placeholder:italic dark:placeholder:text-font-dark-faded pl-4 h-10 dark:bg-slate-500"
-                                placeholder="Type message..."
-                              />
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <button className="flex items-center justify-center bg-emerald-400 hover:bg-emerald-600 rounded-xl text-white py-2 px-4 ">
-                              <svg
-                                className="w-6 h-6 transform rotate-45 -mt-px"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                                ></path>
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
-          </div>
-        )}
+          ) : selected ? (
+            <>selected an issue</>
+          ) : (
+            <div>
+              <p className="text-center">
+                There was an error loading the contents of this page. Check
+                internet connectivity
+              </p>
+              <p className="text-center">
+                <Link
+                  href="/iser/issues"
+                  className="text-red-800 dark:text-red-400 underline"
+                >
+                  click here{" "}
+                </Link>
+                to go view all issues
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
-  ) : (
-    <>Selected an Issue</>
-  );
-}
-
-function lisaMessage(message) {
-  return (
-    <div className="col-start-1 col-end-8 p-3 rounded-lg">
-      <div className="flex flex-row items-center">
-        <div className="flex items-center justify-center h-10 w-10 rounded-full  flex-shrink-0">
-          <SVGlogoSymbol className="h-8 w-8" />
-        </div>
-        <div className="relative ml-3 text-sm bg-white dark:bg-slate-800 dark:text-font-dark py-2 px-4 shadow dark:shadow-slate-950/50 rounded-xl">
-          <div
-            className={`font-mono overflow-hidden animate-[typing_2s_steps(20)_forwards] whitespace-nowrap`}
-          >
-            {message}
-          </div>
-        </div>
-      </div>
-    </div>
-    // <div className="clearfix">
-    //   <div className="card inline-block ml-2 mr-4 p-2 rounded-lg overflow-hidden">
-    //     <p
-    //       className={`font-mono animate-[typing_2s_steps(${message.length})_forwards] overflow-hidden whitespace-nowrap`}
-    //     >
-    //       {message}
-    //     </p>
-    //   </div>
-    // </div>
   );
 }
 
@@ -370,4 +303,7 @@ function inputSelect(
 
 const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
 
-const initMessage = "Provide a name for the issue to initialize it";
+const initMessage = "Hello you, provide a name for the issue to initialize it.";
+
+const replyMessage =
+  "Im ok what about you. Im ok what about you. Im ok what about you. Im ok what about you. Im ok what about you. Im ok what about you. Im ok what about you?";

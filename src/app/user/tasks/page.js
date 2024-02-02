@@ -385,7 +385,7 @@ export default function TasksPage() {
                     <div className="w-full">
                       <label
                         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        for="file_input"
+                        htmlFor="file_input"
                       >
                         Upload report/file *
                       </label>

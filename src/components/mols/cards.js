@@ -13,20 +13,19 @@ export default function CardIssue({ item, icon: Icon }) {
         <h5 className="mb-3 text-xl font-bold lg:text-2xl">{item.name}</h5>
         <div className="mb-6 text-lg ">
           <p>
-            A {item.type.type} by {item.petitioner.name} for{" "}
-            {item.type.category}
+            A {item.type.type} by {item.source.name} for {item.type.category}
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
             <div
               className={`bg-slate-500 h-2.5 rounded-full w-${
                 item.status.status === "complete"
                   ? "w-full"
-                  : item.dueDates.filter((v) => v.task.status).length === 0 ||
-                    item.dueDates.length === 0
+                  : item.dueDates?.filter((v) => v.task.status).length === 0 ||
+                    item.dueDates?.length === 0
                   ? "0"
-                  : item.dueDates.filter((v) => v.task.status).length < 3
+                  : item.dueDates?.filter((v) => v.task.status).length < 3
                   ? "1/3"
-                  : item.dueDates.filter((v) => v.task.status).length < 4
+                  : item.dueDates?.filter((v) => v.task.status).length < 4
                   ? "2/3"
                   : "3/3"
               }/`}

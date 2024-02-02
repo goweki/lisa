@@ -39,16 +39,21 @@ export default function Providers({ children }) {
     }
   }, [session]);
   //render
-  return !session || !data ? (
+  return !session || !data || status === "loading" ? (
     <Loader1 />
   ) : data === "failed" ? (
-    <p className="text-center my-auto">
-      There was an error loading the contents of this page,{" "}
-      <Link href="/" className="text-red-800 dark:text-red-400 underline">
-        click here
-      </Link>{" "}
-      to go to homepage
-    </p>
+    <div>
+      <p className="text-center">
+        There was an error loading the contents of this page. Check internet
+        connectivity
+      </p>
+      <p className="text-center">
+        <Link href="/" className="text-red-800 dark:text-red-400 underline">
+          click here{" "}
+        </Link>
+        to go to homepage
+      </p>
+    </div>
   ) : (
     <DataContext.Provider value={data}>{children}</DataContext.Provider>
   );

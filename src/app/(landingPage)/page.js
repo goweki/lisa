@@ -6,11 +6,12 @@ import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
 import { useDate } from "@/lib/dateTime";
+import { Loader1 } from "@/components/atoms/loader";
 
 export default function LandingPage() {
   // states
   const { wish, date, time } = useDate();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [showDemoReqModal, setToggleDemoReqModal] = useState(false);
   // Render
   return (
@@ -21,7 +22,9 @@ export default function LandingPage() {
             <SVGlogoAnimation1 />
           </div>
         </div>
-        {!session ? (
+        {status === "loading" ? (
+          <Loader1 />
+        ) : !session ? (
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
               <h1 className="mb-8 text-3xl text-font-inactive dark:text-font-dark-inactive font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
