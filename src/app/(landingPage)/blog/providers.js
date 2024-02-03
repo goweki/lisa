@@ -13,9 +13,9 @@ export default function BlogProvider({ children }) {
       method: "GET",
     };
     fetch(`/api/data?colle=library`, fetchOptions)
-      .then((res_) => {
+      .then(async (res_) => {
         if (res_.ok) {
-          return res_.json();
+          return await res_.json();
         } else {
           setBlog(httpCodes[res_.status]);
           return false;

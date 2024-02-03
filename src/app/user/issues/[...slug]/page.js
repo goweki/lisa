@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { DataContext } from "../../providers";
-import { SVGlogoSymbol, SVGpenscilSquare } from "@/components/atoms/svgs";
+import { SVGpenscilSquare } from "@/components/atoms/svgs";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
-import Typewriter from "@/helpers/useTyping";
 import { InputText } from "@/components/atoms/inputs";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
+import { Loader1 } from "@/components/atoms/loader";
 
 export default function IssueForm({ params }) {
   const { data: session } = useSession();
@@ -18,6 +18,7 @@ export default function IssueForm({ params }) {
   const router = useRouter();
   const [menuItems, setMenuItems] = useState({});
   const [selected, setSelected] = useState("");
+  const [tab, setTab] = useState("profile");
   const [UIstate, setUIstate] = useState("loading");
   const [newIssue, setNewIssue] = useState({
     type: { type: "", category: "" },
@@ -31,7 +32,25 @@ export default function IssueForm({ params }) {
   // check slug and update selected
   useEffect(() => {
     if (slug[0] !== "new") {
-      setSelected(issues.find(({ _id }) => _id === slug[0]));
+      let issue_ = issues.find(({ _id }) => _id === slug[0]);
+      if (issue_) {
+        setSelected(issue_);
+      } else {
+        const fetchOptions = {
+          method: "GET",
+        };
+        (async () => {
+          const resRaw = await fetch(
+            `/api/user/issue?id=${slug[0]}`,
+            fetchOptions
+          );
+          if (resRaw.ok) {
+            const res = await resRaw.json();
+            console.log("resJson: ", JSON.stringify(res.success));
+            setSelected(res.success);
+          }
+        })();
+      }
     }
     setUIstate("OK");
   }, [issues, slug]);
@@ -83,6 +102,7 @@ export default function IssueForm({ params }) {
           source: { name: newIssue.source.value },
           institution: newIssue.institution.value,
           status: { status: "open" },
+          dueDates: [],
         }),
       };
       setUIstate("loading");
@@ -117,13 +137,15 @@ export default function IssueForm({ params }) {
   }
   //
   //render
-  return (
+  return UIstate === "loading" ? (
+    <Loader1 />
+  ) : (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="flex flex-col flex-grow max-w-screen-lg mx-auto px-4 sm:px-4 lg:px-6 w-full">
-        {/* heading */}
-        <div className="space-y-2 pt-6 md:space-y-5">
+        <div className="space-y-1 pt-6 md:space-y-2">
+          {/* heading */}
           <h1 className="text-center uppercase">
-            {slug[0] === "new" ? "New Issue" : selected.name ?? "ERROR"}
+            {slug[0] === "new" ? "New Issue" : selected?.name ?? "ERROR"}
           </h1>
           {/* Inputs */}
           {slug[0] === "new" ? (
@@ -242,7 +264,50 @@ export default function IssueForm({ params }) {
               </div>
             </div>
           ) : selected ? (
-            <>selected an issue</>
+            <div>
+              <ul className="items-center justify-center flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+                <li className="me-2">
+                  <div
+                    className={`${
+                      tab === "profile"
+                        ? "border-gray-300 text-gray-600 dark:text-gray-300"
+                        : "border-transparent"
+                    } cursor-pointer inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 group`}
+                  >
+                    <svg
+                      className="w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5 11.424V1a1 1 0 1 0-2 0v10.424a3.228 3.228 0 0 0 0 6.152V19a1 1 0 1 0 2 0v-1.424a3.228 3.228 0 0 0 0-6.152ZM19.25 14.5A3.243 3.243 0 0 0 17 11.424V1a1 1 0 0 0-2 0v10.424a3.227 3.227 0 0 0 0 6.152V19a1 1 0 1 0 2 0v-1.424a3.243 3.243 0 0 0 2.25-3.076Zm-6-9A3.243 3.243 0 0 0 11 2.424V1a1 1 0 0 0-2 0v1.424a3.228 3.228 0 0 0 0 6.152V19a1 1 0 1 0 2 0V8.576A3.243 3.243 0 0 0 13.25 5.5Z" />
+                    </svg>
+                    Issue Profile
+                  </div>
+                </li>
+                <li className="me-2">
+                  <div
+                    className={`${
+                      tab === "profile"
+                        ? "border-gray-300 text-gray-600 dark:text-gray-300"
+                        : "border-transparent"
+                    } cursor-pointer inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 group`}
+                  >
+                    <svg
+                      className="w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 18 20"
+                    >
+                      <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
+                    </svg>
+                    Documents
+                  </div>
+                </li>
+              </ul>
+            </div>
           ) : (
             <div>
               <p className="text-center">
@@ -251,7 +316,7 @@ export default function IssueForm({ params }) {
               </p>
               <p className="text-center">
                 <Link
-                  href="/iser/issues"
+                  href="/user/issues"
                   className="text-red-800 dark:text-red-400 underline"
                 >
                   click here{" "}
@@ -299,6 +364,17 @@ function inputSelect(
       </div>
     </div>
   );
+}
+
+async function fetchIssue(issueId) {
+  const resRaw = await fetch(`/api/user/issue?id=${issueId}`, {
+    method: "GET",
+  });
+  if (resRaw.ok) {
+    const res = await resRaw.json();
+    console.log("resJson 2: ", JSON.stringify(res.success));
+    return res.success;
+  }
 }
 
 const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];

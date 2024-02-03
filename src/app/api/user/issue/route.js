@@ -1,10 +1,11 @@
+import { ObjectId } from "mongodb";
 import db_cluster from "@/lib/mongodb";
 const collection = db_cluster.collection("issues");
 
 export async function POST(request) {
   // request body
   const doc = await request.json();
-  // doc structure: { name, type, petitioner, institution }
+  // doc structure: { name, type, source, institution }
   console.log(
     "POST REQUEST: new issue: ",
     doc.type.category,
@@ -32,7 +33,7 @@ export async function PUT(request) {
   // request body
   const doc = await request.json();
   const { _id, ...doc_ } = doc;
-  // doc structure: { _id,name, type, petitioner, institution }
+  // doc structure: { _id,name, type, source, institution }
   console.log("PUT REQUEST: updating issue ", _id);
   try {
     // console.log(` > setting fields: ${Object.keys(doc_)}`);
@@ -54,7 +55,7 @@ export async function DELETE(request) {
   // request body
   const doc = await request.json();
   const { _id } = doc;
-  // doc structure: { _id,name, type, petitioner, institution }
+  // doc structure: { _id,name, type, source, institution }
   console.log("DELETE REQUEST: deleting issue: ", _id);
   try {
     // delete doc
@@ -64,6 +65,20 @@ export async function DELETE(request) {
     return Response.json({ success: res_ });
   } catch (err) {
     console.log(" > ERROR: document deletion failed.", err, "\n..........");
+    return Response.json({ error: err });
+  }
+}
+
+export async function GET(request) {
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  try {
+    // retrieve doc
+    const res_ = await collection.findOne({ _id: new ObjectId(id) });
+    if (res_) return Response.json({ success: res_ });
+    else return Response.json({ failed: "no issue found" });
+  } catch (err) {
+    console.log(" > ERROR: document retrieval erred.", err, "\n..........");
     return Response.json({ error: err });
   }
 }

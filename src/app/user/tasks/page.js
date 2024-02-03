@@ -36,10 +36,10 @@ export default function TasksPage() {
           _id: issue._id,
           name: issue.name,
           type: issue.type,
-          dueDates: issue.dueDates.filter((obj) => obj.task.complete),
+          dueDates: issue.dueDates?.filter((obj) => obj.task.complete),
         };
       })
-      .filter((issue) => issue.dueDates.length);
+      .filter((issue) => issue.dueDates?.length);
 
     const issues_withIncompletetasks = issues
       .filter((issue) => issue.status.status === "open")
@@ -48,14 +48,14 @@ export default function TasksPage() {
           _id: issue._id,
           name: issue.name,
           type: issue.type,
-          dueDates: issue.dueDates.filter((obj) => !obj.task.complete),
+          dueDates: issue.dueDates?.filter((obj) => !obj.task.complete),
         };
       })
-      .filter((issue) => issue.dueDates.length);
+      .filter((issue) => issue.dueDates?.length);
 
     //complete tasks
     const completes_2d = issues_withCompletetasks.map((issue) => {
-      const innerCompletes = issue.dueDates.map((dueDate) => {
+      const innerCompletes = issue.dueDates?.map((dueDate) => {
         return {
           issueId: issue._id,
           issueName: issue.name,
@@ -70,7 +70,7 @@ export default function TasksPage() {
     setCompletes(completes);
     // incomplete tasks
     const inCompletes_2d = issues_withIncompletetasks.map((issue) => {
-      const innerIncompletes = issue.dueDates.map((dueDate) => {
+      const innerIncompletes = issue.dueDates?.map((dueDate) => {
         return {
           issueId: issue._id,
           issueName: issue.name,
