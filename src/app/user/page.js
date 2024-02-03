@@ -73,7 +73,8 @@ function profileCard(date, time, data_) {
                 : "text-red-500"
             }`}
           >
-            {data_.length} issue{data_.length !== 1 && <>s</>} has pending tasks
+            {data_.length} issue{data_.length !== 1 && <>s</>} with pending
+            tasks
           </p>
           <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
             {data_ &&
