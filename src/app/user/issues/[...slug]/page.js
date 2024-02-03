@@ -16,6 +16,7 @@ export default function IssuePage({ params }) {
   const { slug } = params;
   const {
     data: { issues, templates },
+    refreshData,
   } = useContext(DataContext);
   const router = useRouter();
   const [menuItems, setMenuItems] = useState({});
@@ -35,24 +36,7 @@ export default function IssuePage({ params }) {
   useEffect(() => {
     if (slug[0] !== "new") {
       let issue_ = issues.find(({ _id }) => _id === slug[0]);
-      if (issue_) {
-        setSelected(issue_);
-      } else {
-        const fetchOptions = {
-          method: "GET",
-        };
-        (async () => {
-          const resRaw = await fetch(
-            `/api/user/issue?id=${slug[0]}`,
-            fetchOptions
-          );
-          if (resRaw.ok) {
-            const res = await resRaw.json();
-            console.log("resJson: ", JSON.stringify(res.success));
-            setSelected(res.success);
-          }
-        })();
-      }
+      setSelected(issue_);
     }
     setUIstate("OK");
   }, [issues, slug]);
@@ -126,6 +110,7 @@ export default function IssuePage({ params }) {
             "\n.............."
         );
         toast.success("Issue initialized!");
+        await refreshData();
         router.push(`/user/issues/${_res.success.insertedId}`);
       } else {
         console.error(
