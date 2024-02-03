@@ -3,11 +3,9 @@ export function InputText({
   setValue,
   name = "inputName",
   label,
-  valValidator = {
-    function(val) {
-      if (val) return "";
-      else return "Empty value";
-    },
+  valValidator = (val) => {
+    if (val) return "";
+    else return "Empty value";
   },
   type = "text",
   placeholder = "Text field",

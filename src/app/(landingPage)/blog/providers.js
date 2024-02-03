@@ -13,9 +13,9 @@ export default function BlogProvider({ children }) {
       method: "GET",
     };
     fetch(`/api/data?colle=library`, fetchOptions)
-      .then((res_) => {
+      .then(async (res_) => {
         if (res_.ok) {
-          return res_.json();
+          return await res_.json();
         } else {
           setBlog(httpCodes[res_.status]);
           return false;
@@ -42,14 +42,22 @@ export default function BlogProvider({ children }) {
   return !blogposts ? (
     <Loader1 />
   ) : typeof blogposts == "string" ? (
-    <p className="text-center my-auto">
-      There was an error loading the contents of this page,{" "}
-      <Link href="/blogs" className="text-red-800 dark:text-red-400 underline">
-        click here
-      </Link>
+    <div className="text-center my-auto">
+      <p className="text-center">
+        There was an error loading the contents of this page. Check internet
+        connectivity.
+      </p>
+      <p className="text-center">
+        <Link
+          href="/blogs"
+          className="text-red-800 dark:text-red-400 underline"
+        >
+          click here
+        </Link>{" "}
+        to reload
+      </p>
       {`\n > ERROR: ${blogposts}`}
-      to go to reload
-    </p>
+    </div>
   ) : (
     <BlogContext.Provider value={blogposts}>{children}</BlogContext.Provider>
   );

@@ -36,10 +36,10 @@ export default function TasksPage() {
           _id: issue._id,
           name: issue.name,
           type: issue.type,
-          dueDates: issue.dueDates.filter((obj) => obj.task.complete),
+          dueDates: issue.dueDates?.filter((obj) => obj.task.complete),
         };
       })
-      .filter((issue) => issue.dueDates.length);
+      .filter((issue) => issue.dueDates?.length);
 
     const issues_withIncompletetasks = issues
       .filter((issue) => issue.status.status === "open")
@@ -48,14 +48,14 @@ export default function TasksPage() {
           _id: issue._id,
           name: issue.name,
           type: issue.type,
-          dueDates: issue.dueDates.filter((obj) => !obj.task.complete),
+          dueDates: issue.dueDates?.filter((obj) => !obj.task.complete),
         };
       })
-      .filter((issue) => issue.dueDates.length);
+      .filter((issue) => issue.dueDates?.length);
 
     //complete tasks
     const completes_2d = issues_withCompletetasks.map((issue) => {
-      const innerCompletes = issue.dueDates.map((dueDate) => {
+      const innerCompletes = issue.dueDates?.map((dueDate) => {
         return {
           issueId: issue._id,
           issueName: issue.name,
@@ -70,7 +70,7 @@ export default function TasksPage() {
     setCompletes(completes);
     // incomplete tasks
     const inCompletes_2d = issues_withIncompletetasks.map((issue) => {
-      const innerIncompletes = issue.dueDates.map((dueDate) => {
+      const innerIncompletes = issue.dueDates?.map((dueDate) => {
         return {
           issueId: issue._id,
           issueName: issue.name,
@@ -384,8 +384,8 @@ export default function TasksPage() {
                   <div className="flex flex-col md:flex-row items-center p-6 rounded-b border-t border-gray-200 dark:border-gray-600 [&>*]:mx-6 [&>*]:my-3">
                     <div className="w-full">
                       <label
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                        for="file_input"
+                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                        htmlFor="file_input"
                       >
                         Upload report/file *
                       </label>
@@ -404,7 +404,7 @@ export default function TasksPage() {
                         }}
                       />
                       <p
-                        class="mt-1 text-xs text-gray-500 dark:text-gray-300"
+                        className="mt-1 text-xs text-gray-500 dark:text-gray-300"
                         id="file_input_help"
                       >
                         pdf,word (2MB max)

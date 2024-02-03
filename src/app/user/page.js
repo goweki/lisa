@@ -20,12 +20,12 @@ export default function UserHome() {
       .map((issue) => {
         return {
           ...issue,
-          dueDates: issue.dueDates.filter(
+          dueDates: issue.dueDates?.filter(
             (obj) => !obj.task.complete && isDatePassed(new Date(obj.date))
           ),
         };
       })
-      .filter((issue) => issue.dueDates.length !== 0);
+      .filter((issue) => issue.dueDates?.length > 0);
     setOverdues(_overdues);
   }, [issues, rawDateMemo]);
 
@@ -83,7 +83,7 @@ function profileCard(date, time, data_) {
                     <span>
                       {v.name}, has passed deadlines for{" "}
                       <span className="font-bold">
-                        {v.dueDates.map((dDate) => dDate.task.name + " ,")}
+                        {v.dueDates?.map((dDate) => dDate.task.name + " ,")}
                       </span>
                     </span>
                   </li>
@@ -153,7 +153,7 @@ function scheduleBrief(data_, router) {
                   <th scope="row" className="px-1 py-2 whitespace-nowrap">
                     {v.name}
                   </th>
-                  <td className="px-1 py-2">{v.petitioner.name}</td>
+                  <td className="px-1 py-2">{v.source.name}</td>
                   <td className="px-1 py-2">{v.type.category}</td>
                   <td className="px-1 py-2">{v.status.status}</td>
                 </tr>
