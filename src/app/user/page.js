@@ -12,7 +12,9 @@ export default function UserHome() {
   const router = useRouter();
   const [overdues, setOverdues] = useState("");
   const { date, time, rawDate } = useDate();
-  const { issues } = useContext(DataContext);
+  const {
+    data: { issues },
+  } = useContext(DataContext);
   //useEffects
   const rawDateMemo = useCallback(() => rawDate(), []);
   useEffect(() => {

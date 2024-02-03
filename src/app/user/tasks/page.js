@@ -16,7 +16,9 @@ import { Loader1 } from "@/components/atoms/loader";
 
 export default function TasksPage() {
   const [UIstate, setUIstate] = useState("loading");
-  const { issues } = useContext(DataContext);
+  const {
+    data: { issues },
+  } = useContext(DataContext);
   const { rawDate } = useDate();
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [completeTasks, setCompletes] = useState("");

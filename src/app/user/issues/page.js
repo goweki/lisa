@@ -12,7 +12,9 @@ import { InputText } from "@/components/atoms/inputs";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 
 export default function IssuesPage() {
-  const { issues } = useContext(DataContext);
+  const {
+    data: { issues },
+  } = useContext(DataContext);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   //render
   return (

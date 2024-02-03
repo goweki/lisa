@@ -32,7 +32,11 @@ export default function Navbar(props) {
                   key={i}
                   href={v.onClick}
                   className={`${
-                    pathname === v.onClick ? "underline font-bold" : ""
+                    pathname === v.onClick ||
+                    (pathname.length > 8 &&
+                      pathname.slice(0, 10) === v.onClick.slice(0, 10))
+                      ? "underline font-bold"
+                      : ""
                   } block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
                 >
                   {v.label}

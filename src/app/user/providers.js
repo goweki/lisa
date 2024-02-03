@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Loader1 } from "@/components/atoms/loader";
 export const DataContext = createContext();
@@ -8,36 +8,46 @@ export const DataContext = createContext();
 export default function Providers({ children }) {
   const { data: session, status } = useSession();
   const [data, setData] = useState(null);
-  //onMount
-  useEffect(() => {
-    if (session) {
+  // func update UI data
+  const fetchUIuserData = useCallback(async () => {
+    try {
       const fetchOptions = {
         method: "GET",
       };
-      //   console.log(`...........................\nCHECKPOINT: fetching ui data:`);
-      fetch(
+
+      const response = await fetch(
         `/api/user/data?institution=${Object.keys(session.user.role)[0]}`,
         fetchOptions
-      )
-        .then((res_) => res_.json())
-        .then((json_) => {
-          if (json_.success) {
-            // console.log(`> SUCCESS: ${json_.success.length} Documents fetched`);
-            setData(json_.success);
-          } else {
-            console.error(
-              "................\nFAILED: could not fetch products\n > " +
-                JSON.stringify(json_.error ?? "....")
-            );
-            setData("failed");
-          }
-        })
-        .catch((err) => {
-          setData("failed");
-          console.error("ERROR: caught error\n > " + err);
-        });
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data. Status: ${response.status}`);
+      }
+
+      const json_ = await response.json();
+
+      if (json_.success) {
+        setData(json_.success);
+      } else {
+        console.error(
+          "FAILED: could not fetch data\n > " +
+            JSON.stringify(json_.error ?? "....")
+        );
+        setData("failed");
+      }
+    } catch (err) {
+      setData("failed");
+      console.error("ERROR: caught error\n > " + err);
     }
-  }, [session]);
+  }, [session?.user.role]);
+
+  // onMount
+  useEffect(() => {
+    if (session) {
+      fetchUIuserData();
+    }
+  }, [session, fetchUIuserData]);
+
   //render
   return !session || !data || status === "loading" ? (
     <Loader1 />
@@ -55,6 +65,8 @@ export default function Providers({ children }) {
       </p>
     </div>
   ) : (
-    <DataContext.Provider value={data}>{children}</DataContext.Provider>
+    <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
+      {children}
+    </DataContext.Provider>
   );
 }
