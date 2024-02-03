@@ -14,7 +14,9 @@ import { Loader1 } from "@/components/atoms/loader";
 export default function IssuePage({ params }) {
   const { data: session } = useSession();
   const { slug } = params;
-  const { issues, templates } = useContext(DataContext);
+  const {
+    data: { issues, templates },
+  } = useContext(DataContext);
   const router = useRouter();
   const [menuItems, setMenuItems] = useState({});
   const [selected, setSelected] = useState("");
