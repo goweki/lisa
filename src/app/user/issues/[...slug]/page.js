@@ -258,7 +258,12 @@ export default function IssuePage({ params }) {
               </div>
             </div>
           ) : selected ? (
-            <ViewIssue selectedIssue={selected} refreshData={refreshData} />
+            <ViewIssue
+              selectedIssue={selected}
+              template={templates.find(
+                ({ type }) => type === selected.type.type
+              )}
+            />
           ) : (
             <div>
               <p className="text-center">
@@ -290,29 +295,26 @@ function inputSelect(
   defaultOption = "type"
 ) {
   return (
-    <div className="space-y-2">
-      <div className="no-wrap"></div>
-      <div className="relative mb-6 mt-0">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-          <SVGpenscilSquare className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
-        </div>
-        <select
-          name={name}
-          id={name}
-          className={`border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
-          value={value}
-          onChange={onChange}
-        >
-          <option value="" className="italic font-light">
-            Select a {defaultOption}...
-          </option>
-          {optionItems_.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.text}
-            </option>
-          ))}
-        </select>
+    <div className="relative mb-6">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+        <SVGpenscilSquare className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
       </div>
+      <select
+        name={name}
+        id={name}
+        className={`border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
+        value={value}
+        onChange={onChange}
+      >
+        <option value="" className="italic font-light">
+          Select a {defaultOption}...
+        </option>
+        {optionItems_.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.text}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
