@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { DataContext } from "../providers";
 import CardIssue from "@/components/mols/cards";
@@ -15,7 +15,19 @@ export default function IssuesPage() {
   const {
     data: { issues },
   } = useContext(DataContext);
+  const [filtIssues, setFiltIssues] = useState([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
+  //filter issues by searchPhrase
+  useEffect(() => {
+    setFiltIssues(
+      issues?.filter(
+        ({ name, source }) =>
+          name.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
+          source.name.toLowerCase().includes(searchPhrase.value?.toLowerCase())
+      )
+    );
+  }, [searchPhrase, issues]);
+
   //render
   return (
     <main className="flex flex-col flex-grow items-center px-4">
@@ -35,9 +47,9 @@ export default function IssuesPage() {
             </Link>
           </div>
         </div>
-        {issues.length > 0 ? (
+        {filtIssues.length > 0 ? (
           <div className="grid gap-8 md:grid-cols-2 lg:gap-12 p-6 md:p-10">
-            {issues.map((v) => (
+            {filtIssues.map((v) => (
               <div key={v._id}>
                 <CardIssue
                   item={v}
