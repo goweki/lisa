@@ -127,8 +127,6 @@ export default function IssuePage({ params }) {
       }
     }
   }
-  //
-  function newIssueFieldsUpdateFunc(field) {}
   //render
   return UIstate === "loading" ? (
     <Loader1 />
@@ -263,6 +261,7 @@ export default function IssuePage({ params }) {
               template={templates.find(
                 ({ type }) => type === selected.type.type
               )}
+              refreshData={refreshData}
             />
           ) : (
             <div>

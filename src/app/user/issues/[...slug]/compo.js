@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { SVGfilter } from "@/components/atoms/svgs";
-import { dateShort } from "@/helpers/dateHandlers";
+import { SVGbuilding, SVGdoc, SVGfilter } from "@/components/atoms/svgs";
+import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 
-export function ViewIssue({ selectedIssue, template }) {
+export function ViewIssue({ selectedIssue, template, refreshData }) {
   const router = useRouter();
   const [tab, setTab] = useState("profile");
-  const [select, setSelect] = useState({ menu: "", items: "" });
+  const [select, setSelect] = useState({ menu: "", item: "" });
   const [edit, setEdit] = useState("");
   const [errFields, setErrFields] = useState([]);
   const [filterPhrase, setFilterPhrase] = useState("");
@@ -31,7 +31,23 @@ export function ViewIssue({ selectedIssue, template }) {
     description: selectedIssue.status.description ?? "",
   });
   // load task classes
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (filterPhrase === "overdue")
+      setDueDates(
+        selectedIssue.dueDates?.filter(
+          ({ date, task }) => isDatePassed(new Date(date)) && !task.complete
+        )
+      );
+    else if (filterPhrase === "due")
+      setDueDates(
+        selectedIssue.dueDates?.filter(
+          ({ date, task }) => !isDatePassed(new Date(date)) && !task.complete
+        )
+      );
+    else if (filterPhrase === "done")
+      setDueDates(selectedIssue.dueDates?.filter(({ task }) => task.complete));
+    else setDueDates(selectedIssue.dueDates);
+  }, [filterPhrase, selectedIssue.dueDates]);
   //
 
   async function handleSubmitProfile() {
@@ -68,8 +84,7 @@ export function ViewIssue({ selectedIssue, template }) {
             "\n.............."
         );
         toast.success("Issue updated successfully!");
-        // await refreshData();
-        router.refresh();
+        await refreshData();
         setUIstate("OK");
       } else {
         console.error(
@@ -153,7 +168,7 @@ export function ViewIssue({ selectedIssue, template }) {
             >
               <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
             </svg>
-            Tasks & Documents
+            Tasks
           </div>
         </li>
         {/* <li className="me-2">
@@ -425,11 +440,11 @@ export function ViewIssue({ selectedIssue, template }) {
                     { value: "overdue", text: "❗ overdue" },
                     { value: "due", text: "✍🏾 due" },
                     { value: "done", text: "✔️ Done" },
-                    { value: "undone", text: "☐ undone" },
                   ]}
                   value={filterPhrase}
                   onChange={(e) => {
                     setFilterPhrase(e.target.value);
+                    setSelect({ menu: "", items: "" });
                   }}
                   defaultOption="filter"
                 />
@@ -437,8 +452,19 @@ export function ViewIssue({ selectedIssue, template }) {
             </div>
             <div className="md:flex">
               <ul className="flex-column space-y space-y-4 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 mb-4 md:mb-0">
-                <li>
-                  <div className="inline-flex items-center px-4 py-3 rounded-lg w-full border border-neutral-400 dark:border-neutral-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white cursor-pointer hover:border-transparent dark:hover:border-transparent">
+                <li
+                  onClick={() =>
+                    setSelect({
+                      menu: "new",
+                      item: {
+                        date: "",
+                        type: "",
+                        task: { name: "", complete: "" },
+                      },
+                    })
+                  }
+                >
+                  <div className="min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg w-full border border-neutral-400 dark:border-neutral-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white cursor-pointer hover:border-transparent dark:hover:border-transparent">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -453,24 +479,20 @@ export function ViewIssue({ selectedIssue, template }) {
                         d="M12 4.5v15m7.5-7.5h-15"
                       />
                     </svg>
-                    New
+                    New task
                   </div>
                 </li>
-                {selectedIssue.dueDates?.map((taskItem) => (
+                {dueDates?.map((taskItem) => (
                   <li
                     key={taskItem.task.name}
                     onClick={() => setSelect({ menu: "task", item: taskItem })}
                   >
-                    <div className="inline-flex items-center px-4 py-3 rounded-lg  bg-slate-50 w-full dark:bg-gray-800 hover:text-emerald-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-emerald-200 cursor-pointer">
-                      <svg
-                        className="w-4 h-4 me-2 text-gray-500 dark:text-gray-400"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        viewBox="0 0 18 18"
-                      >
-                        <path d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z" />
-                      </svg>
+                    <div className="min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg  bg-slate-50 w-full dark:bg-gray-800 hover:text-emerald-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-emerald-200 cursor-pointer">
+                      {taskItem.type === "document" ? (
+                        <SVGdoc className="w-4 h-4 me-2 text-gray-500 dark:text-gray-400" />
+                      ) : (
+                        <SVGbuilding className="w-4 h-4 me-2 text-gray-500 dark:text-gray-400" />
+                      )}
                       {taskItem.task.name}
                     </div>
                   </li>
@@ -487,20 +509,45 @@ export function ViewIssue({ selectedIssue, template }) {
   function viewArea(select) {
     return (
       <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-          {select.menu === "task"
-            ? select.item.task.name
-            : "Select an item on the left to view details"}
-        </h3>
-        {select.menu === "task" && (
-          <p className="mb-2">
-            Due Date: {dateShort(new Date(select.item.date))}
-          </p>
+        {select.menu === "task" ? (
+          <>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              {select.item.task.name + " " + select.item.type}
+            </h3>
+
+            <p className="mb-2">
+              Date: {dateShort(new Date(select.item.date))}
+            </p>
+
+            <p>
+              The tab JavaScript swaps classes to control the content visibility
+              and styling.
+            </p>
+          </>
+        ) : select.menu === "new" ? (
+          <>
+            <InputText
+              label="Task Name*"
+              name="taskName"
+              placeholder="Task name"
+              value={select.item.task.name}
+              setValue={(val) =>
+                setSelect((prev) => ({
+                  ...prev,
+                  item: {
+                    ...prev.item,
+                    task: { ...prev.item.task, name: val },
+                  },
+                }))
+              }
+              errFields={errFields}
+            />
+          </>
+        ) : (
+          <h3 className="text-lg font-light italic text-gray-500 mb-2">
+            Select an item on the left to view details
+          </h3>
         )}
-        <p>
-          The tab JavaScript swaps classes to control the content visibility and
-          styling.
-        </p>
       </div>
     );
   }
