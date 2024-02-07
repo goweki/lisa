@@ -30,6 +30,29 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
     status: selectedIssue.status.status ?? "",
     description: selectedIssue.status.description ?? "",
   });
+  //func to reset issue-states
+  function resetIssueProfileStates() {
+    setSource({
+      name: selectedIssue.source.name ?? "",
+      tel: selectedIssue.source.tel ?? "",
+      email: selectedIssue.source.email ?? "",
+    });
+    setRespondent({
+      name: selectedIssue.respondent?.name ?? "",
+      tel: selectedIssue.respondent?.tel ?? "",
+      email: selectedIssue.respondent?.email ?? "",
+    });
+    setCourt(selectedIssue.court ?? "");
+    setStatus({
+      status: selectedIssue.status.status ?? "",
+      description: selectedIssue.status.description ?? "",
+    });
+  }
+  //func to reset task-state
+  function resetTaskStates() {
+    setFilterPhrase("");
+    setSelect({ menu: "", item: "" });
+  }
   // load task classes
   useEffect(() => {
     if (filterPhrase === "overdue")
@@ -88,7 +111,7 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
         setUIstate("OK");
       } else {
         console.error(
-          "ERROR: failed to update issue at /user/issues/[slug] /page\n > " +
+          "ERROR: failed to update issue at /user/issues/[slug] /compo\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
@@ -97,25 +120,51 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
     }
   }
 
-  function resetStates() {
-    setSource({
-      name: selectedIssue.source.name ?? "",
-      tel: selectedIssue.source.tel ?? "",
-      email: selectedIssue.source.email ?? "",
-    });
-    setRespondent({
-      name: selectedIssue.respondent?.name ?? "",
-      tel: selectedIssue.respondent?.tel ?? "",
-      email: selectedIssue.respondent?.email ?? "",
-    });
-    setCourt(selectedIssue.court ?? "");
-    setDueDates(selectedIssue.dueDates);
-    setStatus({
-      status: selectedIssue.status.status ?? "",
-      description: selectedIssue.status.description ?? "",
-    });
+  async function handleInitializeTask() {
+    if (!select.item.type || !select.item.date || !select.item.task.name) {
+      if (!select.item.type) toast.error("Please select task type");
+      if (!select.item.date) toast.error("Please select task date");
+      if (!select.item.task.name) toast.error("Please provide task name");
+    } else {
+      // fetch options
+      let fetchOptions = {
+        method: "POST",
+        body: JSON.stringify({
+          issueId: selectedIssue._id,
+          type: select.item.type,
+          date: select.item.date,
+          name: select.item.task.name,
+        }),
+      };
+      setUIstate("loading");
+      // POST request using fetch
+      const _res = await fetch("/api/user/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error("OOPS: task not initialized");
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: task initialized successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Task initialized successfully!");
+        await refreshData();
+        setSelect({ menu: "", item: "" });
+      } else {
+        if (_res?.failed) toast.error(_res?.failed);
+        else
+          toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+      setUIstate("OK");
+    }
   }
-
   // render
   return (
     <div id="view-issue">
@@ -131,7 +180,8 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
             onClick={() => {
               setTab("profile");
               setEdit("");
-              resetStates();
+              // resetIssueStates();
+              resetTaskStates();
             }}
           >
             <svg
@@ -156,7 +206,8 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
             onClick={() => {
               setTab("tasks");
               setEdit("");
-              resetStates();
+              resetIssueProfileStates();
+              // resetTaskStates();
             }}
           >
             <svg
@@ -214,7 +265,7 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
                     if (e.target.checked) setEdit("profile");
                     else {
                       setEdit("");
-                      resetStates();
+                      resetIssueProfileStates();
                     }
                   }}
                   className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
@@ -446,6 +497,7 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
                     setFilterPhrase(e.target.value);
                     setSelect({ menu: "", items: "" });
                   }}
+                  icon={SVGfilter}
                   defaultOption="filter"
                 />
               </div>
@@ -464,7 +516,13 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
                     })
                   }
                 >
-                  <div className="min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg w-full border border-neutral-400 dark:border-neutral-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white cursor-pointer hover:border-transparent dark:hover:border-transparent">
+                  <div
+                    className={`${
+                      select.menu === "new"
+                        ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-700 dark:text-white border-transparent dark:border-transparent"
+                        : ""
+                    } min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg w-full border border-neutral-400 dark:border-neutral-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white hover:border-transparent dark:hover:border-transparent cursor-pointer`}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -487,11 +545,29 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
                     key={taskItem.task.name}
                     onClick={() => setSelect({ menu: "task", item: taskItem })}
                   >
-                    <div className="min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg  bg-slate-50 w-full dark:bg-gray-800 hover:text-emerald-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-emerald-200 cursor-pointer">
+                    <div
+                      className={`${
+                        select.item?.task?.name === taskItem.task.name
+                          ? "text-emerald-700 bg-gray-100 dark:bg-gray-700 dark:text-emerald-200"
+                          : ""
+                      } min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg  bg-slate-50 w-full dark:bg-gray-800 hover:text-emerald-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-emerald-200 cursor-pointer`}
+                    >
                       {taskItem.type === "document" ? (
-                        <SVGdoc className="w-4 h-4 me-2 text-gray-500 dark:text-gray-400" />
+                        <SVGdoc
+                          className={`${
+                            select.item?.task?.name === taskItem.task.name
+                              ? "text-emerald-600"
+                              : "text-gray-500 dark:text-gray-400"
+                          } w-4 h-4 me-2 `}
+                        />
                       ) : (
-                        <SVGbuilding className="w-4 h-4 me-2 text-gray-500 dark:text-gray-400" />
+                        <SVGbuilding
+                          className={`${
+                            select.item?.task?.name === taskItem.task.name
+                              ? "text-emerald-600"
+                              : "text-gray-500 dark:text-gray-400"
+                          } w-4 h-4 me-2 `}
+                        />
                       )}
                       {taskItem.task.name}
                     </div>
@@ -509,10 +585,10 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
   function viewArea(select) {
     return (
       <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
-        {select.menu === "task" ? (
+        {select.menu === "task" && select.item ? (
           <>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {select.item.task.name + " " + select.item.type}
+              {select.item?.task.name + " " + select.item?.type}
             </h3>
 
             <p className="mb-2">
@@ -524,8 +600,23 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
               and styling.
             </p>
           </>
-        ) : select.menu === "new" ? (
-          <>
+        ) : select.menu === "new" && select.item ? (
+          <div>
+            <InputSelect
+              name="taskType"
+              optionItems={[
+                { value: "document", text: "📝 document" },
+                { value: "event", text: "⏲️ event" },
+              ]}
+              value={select.item.type}
+              onChange={(e) => {
+                setSelect((prev) => ({
+                  ...prev,
+                  item: { ...prev.item, type: e.target.value },
+                }));
+              }}
+              defaultOption="type of issue"
+            />
             <InputText
               label="Task Name*"
               name="taskName"
@@ -542,7 +633,40 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
               }
               errFields={errFields}
             />
-          </>
+            <InputDate
+              label="Date*"
+              name="taskDate"
+              value={select.item.date}
+              setValue={(val) =>
+                setSelect((prev) => ({
+                  ...prev,
+                  item: {
+                    ...prev.item,
+                    date: val,
+                  },
+                }))
+              }
+              min={new Date().toISOString().split("T")[0]}
+              max={
+                new Date(new Date().setFullYear(new Date().getFullYear() + 10))
+                  .toISOString()
+                  .split("T")[0]
+              }
+              errFields={errFields}
+            />
+            <div className="pt-4">
+              <ButtonPrimary
+                label="Create Task"
+                disabled={
+                  !select.item.type ||
+                  !select.item.date ||
+                  !select.item.task.name
+                }
+                loading={UIstate === "loading"}
+                onClick={handleInitializeTask}
+              />
+            </div>
+          </div>
         ) : (
           <h3 className="text-lg font-light italic text-gray-500 mb-2">
             Select an item on the left to view details
@@ -600,17 +724,69 @@ function InputText({
   );
 }
 
+function InputDate({
+  value,
+  setValue,
+  name = "inputName",
+  label,
+  type = "date",
+  min = "2024-01-01",
+  max = "2060-12-31",
+  icon: Icon,
+  errFields,
+  readOnly,
+}) {
+  return (
+    <div className="space-y-2 mb-4">
+      {label && (
+        <div className="no-wrap">
+          <label htmlFor={name} className="px-2">
+            {label}
+          </label>
+        </div>
+      )}
+      <div className="relative mb-6 mt-0">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+          {Icon && (
+            <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
+          )}
+        </div>
+        <input
+          name={name}
+          id={name}
+          type={type}
+          className={`${
+            errFields.includes(name)
+              ? "border-red-500 dark:border-red-400"
+              : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
+          } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+          }}
+          min={min}
+          max={max}
+          disabled={readOnly}
+        />
+      </div>
+    </div>
+  );
+}
+
 function InputSelect({
   optionItems,
   value,
   onChange = () => "",
   name = "inputName",
   defaultOption = "type",
+  icon: Icon,
 }) {
   return (
     <div className="relative mb-6">
       <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-        <SVGfilter className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
+        {Icon && (
+          <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
+        )}
       </div>
       <select
         name={name}
