@@ -258,6 +258,7 @@ export default function IssuePage({ params }) {
           ) : selected ? (
             <ViewIssue
               selectedIssue={selected}
+              selectedTaskName={slug[1] ?? null}
               template={templates.find(
                 ({ type }) => type === selected.type.type
               )}
@@ -274,9 +275,10 @@ export default function IssuePage({ params }) {
                   href="/user/issues"
                   className="text-red-800 dark:text-red-400 underline"
                 >
+                  {" "}
                   click here{" "}
                 </Link>
-                to go view all issues
+                to view all issues
               </p>
             </div>
           )}

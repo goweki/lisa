@@ -4,16 +4,27 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { SVGbuilding, SVGdoc, SVGfilter } from "@/components/atoms/svgs";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
+import { strPascalcase } from "@/helpers/stringHandlers";
+import DocView from "@/components/mols/docViewer";
 
-export function ViewIssue({ selectedIssue, template, refreshData }) {
+export function ViewIssue({
+  selectedIssue,
+  template,
+  refreshData,
+  selectedTaskName,
+}) {
   const router = useRouter();
+  const [UIstate, setUIstate] = useState("OK");
   const [tab, setTab] = useState("profile");
-  const [select, setSelect] = useState({ menu: "", item: "" });
   const [edit, setEdit] = useState("");
+  const [select, setSelect] = useState({ menu: "", item: "" });
+  const [completeUpload, setCompleteUpload] = useState({
+    data: "",
+    preview: "",
+  });
   const [errFields, setErrFields] = useState([]);
   const [filterPhrase, setFilterPhrase] = useState("");
   const [expandedField, setExpanded] = useState("");
-  const [UIstate, setUIstate] = useState("OK");
   const [source, setSource] = useState({
     name: selectedIssue.source.name ?? "",
     tel: selectedIssue.source.tel ?? "",
@@ -71,7 +82,16 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
       setDueDates(selectedIssue.dueDates?.filter(({ task }) => task.complete));
     else setDueDates(selectedIssue.dueDates);
   }, [filterPhrase, selectedIssue.dueDates]);
-  //
+  // if selectedTaskId
+  useEffect(() => {
+    if (selectedTaskName) {
+      setTab("tasks");
+      const task = selectedIssue.dueDates.find(
+        ({ task }) => task.name === selectedTaskName
+      );
+      setSelect({ menu: "task", item: task });
+    }
+  }, [selectedTaskName, selectedIssue.dueDates]);
 
   async function handleSubmitProfile() {
     if (!selectedIssue._id) {
@@ -481,7 +501,7 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
               />
             )}
           </>
-        ) : (
+        ) : tab === "tasks" ? (
           <>
             <div>
               <div className="max-w-xs mb-4 m-auto">
@@ -577,7 +597,7 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
               {viewArea(select)}
             </div>
           </>
-        )}
+        ) : null}
       </form>
     </div>
   );
@@ -587,18 +607,79 @@ export function ViewIssue({ selectedIssue, template, refreshData }) {
       <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
         {select.menu === "task" && select.item ? (
           <>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {select.item?.task.name + " " + select.item?.type}
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              {strPascalcase(select.item.task.name) + " " + select.item.type}{" "}
+              <span className="font-light text-gray-500 dark:text-gray-400">
+                {/* {select.item.type === "document" ? " Due Date" : " Date"}:{" "} */}
+                {"-"}
+                {dateShort(new Date(select.item.date))}
+              </span>
             </h3>
 
-            <p className="mb-2">
-              Date: {dateShort(new Date(select.item.date))}
-            </p>
-
-            <p>
-              The tab JavaScript swaps classes to control the content visibility
-              and styling.
-            </p>
+            <div>
+              {!select.item.task.complete ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div>
+                    <label
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      htmlFor="file_input"
+                    >
+                      Upload report to complete task
+                    </label>
+                    <p
+                      className="mb-1 text-xs text-gray-500 dark:text-gray-300"
+                      id="file_input_help"
+                    >
+                      pdf,word (2MB max)
+                    </p>
+                    <input
+                      className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                      id="file_input"
+                      type="file"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      placeholder="Select a file"
+                      onChange={(e) => {
+                        if (
+                          e.target.files[0] &&
+                          ["pdf", "doc", "docx"].includes(
+                            e.target.files[0].name.split(".").pop()
+                          ) &&
+                          e.target.files[0].size < 2100000
+                        )
+                          setCompleteUpload({
+                            data: e.target.files[0],
+                            preview: URL.createObjectURL(e.target.files[0]),
+                          });
+                        else toast.error("File must not exceed 2MB pdf,word");
+                      }}
+                    />
+                  </div>
+                  <div className="mt-auto">
+                    <ButtonPrimary
+                      label="Complete Task"
+                      onClick={(event) => {
+                        setSelect((prev) => ({
+                          ...prev,
+                          item: {
+                            ...prev.item,
+                            task: {
+                              ...prev.item.task,
+                              complete: event.target.files[0],
+                            },
+                          },
+                        }));
+                      }}
+                      disabled={!completeUpload.data}
+                    />
+                  </div>
+                </div>
+              ) : select.item.type === "document" ? (
+                <>Document</>
+              ) : select.item.type === "event" ? (
+                <>Event</>
+              ) : null}
+              {completeUpload.data && <DocView doc={[completeUpload.data]} />}
+            </div>
           </>
         ) : select.menu === "new" && select.item ? (
           <div>
