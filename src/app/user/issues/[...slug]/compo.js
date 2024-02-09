@@ -63,6 +63,10 @@ export function ViewIssue({
   function resetTaskStates() {
     setFilterPhrase("");
     setSelect({ menu: "", item: "" });
+    setCompleteUpload({
+      data: "",
+      preview: "",
+    });
   }
   // load task classes
   useEffect(() => {
@@ -525,7 +529,7 @@ export function ViewIssue({
             <div className="md:flex">
               <ul className="flex-column space-y space-y-4 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 mb-4 md:mb-0">
                 <li
-                  onClick={() =>
+                  onClick={() => {
                     setSelect({
                       menu: "new",
                       item: {
@@ -533,8 +537,12 @@ export function ViewIssue({
                         type: "",
                         task: { name: "", complete: "" },
                       },
-                    })
-                  }
+                    });
+                    setCompleteUpload({
+                      data: "",
+                      preview: "",
+                    });
+                  }}
                 >
                   <div
                     className={`${
@@ -563,7 +571,13 @@ export function ViewIssue({
                 {dueDates?.map((taskItem) => (
                   <li
                     key={taskItem.task.name}
-                    onClick={() => setSelect({ menu: "task", item: taskItem })}
+                    onClick={() => {
+                      setSelect({ menu: "task", item: taskItem });
+                      setCompleteUpload({
+                        data: "",
+                        preview: "",
+                      });
+                    }}
                   >
                     <div
                       className={`${
@@ -673,11 +687,9 @@ export function ViewIssue({
                     />
                   </div>
                 </div>
-              ) : select.item.type === "document" ? (
-                <>Document</>
-              ) : select.item.type === "event" ? (
-                <>Event</>
-              ) : null}
+              ) : (
+                <DocView doc={select.item.task.complete} />
+              )}
               {completeUpload.data && <DocView doc={completeUpload.data} />}
             </div>
           </>
