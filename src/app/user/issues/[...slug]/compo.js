@@ -678,7 +678,7 @@ export function ViewIssue({
               ) : select.item.type === "event" ? (
                 <>Event</>
               ) : null}
-              {completeUpload.data && <DocView doc={[completeUpload.data]} />}
+              {completeUpload.data && <DocView doc={completeUpload.data} />}
             </div>
           </>
         ) : select.menu === "new" && select.item ? (

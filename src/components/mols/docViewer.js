@@ -17,7 +17,7 @@ export default function DocView({ doc }) {
   }
 
   return (
-    <div>
+    <div className="p-2 md-p-4">
       <Document file={doc} onLoadSuccess={onDocumentLoadSuccess}>
         <Page pageNumber={pageNumber} />
       </Document>
