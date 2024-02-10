@@ -4,5 +4,5 @@ export function strTruncate(str, len) {
 }
 
 export function strPascalcase(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }

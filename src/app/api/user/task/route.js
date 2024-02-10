@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import db_cluster from "@/lib/mongodb";
+import { strPascalcase } from "@/helpers/stringHandlers";
 const collection = db_cluster.collection("issues");
 
 export async function POST(request) {
@@ -19,7 +20,7 @@ export async function POST(request) {
     if (
       await collection.findOne({
         _id: new ObjectId(issueId),
-        "dueDates.task.name": name,
+        "dueDates.task.name": strPascalcase(name),
       })
     ) {
       // HTTP response - task name exists
@@ -31,7 +32,11 @@ export async function POST(request) {
         { _id: new ObjectId(issueId) },
         {
           $push: {
-            dueDates: { type, date, task: { name: name, complete: "" } },
+            dueDates: {
+              type,
+              date,
+              task: { name: strPascalcase(name), complete: "" },
+            },
           },
         }
       );
