@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { useRouter } from "next/navigation";
+import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import toast from "react-hot-toast";
 import { SVGbuilding, SVGdoc, SVGfilter } from "@/components/atoms/svgs";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
@@ -768,7 +768,7 @@ export function ViewIssue({
         );
         toast.success("Issue deleted");
         await refreshData();
-        setUIstate("OK");
+        router.replace("/user/issues");
       } else {
         console.error(
           "ERROR: failed to delete issue at /user/issues/[slug] /compo\n > " +
