@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ButtonPrimary } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { SVGbuilding, SVGdoc, SVGfilter } from "@/components/atoms/svgs";
@@ -41,33 +41,7 @@ export function ViewIssue({
     status: selectedIssue.status.status ?? "",
     description: selectedIssue.status.description ?? "",
   });
-  //func to reset issue-states
-  function resetIssueProfileStates() {
-    setSource({
-      name: selectedIssue.source.name ?? "",
-      tel: selectedIssue.source.tel ?? "",
-      email: selectedIssue.source.email ?? "",
-    });
-    setRespondent({
-      name: selectedIssue.respondent?.name ?? "",
-      tel: selectedIssue.respondent?.tel ?? "",
-      email: selectedIssue.respondent?.email ?? "",
-    });
-    setCourt(selectedIssue.court ?? "");
-    setStatus({
-      status: selectedIssue.status.status ?? "",
-      description: selectedIssue.status.description ?? "",
-    });
-  }
-  //func to reset task-state
-  function resetTaskStates() {
-    setFilterPhrase("");
-    setSelect({ menu: "", item: "" });
-    setCompleteUpload({
-      data: "",
-      preview: "",
-    });
-  }
+
   // load task classes
   useEffect(() => {
     if (filterPhrase === "overdue")
@@ -97,98 +71,6 @@ export function ViewIssue({
     }
   }, [selectedTaskName, selectedIssue.dueDates]);
 
-  async function handleSubmitProfile() {
-    if (!selectedIssue._id) {
-      toast.error("Sorry, issue could not be found");
-    } else {
-      // fetch options
-      let fetchOptions = {
-        method: "PUT",
-        body: JSON.stringify({
-          _id: selectedIssue._id,
-          source,
-          respondent,
-          court,
-          status,
-        }),
-      };
-      setUIstate("loading");
-      // PUT request using fetch
-      const _res = await fetch("/api/user/issue", fetchOptions).then(
-        async (res_) => {
-          if (res_.ok) {
-            return await res_.json();
-          } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: issue not updated");
-          }
-        }
-      );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: issue updated successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        toast.success("Issue updated successfully!");
-        await refreshData();
-        setUIstate("OK");
-      } else {
-        console.error(
-          "ERROR: failed to update issue at /user/issues/[slug] /compo\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
-        );
-        toast.error(_res?.error ?? "No Response, check internet connection");
-      }
-    }
-  }
-
-  async function handleInitializeTask() {
-    if (!select.item.type || !select.item.date || !select.item.task.name) {
-      if (!select.item.type) toast.error("Please select task type");
-      if (!select.item.date) toast.error("Please select task date");
-      if (!select.item.task.name) toast.error("Please provide task name");
-    } else {
-      // fetch options
-      let fetchOptions = {
-        method: "POST",
-        body: JSON.stringify({
-          issueId: selectedIssue._id,
-          type: select.item.type,
-          date: select.item.date,
-          name: select.item.task.name,
-        }),
-      };
-      setUIstate("loading");
-      // POST request using fetch
-      const _res = await fetch("/api/user/task", fetchOptions).then(
-        async (res_) => {
-          if (res_.ok) {
-            return await res_.json();
-          } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: task not initialized");
-          }
-        }
-      );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: task initialized successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        toast.success("Task initialized successfully!");
-        await refreshData();
-        setSelect({ menu: "", item: "" });
-      } else {
-        if (_res?.failed) toast.error(_res?.failed);
-        else
-          toast.error(_res?.error ?? "No Response, check internet connection");
-      }
-      setUIstate("OK");
-    }
-  }
   // render
   return (
     <div id="view-issue">
@@ -463,7 +345,7 @@ export function ViewIssue({
                 readOnly={edit !== "profile"}
               />
             </div>
-            <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center mb-6 pl-4">
               <div className="flex items-center h-5">
                 <input
                   id="issue-status"
@@ -484,7 +366,7 @@ export function ViewIssue({
               >
                 Active
               </label>
-              <div className="ml-6">
+              <div className="ml-6 mt-4">
                 <InputText
                   name="status-description"
                   placeholder="Status description"
@@ -498,11 +380,22 @@ export function ViewIssue({
               </div>
             </div>
             {edit === "profile" && (
-              <ButtonPrimary
-                label="Submit changes"
-                loading={UIstate === "loading"}
-                onClick={handleSubmitProfile}
-              />
+              <div className="max-w-lg mx-auto">
+                <div className="mb-4">
+                  <ButtonPrimary
+                    label="Submit Issue changes"
+                    loading={UIstate === "loading"}
+                    onClick={handleSubmitIssueChanges}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <ButtonText
+                    label="Delete Issue"
+                    loading={UIstate === "loading"}
+                    onClick={handleDeleteIssue}
+                  />
+                </div>
+              </div>
             )}
           </>
         ) : tab === "tasks" ? (
@@ -616,6 +509,7 @@ export function ViewIssue({
     </div>
   );
 
+  //Details view area
   function viewArea(select) {
     return (
       <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
@@ -767,6 +661,169 @@ export function ViewIssue({
         )}
       </div>
     );
+  }
+  //func to reset issue-states
+  function resetIssueProfileStates() {
+    setSource({
+      name: selectedIssue.source.name ?? "",
+      tel: selectedIssue.source.tel ?? "",
+      email: selectedIssue.source.email ?? "",
+    });
+    setRespondent({
+      name: selectedIssue.respondent?.name ?? "",
+      tel: selectedIssue.respondent?.tel ?? "",
+      email: selectedIssue.respondent?.email ?? "",
+    });
+    setCourt(selectedIssue.court ?? "");
+    setStatus({
+      status: selectedIssue.status.status ?? "",
+      description: selectedIssue.status.description ?? "",
+    });
+  }
+  //func to reset task-state
+  function resetTaskStates() {
+    setFilterPhrase("");
+    setSelect({ menu: "", item: "" });
+    setCompleteUpload({
+      data: "",
+      preview: "",
+    });
+  }
+
+  async function handleSubmitIssueChanges() {
+    if (!selectedIssue._id) {
+      toast.error("Sorry, issue could not be found");
+    } else {
+      // fetch options
+      let fetchOptions = {
+        method: "PUT",
+        body: JSON.stringify({
+          _id: selectedIssue._id,
+          source,
+          respondent,
+          court,
+          status,
+        }),
+      };
+      setUIstate("loading");
+      // PUT request using fetch
+      const _res = await fetch("/api/user/issue", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error("OOPS: issue not updated");
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: issue updated successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Issue updated successfully!");
+        await refreshData();
+        setUIstate("OK");
+      } else {
+        console.error(
+          "ERROR: failed to update issue at /user/issues/[slug] /compo\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
+        );
+        toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+    }
+  }
+  //func to Delete Issue
+  async function handleDeleteIssue() {
+    if (!selectedIssue._id) {
+      toast.error("Sorry, issue could not be found");
+    } else {
+      // fetch options
+      let fetchOptions = {
+        method: "DELETE",
+        body: JSON.stringify({
+          _id: selectedIssue._id,
+        }),
+      };
+      setUIstate("loading");
+      // PUT request using fetch
+      const _res = await fetch("/api/user/issue", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.error(`ERROR: ` + JSON.stringify(res_));
+            toast.error("OOPS: issue not deleted");
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: issue deleted\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Issue deleted");
+        await refreshData();
+        setUIstate("OK");
+      } else {
+        console.error(
+          "ERROR: failed to delete issue at /user/issues/[slug] /compo\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
+        );
+        toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+    }
+  }
+
+  async function handleInitializeTask() {
+    if (!select.item.type || !select.item.date || !select.item.task.name) {
+      if (!select.item.type) toast.error("Please select task type");
+      if (!select.item.date) toast.error("Please select task date");
+      if (!select.item.task.name) toast.error("Please provide task name");
+    } else {
+      // fetch options
+      let fetchOptions = {
+        method: "POST",
+        body: JSON.stringify({
+          issueId: selectedIssue._id,
+          type: select.item.type,
+          date: select.item.date,
+          name: select.item.task.name,
+        }),
+      };
+      setUIstate("loading");
+      // POST request using fetch
+      const _res = await fetch("/api/user/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error("OOPS: task not initialized");
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: task initialized successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Task initialized successfully!");
+        await refreshData();
+        setSelect({ menu: "", item: "" });
+      } else {
+        if (_res?.failed) toast.error(_res?.failed);
+        else
+          toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+      setUIstate("OK");
+    }
   }
 }
 
