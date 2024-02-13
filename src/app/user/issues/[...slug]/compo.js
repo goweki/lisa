@@ -18,10 +18,7 @@ export function ViewIssue({
   const [tab, setTab] = useState("profile");
   const [edit, setEdit] = useState("");
   const [select, setSelect] = useState({ menu: "", item: "" });
-  const [completeUpload, setCompleteUpload] = useState({
-    data: "",
-    preview: "",
-  });
+  const [completeUpload, setCompleteUpload] = useState("");
   const [errFields, setErrFields] = useState([]);
   const [filterPhrase, setFilterPhrase] = useState("");
   const [expandedField, setExpanded] = useState("");
@@ -401,7 +398,7 @@ export function ViewIssue({
         ) : tab === "tasks" ? (
           <>
             <div>
-              <div className="max-w-xs mb-4 m-auto">
+              <div className="max-w-xs mb-4 mr-auto">
                 <InputSelect
                   name="filterPhrase"
                   optionItems={[
@@ -431,10 +428,7 @@ export function ViewIssue({
                         task: { name: "", complete: "" },
                       },
                     });
-                    setCompleteUpload({
-                      data: "",
-                      preview: "",
-                    });
+                    setCompleteUpload("");
                   }}
                 >
                   <div
@@ -466,10 +460,7 @@ export function ViewIssue({
                     key={taskItem.task.name}
                     onClick={() => {
                       setSelect({ menu: "task", item: taskItem });
-                      setCompleteUpload({
-                        data: "",
-                        preview: "",
-                      });
+                      setCompleteUpload("");
                     }}
                   >
                     <div
@@ -515,14 +506,23 @@ export function ViewIssue({
       <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
         {select.menu === "task" && select.item ? (
           <>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              {strPascalcase(select.item.task.name) + " " + select.item.type}{" "}
-              <span className="font-light text-gray-500 dark:text-gray-400">
-                {/* {select.item.type === "document" ? " Due Date" : " Date"}:{" "} */}
-                {"-"}
-                {dateShort(new Date(select.item.date))}
-              </span>
-            </h3>
+            <div className="flex flex-row justify-between">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {strPascalcase(select.item.task.name) + " " + select.item.type}{" "}
+                <span className="font-light text-gray-500 dark:text-gray-400">
+                  {/* {select.item.type === "document" ? " Due Date" : " Date"}:{" "} */}
+                  {"-"}
+                  {dateShort(new Date(select.item.date))}
+                </span>
+              </h3>
+              <div>
+                <ButtonText
+                  label="delete task"
+                  onClick={handleDeleteTask}
+                  loading={UIstate === "loading"}
+                />
+              </div>
+            </div>
 
             <div>
               {!select.item.task.complete ? (
@@ -554,10 +554,7 @@ export function ViewIssue({
                           ) &&
                           e.target.files[0].size < 2100000
                         )
-                          setCompleteUpload({
-                            data: e.target.files[0],
-                            preview: URL.createObjectURL(e.target.files[0]),
-                          });
+                          setCompleteUpload(e.target.files[0]);
                         else toast.error("File must not exceed 2MB pdf,word");
                       }}
                     />
@@ -565,26 +562,29 @@ export function ViewIssue({
                   <div className="mt-auto">
                     <ButtonPrimary
                       label="Complete Task"
-                      onClick={(event) => {
-                        setSelect((prev) => ({
-                          ...prev,
-                          item: {
-                            ...prev.item,
-                            task: {
-                              ...prev.item.task,
-                              complete: event.target.files[0],
-                            },
-                          },
-                        }));
-                      }}
-                      disabled={!completeUpload.data}
+                      onClick={handleCompleteTask}
+                      disabled={!completeUpload}
                     />
                   </div>
                 </div>
               ) : (
-                <DocView doc={select.item.task.complete} />
+                <DocView
+                  doc={
+                    new File(
+                      [
+                        Uint8Array.from(atob(select.item.task.complete), (c) =>
+                          c.charCodeAt(0)
+                        ).buffer,
+                      ],
+                      "task-report.pdf",
+                      {
+                        type: "application/pdf",
+                      }
+                    )
+                  }
+                />
               )}
-              {completeUpload.data && <DocView doc={completeUpload.data} />}
+              {completeUpload && <DocView doc={completeUpload} />}
             </div>
           </>
         ) : select.menu === "new" && select.item ? (
@@ -684,12 +684,9 @@ export function ViewIssue({
   function resetTaskStates() {
     setFilterPhrase("");
     setSelect({ menu: "", item: "" });
-    setCompleteUpload({
-      data: "",
-      preview: "",
-    });
+    setCompleteUpload("");
   }
-
+  //func to Update Issue
   async function handleSubmitIssueChanges() {
     if (!selectedIssue._id) {
       toast.error("Sorry, issue could not be found");
@@ -723,8 +720,8 @@ export function ViewIssue({
             JSON.stringify(_res.success) +
             "\n.............."
         );
-        toast.success("Issue updated successfully!");
         await refreshData();
+        toast.success("Issue updated successfully!");
         setUIstate("OK");
       } else {
         console.error(
@@ -766,8 +763,8 @@ export function ViewIssue({
             JSON.stringify(_res.success) +
             "\n.............."
         );
-        toast.success("Issue deleted");
         await refreshData();
+        toast.success("Issue deleted");
         router.replace("/user/issues");
       } else {
         console.error(
@@ -779,7 +776,7 @@ export function ViewIssue({
       }
     }
   }
-
+  //func to Create Task
   async function handleInitializeTask() {
     if (!select.item.type || !select.item.date || !select.item.task.name) {
       if (!select.item.type) toast.error("Please select task type");
@@ -814,7 +811,94 @@ export function ViewIssue({
             JSON.stringify(_res.success) +
             "\n.............."
         );
+        await refreshData();
         toast.success("Task initialized successfully!");
+        setSelect({ menu: "", item: "" });
+      } else {
+        if (_res?.failed) toast.error(_res?.failed);
+        else
+          toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+      setUIstate("OK");
+    }
+  }
+  //func to Complete Task
+  async function handleCompleteTask() {
+    if (!completeUpload) {
+      toast.error("Please upload a task report/document");
+    } else {
+      //loading
+      setUIstate("loading");
+      //fetch options
+      const formData = new FormData();
+      formData.append("issueId", selectedIssue._id);
+      formData.append("taskName", select.item.task.name);
+      formData.append("complete", completeUpload);
+      console.log("COMPLETE file ", completeUpload);
+      const fetchOptions = {
+        method: "PUT",
+        body: formData,
+      };
+      // POST request using fetch
+      const _res = await fetch("/api/user/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.error(`ERROR: ` + JSON.stringify(res_));
+            toast.error("OOPS: task not initialized");
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: task completed\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        await refreshData();
+        toast.success("Task status complete!");
+      } else {
+        if (_res?.failed) toast.error(_res?.failed);
+        else
+          toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+      setUIstate("OK");
+    }
+  }
+  //func to Delete Task
+  async function handleDeleteTask() {
+    if (!select.item.task.name) {
+      toast.error("Selected task not found");
+    } else {
+      //loading
+      setUIstate("loading");
+      //fetch options
+      let fetchOptions = {
+        method: "DELETE",
+        body: JSON.stringify({
+          issueId: selectedIssue._id,
+          taskName: select.item.task.name,
+        }),
+      };
+      // POST request using fetch
+      const _res = await fetch("/api/user/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.error(`ERROR: ` + JSON.stringify(res_));
+            toast.error("OOPS: task not deleted");
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: task deleted\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Task deleted!");
         await refreshData();
         setSelect({ menu: "", item: "" });
       } else {

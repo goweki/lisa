@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, Binary } from "mongodb";
 import db_cluster from "@/lib/mongodb";
 import { strPascalcase } from "@/helpers/stringHandlers";
 const collection = db_cluster.collection("issues");
@@ -56,36 +56,53 @@ export async function POST(request) {
 
 export async function PUT(request) {
   // request body
-  const doc = await request.json();
-  const { _id, ...doc_ } = doc;
-  // doc structure: { _id,name, type, source, institution }
-  console.log("PUT REQUEST: updating issue ", _id);
+  const formData = await request.formData();
+  const issueId = formData.get("issueId");
+  const taskName = formData.get("taskName");
+  const complete = formData.get("complete");
+  console.log("PUT REQUEST: updating task ", taskName);
   try {
-    // console.log(` > setting fields: ${Object.keys(doc_)}`);
     // update doc
-    const res_ = collection.updateOne(
-      { _id: new ObjectId(_id) },
-      { $set: { ...doc_ } }
+    const fileBinary = new Binary(Buffer.from(await complete.arrayBuffer()));
+    console.log("File binary: ", fileBinary);
+    const res_ = await collection.updateOne(
+      {
+        _id: new ObjectId(issueId),
+        "dueDates.task.name": taskName, // Match the task object with the specified name
+      },
+      {
+        $set: {
+          "dueDates.$.task.complete": fileBinary,
+        }, // Update the matched task object
+      }
     );
-    console.log(` > SUCCESS: document updated.\n..........`);
+    console.log(`SUCCESS: task completed - ${taskName}\n`);
     // HTTP response
     return Response.json({ success: res_ });
   } catch (err) {
-    console.log(" > ERROR: document update failed.", err, "\n..........");
-    return Response.json({ error: err });
+    console.error(
+      `ERROR: task completion failed - ${taskName}\n >> error: ${err}`
+    );
+    return Response.json({ error: `Server error: please contact admin...` });
   }
 }
 
 export async function DELETE(request) {
   // request body
   const doc = await request.json();
-  const { _id } = doc;
-  // doc structure: { _id,name, type, source, institution }
-  console.log("DELETE REQUEST: deleting issue: ", _id);
+  const { issueId, taskName } = doc;
+  console.log("DELETE REQUEST: deleting task: ", taskName, " ", issueId);
   try {
-    // delete doc
-    const res_ = collection.deleteOne({ _id: new ObjectId(_id) });
-    console.log(` > SUCCESS: document deleted.\n..........`);
+    // delete (pull) object from the dueDates array
+    const res_ = await collection.updateOne(
+      {
+        _id: new ObjectId(issueId),
+      },
+      {
+        $pull: { dueDates: { "task.name": taskName } }, // Remove the task object with the specified name
+      }
+    );
+    console.log(`SUCCESS: task deleted.\n..........`);
     // HTTP response
     return Response.json({ success: res_ });
   } catch (err) {
