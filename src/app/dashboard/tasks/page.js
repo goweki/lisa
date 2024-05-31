@@ -155,7 +155,7 @@ export default function TasksPage() {
             <div>
               <InputText
                 name="searchPhrase"
-                value={searchPhrase}
+                valObj={searchPhrase}
                 setValue={setSearchPhrase}
                 placeholder="Search for tasks by name, case..."
                 icon={SVGsearch}
