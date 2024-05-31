@@ -87,7 +87,7 @@ export const authOptions: NextAuthOptions = {
         // console.log("token here: ", user);
         token.id = user.id;
         token.role = user.role;
-        token.institutions = user.institutionIDs;
+        token.institutionIDs = user.institutionIDs;
         token.imageUrl = user.imageUrl;
       }
       return token;
@@ -97,7 +97,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.institutions = token.institutions as string[];
+        session.user.institutionIDs = token.institutionIDs as string[];
         session.user.imageUrl = token.imageUrl as string;
       }
       // console.log("session here: ", session);

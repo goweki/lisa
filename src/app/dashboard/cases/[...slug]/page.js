@@ -1,7 +1,7 @@
 "use client";
 import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { DataContext } from "../../providers";
 import { SVGpenscilSquare } from "@/components/atoms/svgs";
@@ -11,34 +11,45 @@ import { strPascalcase } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
 import { Loader1 } from "@/components/atoms/loader";
 import { ViewIssue } from "./compo";
+import { telValidator } from "@/helpers/inputValidators";
 
-export default function IssuePage({ params }) {
-  const { data: session } = useSession();
+export default function CasePage({ params }) {
+  // const { data: session } = useSession();
   const { slug } = params;
   const {
-    data: { issues, templates },
+    data: { cases, caseTypes, institutions: userInstitutions },
     refreshData,
   } = useContext(DataContext);
   const router = useRouter();
-  const [menuItems, setMenuItems] = useState({});
+  const [caseType, setCaseType] = useState("");
   const [selected, setSelected] = useState("");
   const [UIstate, setUIstate] = useState("loading");
-  const [newIssue, setNewIssue] = useState({
-    type: { type: "", category: "" },
+  //empty case Object
+  const emptyCase = {
+    type: "",
     name: { value: "", error: "" },
-    client: { party: "", value: "", error: "" },
-    institution: {
-      value: session.user.role.lisa ? "" : Object.keys(session.user.role)[0],
-      error: "",
+    client: {
+      party: "",
+      name: { value: "", error: "" },
+      tel: { value: "", error: "" },
     },
-  });
+    institution: {
+      value: userInstitutions.some((inst) => inst.name === "Lisa")
+        ? ""
+        : userInstitutions.length === 1
+        ? userInstitutions[0].id
+        : "",
+    },
+  };
+  // case state Object
+  const [newCase, setNewCase] = useState(emptyCase);
   // check slug and update selected
   useEffect(() => {
     if (slug[0] !== "new") {
-      let issue_ = issues.find(({ _id }) => _id === slug[0]);
+      let issue_ = cases.find(({ _id }) => _id === slug[0]);
       setSelected(issue_);
     } else setUIstate("OK");
-  }, [issues, slug]);
+  }, [cases, slug]);
   // UIstate OK after updating selected
   useEffect(() => {
     if (selected) {
@@ -47,44 +58,12 @@ export default function IssuePage({ params }) {
   }, [selected]);
   //update Categories after issue-type is updates
   useEffect(() => {
-    if (newIssue.type.type)
-      setMenuItems((prev) => {
-        return {
-          ...prev,
-          categories: templates.find((v) => v.type === newIssue.type.type)
-            .categories,
-          parties: templates.find((v) => v.type === newIssue.type.type).parties,
-        };
-      });
-  }, [newIssue.type.type, templates]);
+    if (newCase.type)
+      setCaseType(caseTypes.find((v) => v.name === newCase.type));
+  }, [newCase.type, caseTypes]);
   //submit new issue
   async function initializeIssue() {
-    if (
-      !newIssue.name.value ||
-      !newIssue.client.value ||
-      !newIssue.institution.value
-    ) {
-      if (!newIssue.name.value) {
-        setNewIssue((prev) => ({
-          ...prev,
-          name: { value: "", error: "Please provide a name" },
-        }));
-      } else if (!newIssue.client.value) {
-        setNewIssue((prev) => ({
-          ...prev,
-          client: {
-            ...prev.client,
-            value: "",
-            error: "Please provide a client name",
-          },
-        }));
-      } else {
-        setNewIssue((prev) => ({
-          ...prev,
-          institution: { value: "", error: "Please provide an institution" },
-        }));
-      }
-    } else {
+    try {
       // fetch options
       let fetchOptions = {
         method: "POST",
@@ -93,17 +72,20 @@ export default function IssuePage({ params }) {
         //   'Content-Type': 'application/x-www-form-urlencoded',
         // },
         body: JSON.stringify({
-          type: newIssue.type,
-          name: newIssue.name.value,
-          client: { party: newIssue.client.party, name: newIssue.client.value },
-          institution: newIssue.institution.value,
-          status: { status: "open" },
-          dueDates: [],
+          type: newCase.type,
+          name: newCase.name.value,
+          clientParty: newCase.client.party,
+          clientName: newCase.client.name.value,
+          clientTel: newCase.client.tel.value,
+          caseTypeID: caseType.id,
+          institutionID: userInstitutions.find(
+            (inst) => inst.name === newCase.institution
+          ).id,
         }),
       };
       setUIstate("loading");
       // POST request using fetch
-      const _res = await fetch("/api/user/issue", fetchOptions).then(
+      const _res = await fetch("/api/dashboard/case", fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();
@@ -121,15 +103,17 @@ export default function IssuePage({ params }) {
         );
         toast.success("Issue initialization successful!");
         await refreshData();
-        router.replace(`/user/issues/${_res.success.insertedId}`);
+        router.replace(`/dashboard/cases/${_res.success.insertedId}`);
       } else {
         console.error(
-          "ERROR: failed to initialize issue at /user/issues/new /page\n > " +
+          "ERROR: failed to initialize issue at /dashboard/cases/new /page\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
         setUIstate(_res?.error ?? "No Response, check internet connection");
       }
+    } catch (error) {
+      console.log("fetch failed: ", error.message);
     }
   }
   //render
@@ -142,7 +126,7 @@ export default function IssuePage({ params }) {
         <div className="space-y-1 pt-6 md:space-y-2">
           {/* heading */}
           <h1 className="text-center uppercase">
-            {slug[0] === "new" ? "New Issue" : selected?.name ?? "ERROR"}
+            {slug[0] === "new" ? "New Case" : selected?.name ?? "ERROR"}
           </h1>
           {/* Inputs */}
           {slug[0] === "new" ? (
@@ -150,44 +134,42 @@ export default function IssuePage({ params }) {
               <div
                 className={`relative max-w-lg mx-auto grid grid-cols-1 gap-4 card p-6`}
               >
-                {!newIssue.type.type ||
-                !newIssue.type.category ||
-                !newIssue.client.party ? (
+                {!newCase.type || !newCase.client.party ? (
                   <>
-                    {inputSelect(
-                      templates.map((template) => template.type),
-                      newIssue.type.type,
-                      (e) => {
-                        setNewIssue({
-                          ...newIssue,
-                          type: { type: e.target.value, category: "" },
-                        });
-                      }
-                    )}
-
-                    {newIssue.type.type &&
-                      menuItems.categories &&
+                    {(userInstitutions.some((inst) => inst.name === "Lisa") ||
+                      userInstitutions.length > 1) &&
                       inputSelect(
-                        menuItems.categories,
-                        newIssue.type.category,
+                        userInstitutions.map((inst) => inst.name),
+                        newCase.institution,
                         (e) => {
-                          setNewIssue((prev) => {
+                          setNewCase((prev) => {
                             return {
                               ...prev,
-                              type: { ...prev.type, category: e.target.value },
+                              institution: e.target.value,
                             };
                           });
                         },
-                        "category",
-                        "category"
+                        "user-institution",
+                        "target institution"
                       )}
-
-                    {newIssue.type.category &&
+                    {inputSelect(
+                      caseTypes.map((template) => template.name),
+                      newCase.type,
+                      (e) => {
+                        setNewCase({
+                          ...newCase,
+                          type: e.target.value,
+                        });
+                      },
+                      "case-type",
+                      "case type"
+                    )}
+                    {newCase.type &&
                       inputSelect(
-                        menuItems.parties,
-                        newIssue.client.party,
+                        [caseType.primaryParty, caseType.secondaryParty],
+                        newCase.client.party,
                         (e) => {
-                          setNewIssue((prev) => {
+                          setNewCase((prev) => {
                             return {
                               ...prev,
                               client: {
@@ -198,28 +180,27 @@ export default function IssuePage({ params }) {
                           });
                         },
                         "party-representing",
-                        "party to represent"
+                        "party you represent"
                       )}
                   </>
                 ) : (
                   <>
                     <div className="m-auto">
-                      <div className="mr-4">
-                        {strPascalcase(newIssue.type.category)} -{" "}
-                        {newIssue.type.type}
-                      </div>
+                      <div className="mr-4">{strPascalcase(newCase.type)}</div>
                     </div>
                     <div className="inline m-auto"></div>
                     <div className="mb-6 space-y-3">
                       <InputText
-                        label={`${strPascalcase(newIssue.type.type)} name*`}
-                        name="issueName"
-                        placeholder={`${strPascalcase(
-                          newIssue.type.type
-                        )} name`}
-                        value={newIssue.name}
+                        label={`${strPascalcase(
+                          newCase.type.split(" ").pop()
+                        )} name *`}
+                        name="case-name"
+                        placeholder={`Name of ${strPascalcase(
+                          newCase.type.split(" ").pop()
+                        )}`}
+                        valObj={newCase.name}
                         setValue={({ value, error }) =>
-                          setNewIssue((prev) => ({
+                          setNewCase((prev) => ({
                             ...prev,
                             name: { value, error },
                           }))
@@ -228,52 +209,56 @@ export default function IssuePage({ params }) {
                       <InputText
                         label={
                           "Client (" +
-                          strPascalcase(newIssue.client.party) +
-                          ")*"
+                          strPascalcase(newCase.client.party) +
+                          ") name *"
                         }
-                        name={newIssue.client.party}
-                        placeholder={`Name of ${newIssue.client.party}`}
-                        value={newIssue.client.value}
+                        name="client-name"
+                        placeholder={`Name of ${newCase.client.party}`}
+                        valObj={newCase.client.name}
                         setValue={({ value, error }) =>
-                          setNewIssue((prev) => ({
+                          setNewCase((prev) => ({
                             ...prev,
-                            client: { ...prev.client, value, error },
+                            client: { ...prev.client, name: { value, error } },
                           }))
                         }
                       />
-                      {session.user.role.lisa && (
-                        <InputText
-                          label="Institution*"
-                          name="institution"
-                          placeholder="Institution"
-                          value={newIssue.institution}
-                          setValue={({ value, error }) =>
-                            setNewIssue((prev) => ({
-                              ...prev,
-                              institution: { value, error },
-                            }))
-                          }
-                        />
-                      )}
+                      <InputText
+                        label={
+                          "Client (" +
+                          strPascalcase(newCase.client.party) +
+                          ") Phone number *"
+                        }
+                        name="client-phone-number"
+                        type="tel"
+                        placeholder={`Phone number of ${newCase.client.party}`}
+                        valObj={newCase.client.tel}
+                        valValidator={telValidator}
+                        setValue={({ value, error }) =>
+                          setNewCase((prev) => ({
+                            ...prev,
+                            client: { ...prev.client, tel: { value, error } },
+                          }))
+                        }
+                      />
                     </div>
                     <ButtonPrimary
-                      label={`Initialize ${newIssue.type.type}`}
+                      label={`Initialize ${strPascalcase(
+                        newCase.type.split(" ").pop()
+                      )}`}
                       onClick={initializeIssue}
+                      disabled={
+                        !newCase.type ||
+                        !newCase.name.value ||
+                        !newCase.client.party ||
+                        !newCase.client.name.value ||
+                        !newCase.client.tel.value
+                      }
                     />
                     <ButtonSecondary
-                      label={`Cancel ${newIssue.type.type}`}
+                      label={`Clear`}
                       onClick={() => {
-                        setNewIssue({
-                          type: { type: "", category: "" },
-                          name: { value: "", error: "" },
-                        });
-                        setChat([]);
-                        setNewIssue({
-                          type: { type: "", category: "" },
-                          name: { value: "", error: "" },
-                          client: { party: "", value: "", error: "" },
-                          institution: { value: "", error: "" },
-                        });
+                        setNewCase(emptyCase);
+                        setCaseType("");
                       }}
                     />
                   </>
@@ -284,7 +269,7 @@ export default function IssuePage({ params }) {
             <ViewIssue
               selectedIssue={selected}
               selectedTaskName={slug[1] ?? null}
-              template={templates.find(
+              template={caseTypes.find(
                 ({ type }) => type === selected.type.type
               )}
               refreshData={refreshData}
@@ -297,13 +282,13 @@ export default function IssuePage({ params }) {
               </p>
               <p className="text-center">
                 <Link
-                  href="/user/issues"
+                  href="/dashboard/cases"
                   className="text-red-800 dark:text-red-400 underline"
                 >
                   {" "}
                   click here{" "}
                 </Link>
-                to view all issues
+                to view all cases
               </p>
             </div>
           )}
@@ -335,8 +320,8 @@ function inputSelect(
         <option value="" className="italic font-light">
           Select a {defaultOption}...
         </option>
-        {optionItems.map((option) => (
-          <option key={option} value={option}>
+        {optionItems.map((option, i) => (
+          <option key={i} value={option}>
             {option}
           </option>
         ))}
@@ -346,7 +331,7 @@ function inputSelect(
 }
 
 async function fetchIssue(issueId) {
-  const resRaw = await fetch(`/api/user/issue?id=${issueId}`, {
+  const resRaw = await fetch(`/api/dashboard/case?id=${issueId}`, {
     method: "GET",
   });
   if (resRaw.ok) {

@@ -13,20 +13,20 @@ import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 
 export default function IssuesPage() {
   const {
-    data: { issues },
+    data: { cases },
   } = useContext(DataContext);
   const [filtIssues, setFiltIssues] = useState([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
-  //filter issues by searchPhrase
+  //filter cases by searchPhrase
   useEffect(() => {
     setFiltIssues(
-      issues?.filter(
+      cases?.filter(
         ({ name, source }) =>
           name.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
           client.name.toLowerCase().includes(searchPhrase.value?.toLowerCase())
       )
     );
-  }, [searchPhrase, issues]);
+  }, [searchPhrase, cases]);
 
   //render
   return (
@@ -37,12 +37,12 @@ export default function IssuesPage() {
           <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 card pt-3 pb-6 px-12">
             <InputText
               name="searchPhrase"
-              value={searchPhrase}
+              valObj={searchPhrase}
               setValue={setSearchPhrase}
-              placeholder="Search for issues"
+              placeholder="Search for cases"
               icon={SVGsearch}
             />
-            <Link className="mt-2" href="/user/issues/new">
+            <Link className="mt-2" href="/dashboard/cases/new">
               <ButtonPrimary label="+new Issue" onClick={() => ""} />
             </Link>
           </div>
@@ -61,9 +61,7 @@ export default function IssuesPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 italic">
-            No existing issues found
-          </div>
+          <div className="text-center py-6 italic">No existing cases found</div>
         )}
       </div>
     </main>

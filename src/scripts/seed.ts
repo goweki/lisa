@@ -2,6 +2,20 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const caseTypes_ = [
+  {
+    name: "Divorce petition",
+    primaryParty: "Petitioner",
+    secondaryParty: "Respondent",
+  },
+  {
+    name: "Personal injury lawsuit",
+    primaryParty: "Claimant",
+    secondaryParty: "Defendant",
+  },
+  // Add more case types as needed
+];
+
 async function seed() {
   const institution = await prisma.institution.upsert({
     where: { name: "Lisa" },
@@ -33,6 +47,9 @@ async function seed() {
       institutionIDs: [institution.id],
     },
   });
+  const caseTypes = await prisma.caseType.createMany({
+    data: caseTypes_,
+  });
   const updatedInstitution = await prisma.institution.update({
     where: { id: institution.id },
     data: {
@@ -41,19 +58,10 @@ async function seed() {
       },
     },
   });
-  console.log("Institution updated:", updatedInstitution);
-  console.log("User updated:", user);
+  console.log("Institution initialized:", updatedInstitution);
+  console.log("User initialized:", user);
+  console.log("caseTypes initialized:", caseTypes);
 }
-
-// seed()
-//   .then(async () => {
-//     await prisma.$disconnect();
-//   })
-//   .catch(async (e) => {
-//     console.error(e);
-//     await prisma.$disconnect();
-//     process.exit(1);
-//   });
 
 async function retrieveSeed() {
   const populatedInstitutions = await prisma.institution.findMany({
@@ -66,7 +74,7 @@ async function retrieveSeed() {
   console.log("Users:", populatedInstitutions[0].users);
 }
 
-retrieveSeed()
+seed()
   .then(async () => {
     await prisma.$disconnect();
   })
@@ -75,3 +83,13 @@ retrieveSeed()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+// retrieveSeed()
+//   .then(async () => {
+//     await prisma.$disconnect();
+//   })
+//   .catch(async (e) => {
+//     console.error(e);
+//     await prisma.$disconnect();
+//     process.exit(1);
+//   });

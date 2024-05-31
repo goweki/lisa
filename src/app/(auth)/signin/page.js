@@ -104,7 +104,7 @@ export default function SigninPage() {
               type="email"
               placeholder="Enter your email address"
               icon={SVGemail}
-              value={email}
+              valObj={email}
               setValue={setEmail}
               valValidator={nameValidator}
             />
@@ -114,7 +114,7 @@ export default function SigninPage() {
               type="password"
               placeholder="Enter your password"
               icon={SVGpassword}
-              value={password}
+              valObj={password}
               setValue={setPassword}
               valValidator={passwordValidator}
             />

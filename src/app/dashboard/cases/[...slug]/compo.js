@@ -711,7 +711,7 @@ export function ViewIssue({
       };
       setUIstate("loading");
       // PUT request using fetch
-      const _res = await fetch("/api/user/issue", fetchOptions).then(
+      const _res = await fetch("/api/dashboard/case", fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();
@@ -732,7 +732,7 @@ export function ViewIssue({
         setUIstate("OK");
       } else {
         console.error(
-          "ERROR: failed to update issue at /user/issues/[slug] /compo\n > " +
+          "ERROR: failed to update issue at /dashboard/cases/[slug] /compo\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
@@ -754,7 +754,7 @@ export function ViewIssue({
       };
       setUIstate("loading");
       // PUT request using fetch
-      const _res = await fetch("/api/user/issue", fetchOptions).then(
+      const _res = await fetch("/api/dashboard/case", fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();
@@ -772,10 +772,10 @@ export function ViewIssue({
         );
         await refreshData();
         toast.success("Issue deleted");
-        router.replace("/user/issues");
+        router.replace("/dashboard/cases");
       } else {
         console.error(
-          "ERROR: failed to delete issue at /user/issues/[slug] /compo\n > " +
+          "ERROR: failed to delete issue at /dashboard/cases/[slug] /compo\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
@@ -802,7 +802,7 @@ export function ViewIssue({
       };
       setUIstate("loading");
       // POST request using fetch
-      const _res = await fetch("/api/user/task", fetchOptions).then(
+      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();
@@ -847,7 +847,7 @@ export function ViewIssue({
         body: formData,
       };
       // POST request using fetch
-      const _res = await fetch("/api/user/task", fetchOptions).then(
+      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();
@@ -889,7 +889,7 @@ export function ViewIssue({
         }),
       };
       // POST request using fetch
-      const _res = await fetch("/api/user/task", fetchOptions).then(
+      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();

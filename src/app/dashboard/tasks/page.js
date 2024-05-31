@@ -148,7 +148,7 @@ export default function TasksPage() {
           <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 card pt-3 pb-6 px-12">
             {/* <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 card pt-3 pb-6 px-12"> */}
             {/* <div className="md:order-last pt-2">
-              <Link href="/user/issues/new">
+              <Link href="/dashboard/cases/new">
                 <ButtonPrimary label="+new Issue" onClick={() => ""} />
               </Link>
             </div> */}
@@ -217,7 +217,7 @@ export default function TasksPage() {
                         {selectedTask.task.name}
                       </h3>
                       <Link
-                        href={`/user/issues/${selectedTask.issueId}/${selectedTask.task.name}`}
+                        href={`/dashboard/cases/${selectedTask.issueId}/${selectedTask.task.name}`}
                       >
                         <button
                           type="button"

@@ -105,7 +105,7 @@ const menuItemsOptions = {
   ],
   auth: [
     { label: "Home", type: "link", onClick: "/dashboard" },
-    { label: "Issues", type: "link", onClick: "/dashboard/issues" },
+    { label: "Cases", type: "link", onClick: "/dashboard/cases" },
     { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
   ],
 };

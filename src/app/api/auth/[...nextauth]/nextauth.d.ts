@@ -9,7 +9,7 @@ declare module "next-auth" {
     user?: DefaultUser & {
       id: string;
       role: string;
-      institutions: string[];
+      institutionIDs: string[];
       imageUrl?: string | null;
     };
   }

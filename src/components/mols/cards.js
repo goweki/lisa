@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function CardIssue({ item, icon: Icon }) {
   return (
     <Link
-      href={`/dashboard/issues/${item._id}`}
+      href={`/dashboard/cases/${item._id}`}
       className="card hover:scale-105 m-0 flex flex-col p-6 space-y-6 lg:p-8 lg:flex-row lg:space-y-0 lg:space-x-6 shadow dark:shadow-backg-dark hover:shadow-lg"
     >
       <div className="flex items-center justify-center w-16 h-16 lg:h-20 lg:w-20">

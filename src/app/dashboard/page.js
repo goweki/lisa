@@ -13,30 +13,30 @@ export default function UserHome() {
   const [overdues, setOverdues] = useState("");
   const { date, time, rawDate } = useDate();
   const {
-    data: { issues },
+    data: { cases },
   } = useContext(DataContext);
   //useEffects
   const rawDateMemo = useCallback(() => rawDate(), []);
   useEffect(() => {
-    const _overdues = issues
-      .map((issue) => {
+    const _overdues = cases
+      .map((case_) => {
         return {
-          ...issue,
-          dueDates: issue.dueDates?.filter(
+          ...case_,
+          dueDates: case_.dueDates?.filter(
             (obj) => !obj.task.complete && isDatePassed(new Date(obj.date))
           ),
         };
       })
-      .filter((issue) => issue.dueDates?.length > 0);
+      .filter((case_) => case_.dueDates?.length > 0);
     setOverdues(_overdues);
-  }, [issues, rawDateMemo]);
+  }, [cases, rawDateMemo]);
 
   // render
   return (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         {profileCard(date, time, overdues)}
-        {scheduleBrief(issues, router)}
+        {scheduleBrief(cases, router)}
       </div>
     </main>
   );
@@ -75,8 +75,7 @@ function profileCard(date, time, data_) {
                 : "text-red-500"
             }`}
           >
-            {data_.length} issue{data_.length !== 1 && <>s</>} with pending
-            tasks
+            {data_.length} case{data_.length !== 1 && <>s</>} with pending tasks
           </p>
           <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
             {data_ &&
@@ -97,14 +96,14 @@ function profileCard(date, time, data_) {
         <div className="mt-6 mb-2 mx-4 space-y-4">
           {data_.length !== 0 && (
             <div>
-              <Link href="/user/tasks">
+              <Link href="/dashboard/tasks">
                 <ButtonPrimary label="View Tasks" onClick={() => ""} />
               </Link>
             </div>
           )}
           <div>
-            <Link href="/user/issues/new">
-              <ButtonSecondary label="New Issue" onClick={() => ""} />
+            <Link href="/dashboard/cases/new">
+              <ButtonSecondary label="New Case" onClick={() => ""} />
             </Link>
           </div>
         </div>
@@ -117,10 +116,10 @@ function scheduleBrief(data_, router) {
   return (
     <div className="card overflow-x-auto m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal p-2 md:p-4">
       <div className="flex items-center justify-start">
-        <h5 className="text-xl font-bold leading-none">Active Issues</h5>
+        <h5 className="text-xl font-bold leading-none">Active Cases</h5>
         <div className="ml-4">
           <Link
-            href="/user/issues"
+            href="/dashboard/cases"
             className="text-sm text-emerald-600 hover:underline dark:text-emerald-400"
           >
             View all
@@ -151,7 +150,7 @@ function scheduleBrief(data_, router) {
                 <tr
                   key={i}
                   className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised cursor-pointer"
-                  onClick={() => router.push(`/user/issues/${v._id}`)}
+                  onClick={() => router.push(`/dashboard/cases/${v._id}`)}
                 >
                   <th scope="row" className="px-1 py-2 whitespace-nowrap">
                     {v.name}
@@ -171,7 +170,7 @@ function scheduleBrief(data_, router) {
           ) : (
             <tr>
               <td colSpan={4} className="text-center py-6 italic">
-                No active issues found
+                No active cases found
               </td>
             </tr>
           )}

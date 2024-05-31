@@ -2,91 +2,111 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-    provider = "mongodb"
-    url      = env("MONGODB_URL")
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model Institution {
-    id       String  @id @default(auto()) @map("_id") @db.ObjectId
-    name     String  @unique
-    email    String
-    tel      String?
-    location String?
-    logoUrl  String?
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String  @unique
+  email    String
+  tel      String?
+  location String?
+  logoUrl  String?
 
-    userIDs String[] @db.ObjectId
+  userIDs String[] @db.ObjectId
 
-    users User[] @relation(fields: [userIDs], references: [id])
-    cases Case[]
+  users User[] @relation(fields: [userIDs], references: [id])
+  cases Case[]
 }
 
 model User {
-    id       String  @id @default(auto()) @map("_id") @db.ObjectId
-    name     String
-    email    String  @unique
-    password String
-    role     String
-    imageUrl String?
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String  @unique
+  password String
+  role     String
+  imageUrl String?
 
-    institutionIDs String[] @db.ObjectId
+  institutionIDs String[] @db.ObjectId
 
-    cases        Case[]
-    institutions Institution[] @relation(fields: [institutionIDs], references: [id])
+  cases        Case[]
+  institutions Institution[] @relation(fields: [institutionIDs], references: [id])
 }
 
 model CaseType {
-    id             String @id @default(auto()) @map("_id") @db.ObjectId
-    name           String
-    primaryParty   String
-    secondaryParty String
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  name           String @unique
+  primaryParty   String
+  secondaryParty String
 
-    cases Case[]
+  cases Case[]
+}
+
+enum caseStatus {
+  open
+  won
+  lost
+  closed
 }
 
 model Case {
-    id              String  @id @default(auto()) @map("_id") @db.ObjectId
-    type            String
-    name            String
-    description     String?
-    status          String
-    clientType      String
-    clientName      String
-    clientTel       String?
-    clientEmail     String?
-    otherPartyName  String?
-    otherPartyTel   String
-    otherPartyEmail String
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  type            String
+  name            String
+  description     String?
+  status          caseStatus @default(open)
+  clientParty     String
+  clientName      String
+  clientTel       String
+  clientEmail     String?
+  otherPartyName  String?
+  otherPartyTel   String?
+  otherPartyEmail String?
 
-    caseTypeID    String  @db.ObjectId
-    institutionID String  @db.ObjectId
-    userID        String? @db.ObjectId
+  caseTypeID    String  @db.ObjectId
+  institutionID String  @db.ObjectId
+  userID        String? @db.ObjectId
 
-    tasks       Task[]
-    caseType    CaseType    @relation(fields: [caseTypeID], references: [id])
-    institution Institution @relation(fields: [institutionID], references: [id])
-    lawyer      User?       @relation(fields: [userID], references: [id])
+  tasks       Task[]
+  caseType    CaseType    @relation(fields: [caseTypeID], references: [id])
+  institution Institution @relation(fields: [institutionID], references: [id])
+  lawyer      User?       @relation(fields: [userID], references: [id])
 }
 
 enum reminderChannels {
-    email
-    sms
+  email
+  sms
 }
 
 type Reminder {
-    regime String //hours,days
-    count  Int
+  regime String //hours,days
+  count  Int
 }
 
 model Task {
-    id     String @id @default(auto()) @map("_id") @db.ObjectId
-    name   String
-    caseID String @db.ObjectId
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  dueDate  DateTime
+  document Document?
+  caseID   String    @db.ObjectId
 
-    reminders        Reminder[]
-    reminderChannels reminderChannels
-    case             Case             @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reminders        Reminder[]
+  reminderChannels reminderChannels
+  case             Case             @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Document {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  name   String
+  link   String
+  taskID String @unique @db.ObjectId
+
+  reminders        Reminder[]
+  reminderChannels reminderChannels
+  task             Task             @relation(fields: [taskID], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

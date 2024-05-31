@@ -27,7 +27,7 @@ export function nameValidator(name) {
 }
 
 export function telValidator(tel) {
-  const re = /\+?(254|0)7\d{8}/;
+  const re = /\+?(254|0)\d{9}/;
   if (!tel) {
     return "Tel field can't be empty";
   } else if (!re.test(tel)) {

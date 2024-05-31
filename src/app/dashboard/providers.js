@@ -14,9 +14,9 @@ export default function Providers({ children }) {
       const fetchOptions = {
         method: "GET",
       };
-
+      // console.log("FETCHING: ", session.user);
       const response = await fetch(
-        `/api/user/data?institution=${Object.keys(session.user.role)[0]}`,
+        `/api/dashboard/data?institution=${session.user.institutionIDs}`,
         fetchOptions
       );
 
@@ -26,6 +26,7 @@ export default function Providers({ children }) {
 
       const json_ = await response.json();
 
+      // console.log("RESPONSE", json_);
       if (json_.success) {
         setData(json_.success);
       } else {
@@ -39,7 +40,7 @@ export default function Providers({ children }) {
       setData("failed");
       console.error("ERROR: caught error\n > " + err);
     }
-  }, [session?.user?.role]);
+  }, [session?.user?.institutionIDs]);
 
   // onMount
   useEffect(() => {
