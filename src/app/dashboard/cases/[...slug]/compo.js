@@ -7,8 +7,8 @@ import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import DocView from "@/components/mols/docViewer";
 
-export function ViewIssue({
-  selectedIssue,
+export function ViewCase({
+  selectedCase,
   selectedTaskName,
   template,
   refreshData,
@@ -22,59 +22,65 @@ export function ViewIssue({
   const [errFields, setErrFields] = useState([]);
   const [filterPhrase, setFilterPhrase] = useState("");
   const [expandedField, setExpanded] = useState("");
-  const [client, setClient] = useState({
-    party: selectedIssue.client.party ?? "",
-    name: selectedIssue.client.name ?? "",
-    tel: selectedIssue.client.tel ?? "",
-    email: selectedIssue.client.email ?? "",
-  });
-  const [otherParty, setOtherParty] = useState({
+  // client State
+  const defaultClient = {
+    party: selectedCase.clientParty ?? "",
+    name: selectedCase.clientName ?? "",
+    tel: selectedCase.clientTel ?? "",
+    email: selectedCase.clientEmail ?? "",
+  };
+  const [client, setClient] = useState(defaultClient);
+  // otherParty State
+  const defaultOtherParty = {
     party:
-      template.parties.find((party) => party !== selectedIssue.client.party) ??
-      "",
-    name: selectedIssue.otherParty?.name ?? "",
-    tel: selectedIssue.otherParty?.tel ?? "",
-    email: selectedIssue.otherParty?.email ?? "",
-  });
-  const [court, setCourt] = useState(selectedIssue.court ?? "");
-  const [dueDates, setDueDates] = useState(selectedIssue.dueDates);
-  const [status, setStatus] = useState({
-    status: selectedIssue.status.status ?? "",
-    description: selectedIssue.status.description ?? "",
-  });
+      [template.primaryParty, template.secondaryParty].find(
+        (v) => v !== selectedCase.clientParty
+      ) ?? "",
+    name: selectedCase.otherPartyName ?? "",
+    tel: selectedCase.otherPartyTel ?? "",
+    email: selectedCase.otherPartyEmail ?? "",
+  };
+  const [otherParty, setOtherParty] = useState(defaultOtherParty);
+  // states
+  const [court, setCourt] = useState(selectedCase.court ?? "");
+  const [caseTasks, setCaseTasks] = useState(selectedCase.tasks);
+  const [status, setStatus] = useState(selectedCase.status ?? "");
+  const [description, setDescription] = useState(
+    selectedCase.description ?? ""
+  );
 
   // load task classes
   useEffect(() => {
     if (filterPhrase === "overdue")
-      setDueDates(
-        selectedIssue.dueDates?.filter(
+      setCaseTasks(
+        selectedCase.dueDates?.filter(
           ({ date, task }) => isDatePassed(new Date(date)) && !task.complete
         )
       );
     else if (filterPhrase === "due")
-      setDueDates(
-        selectedIssue.dueDates?.filter(
+      setCaseTasks(
+        selectedCase.dueDates?.filter(
           ({ date, task }) => !isDatePassed(new Date(date)) && !task.complete
         )
       );
     else if (filterPhrase === "done")
-      setDueDates(selectedIssue.dueDates?.filter(({ task }) => task.complete));
-    else setDueDates(selectedIssue.dueDates);
-  }, [filterPhrase, selectedIssue.dueDates]);
+      setCaseTasks(selectedCase.dueDates?.filter(({ task }) => task.complete));
+    else setCaseTasks(selectedCase.dueDates);
+  }, [filterPhrase, selectedCase.dueDates]);
   // if selectedTaskId
   useEffect(() => {
     if (selectedTaskName) {
       setTab("tasks");
-      const task = selectedIssue.dueDates.find(
+      const task = selectedCase.dueDates.find(
         ({ task }) => task.name === selectedTaskName
       );
       setSelect({ menu: "task", item: task });
     }
-  }, [selectedTaskName, selectedIssue.dueDates]);
+  }, [selectedTaskName, selectedCase.dueDates]);
 
   // render
   return (
-    <div id="view-issue">
+    <div id="view-case">
       {/* header */}
       <ul className="items-center justify-center flex flex-wrap -mb-px font-medium text-sm text-center">
         <li className="me-2">
@@ -87,7 +93,7 @@ export function ViewIssue({
             onClick={() => {
               setTab("profile");
               setEdit("");
-              // resetIssueStates();
+              // resetCaseStates();
               resetTaskStates();
             }}
           >
@@ -100,7 +106,7 @@ export function ViewIssue({
             >
               <path d="M5 11.424V1a1 1 0 1 0-2 0v10.424a3.228 3.228 0 0 0 0 6.152V19a1 1 0 1 0 2 0v-1.424a3.228 3.228 0 0 0 0-6.152ZM19.25 14.5A3.243 3.243 0 0 0 17 11.424V1a1 1 0 0 0-2 0v10.424a3.227 3.227 0 0 0 0 6.152V19a1 1 0 1 0 2 0v-1.424a3.243 3.243 0 0 0 2.25-3.076Zm-6-9A3.243 3.243 0 0 0 11 2.424V1a1 1 0 0 0-2 0v1.424a3.228 3.228 0 0 0 0 6.152V19a1 1 0 1 0 2 0V8.576A3.243 3.243 0 0 0 13.25 5.5Z" />
             </svg>
-            Issue Profile
+            Case Profile
           </div>
         </li>
         <li className="me-2">
@@ -113,7 +119,7 @@ export function ViewIssue({
             onClick={() => {
               setTab("tasks");
               setEdit("");
-              resetIssueProfileStates();
+              resetCaseProfileStates();
               // resetTaskStates();
             }}
           >
@@ -172,7 +178,7 @@ export function ViewIssue({
                     if (e.target.checked) setEdit("profile");
                     else {
                       setEdit("");
-                      resetIssueProfileStates();
+                      resetCaseProfileStates();
                     }
                   }}
                   className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
@@ -351,7 +357,7 @@ export function ViewIssue({
             <div className="flex items-center mb-6 pl-4">
               <div className="flex items-center h-5">
                 <input
-                  id="issue-status"
+                  id="case-status"
                   type="checkbox"
                   checked={status.status === "open"}
                   onChange={(e) => {
@@ -364,7 +370,7 @@ export function ViewIssue({
                 />
               </div>
               <label
-                htmlFor="issue-status"
+                htmlFor="case-status"
                 className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
               >
                 Active
@@ -386,16 +392,16 @@ export function ViewIssue({
               <div className="max-w-lg mx-auto">
                 <div className="mb-4">
                   <ButtonPrimary
-                    label="Submit Issue changes"
+                    label="Submit Case changes"
                     loading={UIstate === "loading"}
-                    onClick={handleSubmitIssueChanges}
+                    onClick={handleSubmitCaseChanges}
                   />
                 </div>
                 <div className="flex justify-center">
                   <ButtonText
-                    label="Delete Issue"
+                    label="Delete Case"
                     loading={UIstate === "loading"}
-                    onClick={handleDeleteIssue}
+                    onClick={handleDeleteCase}
                   />
                 </div>
               </div>
@@ -460,7 +466,7 @@ export function ViewIssue({
                     New task
                   </div>
                 </li>
-                {dueDates?.map((taskItem) => (
+                {caseTasks?.map((taskItem) => (
                   <li
                     key={taskItem.task.name}
                     onClick={() => {
@@ -667,25 +673,12 @@ export function ViewIssue({
       </div>
     );
   }
-  //func to reset issue-states
-  function resetIssueProfileStates() {
-    setClient({
-      party: selectedIssue.client.party ?? "",
-      name: selectedIssue.client.name ?? "",
-      tel: selectedIssue.client.tel ?? "",
-      email: selectedIssue.client.email ?? "",
-    });
-    setOtherParty({
-      party: selectedIssue.otherParty?.party ?? "",
-      name: selectedIssue.otherParty?.name ?? "",
-      tel: selectedIssue.otherParty?.tel ?? "",
-      email: selectedIssue.otherParty?.email ?? "",
-    });
-    setCourt(selectedIssue.court ?? "");
-    setStatus({
-      status: selectedIssue.status.status ?? "",
-      description: selectedIssue.status.description ?? "",
-    });
+  //func to reset case-states
+  function resetCaseProfileStates() {
+    setClient(defaultClient);
+    setOtherParty(defaultOtherParty);
+    setCourt(selectedCase.court ?? "");
+    setStatus(selectedCase.status ?? "");
   }
   //func to reset task-state
   function resetTaskStates() {
@@ -693,16 +686,16 @@ export function ViewIssue({
     setSelect({ menu: "", item: "" });
     setCompleteUpload("");
   }
-  //func to Update Issue
-  async function handleSubmitIssueChanges() {
-    if (!selectedIssue._id) {
-      toast.error("Sorry, issue could not be found");
+  //func to Update Case
+  async function handleSubmitCaseChanges() {
+    if (!selectedCase._id) {
+      toast.error("Sorry, case could not be found");
     } else {
       // fetch options
       let fetchOptions = {
         method: "PUT",
         body: JSON.stringify({
-          _id: selectedIssue._id,
+          _id: selectedCase._id,
           client: client,
           otherParty: otherParty,
           court,
@@ -717,22 +710,22 @@ export function ViewIssue({
             return await res_.json();
           } else {
             console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: issue not updated");
+            toast.error("OOPS: case not updated");
           }
         }
       );
       if (_res?.success) {
         console.log(
-          "SUCCESS: issue updated successfully\n > " +
+          "SUCCESS: case updated successfully\n > " +
             JSON.stringify(_res.success) +
             "\n.............."
         );
         await refreshData();
-        toast.success("Issue updated successfully!");
+        toast.success("Case updated successfully!");
         setUIstate("OK");
       } else {
         console.error(
-          "ERROR: failed to update issue at /dashboard/cases/[slug] /compo\n > " +
+          "ERROR: failed to update case at /dashboard/cases/[slug] /compo\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
@@ -740,16 +733,16 @@ export function ViewIssue({
       }
     }
   }
-  //func to Delete Issue
-  async function handleDeleteIssue() {
-    if (!selectedIssue._id) {
-      toast.error("Sorry, issue could not be found");
+  //func to Delete Case
+  async function handleDeleteCase() {
+    if (!selectedCase._id) {
+      toast.error("Sorry, case could not be found");
     } else {
       // fetch options
       let fetchOptions = {
         method: "DELETE",
         body: JSON.stringify({
-          _id: selectedIssue._id,
+          _id: selectedCase._id,
         }),
       };
       setUIstate("loading");
@@ -760,22 +753,22 @@ export function ViewIssue({
             return await res_.json();
           } else {
             console.error(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: issue not deleted");
+            toast.error("OOPS: case not deleted");
           }
         }
       );
       if (_res?.success) {
         console.log(
-          "SUCCESS: issue deleted\n > " +
+          "SUCCESS: case deleted\n > " +
             JSON.stringify(_res.success) +
             "\n.............."
         );
         await refreshData();
-        toast.success("Issue deleted");
+        toast.success("Case deleted");
         router.replace("/dashboard/cases");
       } else {
         console.error(
-          "ERROR: failed to delete issue at /dashboard/cases/[slug] /compo\n > " +
+          "ERROR: failed to delete case at /dashboard/cases/[slug] /compo\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
@@ -794,7 +787,7 @@ export function ViewIssue({
       let fetchOptions = {
         method: "POST",
         body: JSON.stringify({
-          issueId: selectedIssue._id,
+          caseId: selectedCase._id,
           type: select.item.type,
           date: select.item.date,
           name: select.item.task.name,
@@ -838,7 +831,7 @@ export function ViewIssue({
       setUIstate("loading");
       //fetch options
       const formData = new FormData();
-      formData.append("issueId", selectedIssue._id);
+      formData.append("caseId", selectedCase._id);
       formData.append("taskName", select.item.task.name);
       formData.append("complete", completeUpload);
       console.log("COMPLETE file ", completeUpload);
@@ -884,7 +877,7 @@ export function ViewIssue({
       let fetchOptions = {
         method: "DELETE",
         body: JSON.stringify({
-          issueId: selectedIssue._id,
+          caseId: selectedCase._id,
           taskName: select.item.task.name,
         }),
       };

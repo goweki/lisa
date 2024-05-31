@@ -10,7 +10,7 @@ import { InputText } from "@/components/atoms/inputs";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
 import { Loader1 } from "@/components/atoms/loader";
-import { ViewIssue } from "./compo";
+import { ViewCase } from "./compo";
 import { telValidator } from "@/helpers/inputValidators";
 
 export default function CasePage({ params }) {
@@ -46,8 +46,7 @@ export default function CasePage({ params }) {
   // check slug and update selected
   useEffect(() => {
     if (slug[0] !== "new") {
-      let issue_ = cases.find(({ _id }) => _id === slug[0]);
-      setSelected(issue_);
+      setSelected(cases.find(({ id }) => id === slug[0]));
     } else setUIstate("OK");
   }, [cases, slug]);
   // UIstate OK after updating selected
@@ -56,13 +55,13 @@ export default function CasePage({ params }) {
       setUIstate("OK");
     }
   }, [selected]);
-  //update Categories after issue-type is updates
+  //update Categories after case-type is updates
   useEffect(() => {
     if (newCase.type)
       setCaseType(caseTypes.find((v) => v.name === newCase.type));
   }, [newCase.type, caseTypes]);
-  //submit new issue
-  async function initializeIssue() {
+  //submit new case
+  async function initializeCase() {
     try {
       // fetch options
       let fetchOptions = {
@@ -97,16 +96,16 @@ export default function CasePage({ params }) {
       );
       if (_res?.success) {
         console.log(
-          "SUCCESS: issue initialized successfully\n > " +
+          "SUCCESS: case initialized successfully\n > " +
             JSON.stringify(_res.success) +
             "\n.............."
         );
-        toast.success("Issue initialization successful!");
+        toast.success("Case initialized successfully!");
         await refreshData();
-        router.replace(`/dashboard/cases/${_res.success.insertedId}`);
+        router.replace(`/dashboard/cases/${_res.success.id}`);
       } else {
         console.error(
-          "ERROR: failed to initialize issue at /dashboard/cases/new /page\n > " +
+          "ERROR: failed to initialize case at /dashboard/cases/new /page\n > " +
             JSON.stringify(_res) +
             "\n.............."
         );
@@ -245,7 +244,7 @@ export default function CasePage({ params }) {
                       label={`Initialize ${strPascalcase(
                         newCase.type.split(" ").pop()
                       )}`}
-                      onClick={initializeIssue}
+                      onClick={initializeCase}
                       disabled={
                         !newCase.type ||
                         !newCase.name.value ||
@@ -266,12 +265,10 @@ export default function CasePage({ params }) {
               </div>
             </div>
           ) : selected ? (
-            <ViewIssue
-              selectedIssue={selected}
+            <ViewCase
+              selectedCase={selected}
               selectedTaskName={slug[1] ?? null}
-              template={caseTypes.find(
-                ({ type }) => type === selected.type.type
-              )}
+              template={caseTypes.find(({ id }) => id === selected.caseTypeID)}
               refreshData={refreshData}
             />
           ) : (
@@ -330,8 +327,8 @@ function inputSelect(
   );
 }
 
-async function fetchIssue(issueId) {
-  const resRaw = await fetch(`/api/dashboard/case?id=${issueId}`, {
+async function fetchCase(caseId) {
+  const resRaw = await fetch(`/api/dashboard/case?id=${caseId}`, {
     method: "GET",
   });
   if (resRaw.ok) {
@@ -341,4 +338,4 @@ async function fetchIssue(issueId) {
   }
 }
 
-// const issueTypes = [{ value: "petition", text: "✍🏾 petition" }];
+// const caseTypes = [{ value: "petition", text: "✍🏾 petition" }];

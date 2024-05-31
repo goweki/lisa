@@ -1,26 +1,24 @@
 import { ObjectId, Binary } from "mongodb";
-import db_cluster from "@/lib/mongodb";
+import prisma from "@/lib/prisma";
 import { strPascalcase } from "@/helpers/stringHandlers";
-const collection = db_cluster.collection("issues");
 
 export async function POST(request) {
   // request body
-  // doc structure: {issueId,type,date,name}
-  const { issueId, type, name, date } = await request.json();
+  // doc structure: {caseId,type,date,name}
+  const { caseId, type, name, date } = await request.json();
   //   console.log(
   //     "POST REQUEST: new task: ",
   //     name,
   //     " of type ",
   //     type,
-  //     " in issue: ",
-  //     issueId
+  //     " in case: ",
+  //     caseId
   //   );
   try {
     //
     if (
-      await collection.findOne({
-        _id: new ObjectId(issueId),
-        "dueDates.task.name": strPascalcase(name),
+      await prisma.case.findUnique({
+        where: { id: caseId },
       })
     ) {
       // HTTP response - task name exists
@@ -29,7 +27,7 @@ export async function POST(request) {
     } else {
       // insert doc
       const res_ = await collection.updateOne(
-        { _id: new ObjectId(issueId) },
+        { _id: new ObjectId(caseId) },
         {
           $push: {
             dueDates: {
@@ -57,7 +55,7 @@ export async function POST(request) {
 export async function PUT(request) {
   // request body
   const formData = await request.formData();
-  const issueId = formData.get("issueId");
+  const caseId = formData.get("caseId");
   const taskName = formData.get("taskName");
   const complete = formData.get("complete");
   console.log("PUT REQUEST: updating task ", taskName);
@@ -67,7 +65,7 @@ export async function PUT(request) {
     // console.log("File binary: ", fileBinary);
     const res_ = await collection.updateOne(
       {
-        _id: new ObjectId(issueId),
+        _id: new ObjectId(caseId),
         "dueDates.task.name": taskName, // Match the task object with the specified name
       },
       {
@@ -90,13 +88,13 @@ export async function PUT(request) {
 export async function DELETE(request) {
   // request body
   const doc = await request.json();
-  const { issueId, taskName } = doc;
-  console.log("DELETE REQUEST: deleting task: ", taskName, " ", issueId);
+  const { caseId, taskName } = doc;
+  console.log("DELETE REQUEST: deleting task: ", taskName, " ", caseId);
   try {
     // delete (pull) object from the dueDates array
     const res_ = await collection.updateOne(
       {
-        _id: new ObjectId(issueId),
+        _id: new ObjectId(caseId),
       },
       {
         $pull: { dueDates: { "task.name": taskName } }, // Remove the task object with the specified name
@@ -118,7 +116,7 @@ export async function GET(request) {
     // retrieve doc
     const res_ = await collection.findOne({ _id: new ObjectId(id) });
     if (res_) return Response.json({ success: res_ });
-    else return Response.json({ failed: "no issue found" });
+    else return Response.json({ failed: "no case found" });
   } catch (err) {
     console.log(" > ERROR: document retrieval erred.", err, "\n..........");
     return Response.json({ error: err });

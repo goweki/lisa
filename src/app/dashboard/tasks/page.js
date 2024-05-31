@@ -17,7 +17,7 @@ import { Loader1 } from "@/components/atoms/loader";
 export default function TasksPage() {
   const [UIstate, setUIstate] = useState("loading");
   const {
-    data: { issues },
+    data: { cases },
   } = useContext(DataContext);
   const { rawDate } = useDate();
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
@@ -29,36 +29,36 @@ export default function TasksPage() {
 
   useEffect(() => {
     //onMount / onUpdate- set task by categories
-    const issues_withCompletetasks = issues
-      .filter((issue) => issue.status.status === "open")
-      .map((issue) => {
+    const cases_withCompletetasks = cases
+      .filter((case_) => case_.status.status === "open")
+      .map((case_) => {
         return {
-          _id: issue._id,
-          name: issue.name,
-          type: issue.type,
-          dueDates: issue.dueDates?.filter((obj) => obj.task.complete),
+          _id: case_._id,
+          name: case_.name,
+          type: case_.type,
+          dueDates: case_.dueDates?.filter((obj) => obj.task.complete),
         };
       })
-      .filter((issue) => issue.dueDates?.length);
+      .filter((case_) => case_.dueDates?.length);
 
-    const issues_withIncompletetasks = issues
-      .filter((issue) => issue.status.status === "open")
-      .map((issue) => {
+    const cases_withIncompletetasks = cases
+      .filter((case_) => case_.status.status === "open")
+      .map((case_) => {
         return {
-          _id: issue._id,
-          name: issue.name,
-          type: issue.type,
-          dueDates: issue.dueDates?.filter((obj) => !obj.task.complete),
+          _id: case_._id,
+          name: case_.name,
+          type: case_.type,
+          dueDates: case_.dueDates?.filter((obj) => !obj.task.complete),
         };
       })
-      .filter((issue) => issue.dueDates?.length);
+      .filter((case_) => case_.dueDates?.length);
     // incomplete tasks
-    const inCompletes_2d = issues_withIncompletetasks.map((issue) => {
-      const innerIncompletes = issue.dueDates?.map((dueDate) => {
+    const inCompletes_2d = cases_withIncompletetasks.map((case_) => {
+      const innerIncompletes = case_.dueDates?.map((dueDate) => {
         return {
-          issueId: issue._id,
-          issueName: issue.name,
-          issueType: issue.type,
+          caseId: case_._id,
+          caseName: case_.name,
+          caseType: case_.type,
           dueDate: dueDate.date,
           task: dueDate.task,
         };
@@ -102,12 +102,12 @@ export default function TasksPage() {
         ]);
     }
     //complete tasks
-    const completes_2d = issues_withCompletetasks.map((issue) => {
-      const innerCompletes = issue.dueDates?.map((dueDate) => {
+    const completes_2d = cases_withCompletetasks.map((case_) => {
+      const innerCompletes = case_.dueDates?.map((dueDate) => {
         return {
-          issueId: issue._id,
-          issueName: issue.name,
-          issueType: issue.type,
+          caseId: case_._id,
+          caseName: case_.name,
+          caseType: case_.type,
           dueDate: dueDate.date,
           task: dueDate.task,
         };
@@ -124,14 +124,14 @@ export default function TasksPage() {
     //stop loading
     setUIstate("OK");
     //
-  }, [issues, rawDateMemo]);
+  }, [cases, rawDateMemo]);
   //filter tasks by searchPhrase
   useEffect(() => {
     setFiltTasks(
       tasks?.filter(
-        ({ issueName, issueType, task }) =>
-          issueName.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
-          issueType.category
+        ({ caseName, caseType, task }) =>
+          caseName.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
+          caseType.category
             .toLowerCase()
             .includes(searchPhrase.value?.toLowerCase()) ||
           task.name.toLowerCase().includes(searchPhrase.value?.toLowerCase())
@@ -149,7 +149,7 @@ export default function TasksPage() {
             {/* <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 card pt-3 pb-6 px-12"> */}
             {/* <div className="md:order-last pt-2">
               <Link href="/dashboard/cases/new">
-                <ButtonPrimary label="+new Issue" onClick={() => ""} />
+                <ButtonPrimary label="+new Case" onClick={() => ""} />
               </Link>
             </div> */}
             <div>
@@ -157,7 +157,7 @@ export default function TasksPage() {
                 name="searchPhrase"
                 value={searchPhrase}
                 setValue={setSearchPhrase}
-                placeholder="Search for tasks by name, issue..."
+                placeholder="Search for tasks by name, case..."
                 icon={SVGsearch}
               />
             </div>
@@ -217,7 +217,7 @@ export default function TasksPage() {
                         {selectedTask.task.name}
                       </h3>
                       <Link
-                        href={`/dashboard/cases/${selectedTask.issueId}/${selectedTask.task.name}`}
+                        href={`/dashboard/cases/${selectedTask.caseId}/${selectedTask.task.name}`}
                       >
                         <button
                           type="button"
@@ -258,11 +258,11 @@ export default function TasksPage() {
                       <li className="flex flex-col">
                         <div className="text-xs">
                           <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
-                            Parent issue:
+                            Parent case:
                           </span>
                         </div>
                         <div className="flex h-full items-start py-1 px-3 text-base">
-                          {`${selectedTask.issueType.category}, ${selectedTask.issueType.type} - ${selectedTask.issueName}`}
+                          {`${selectedTask.caseType.category}, ${selectedTask.caseType.type} - ${selectedTask.caseName}`}
                         </div>
                       </li>
                       <li className="flex flex-col">
@@ -321,9 +321,9 @@ export default function TasksPage() {
         <th scope="row" className="flex px-6 py-4 whitespace-nowrap">
           <div className="text-start ps-3">
             <div className="font-semibold">{task.task.name}</div>
-            <div className="font-light text-neutral-500">{task.issueName}</div>
+            <div className="font-light text-neutral-500">{task.caseName}</div>
             <div className="font-light text-xs text-neutral-500">
-              {task.issueType.category}, {task.issueType.type}
+              {task.caseType.category}, {task.caseType.type}
             </div>
           </div>
         </th>

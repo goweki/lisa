@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-// const collection = db_cluster.collection("issues");
+// const collection = db_cluster.collection("cases");
 
 export async function POST(request) {
   try {

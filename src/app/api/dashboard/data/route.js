@@ -16,7 +16,14 @@ export async function GET(req) {
     // FIND Docs
     const cases = await prisma.case.findMany(
       institutions.some((inst) => inst.name === "Lisa")
-        ? {}
+        ? {
+            include: {
+              caseType: true,
+              institution: true,
+              lawyer: true,
+              tasks: true,
+            },
+          }
         : {
             where: {
               institutionID: institutionId,

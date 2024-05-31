@@ -67,6 +67,7 @@ model Case {
   otherPartyName  String?
   otherPartyTel   String?
   otherPartyEmail String?
+  court           String?
 
   caseTypeID    String  @db.ObjectId
   institutionID String  @db.ObjectId

@@ -16,7 +16,6 @@ export default function UserHome() {
     data: { cases },
   } = useContext(DataContext);
   //useEffects
-  const rawDateMemo = useCallback(() => rawDate(), []);
   useEffect(() => {
     const _overdues = cases
       .map((case_) => {
@@ -29,7 +28,7 @@ export default function UserHome() {
       })
       .filter((case_) => case_.dueDates?.length > 0);
     setOverdues(_overdues);
-  }, [cases, rawDateMemo]);
+  }, [cases]);
 
   // render
   return (
@@ -130,13 +129,13 @@ function scheduleBrief(data_, router) {
         <thead className="rounded uppercase border-b border-gray-500">
           <tr>
             <th scope="col" className="px-1 py-3">
-              Issue
+              Case
+            </th>
+            <th scope="col" className="px-1 py-3">
+              Case Type
             </th>
             <th scope="col" className="px-1 py-3">
               Client
-            </th>
-            <th scope="col" className="px-1 py-3">
-              Category
             </th>
             <th scope="col" className="px-1 py-3">
               Status
@@ -148,22 +147,23 @@ function scheduleBrief(data_, router) {
             data_.map((v, i) => {
               return (
                 <tr
-                  key={i}
+                  key={v.id}
                   className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised cursor-pointer"
-                  onClick={() => router.push(`/dashboard/cases/${v._id}`)}
+                  onClick={() => router.push(`/dashboard/cases/${v.id}`)}
                 >
                   <th scope="row" className="px-1 py-2 whitespace-nowrap">
                     {v.name}
                   </th>
                   <td className="px-1 py-2">
-                    <span className="block">{v.client.party}</span>
-                    <span className="block">{v.client.name}</span>
+                    {/* <span className="block">{v.type}</span> */}
+                    {/* <span className="block">{v.type}</span> */}
+                    {v.type}
                   </td>
                   <td className="px-1 py-2">
-                    <span className="block">{v.type.category}</span>
-                    <span className="block">{v.type.type}</span>
+                    <span className="block italic">{v.clientParty}</span>
+                    <span className="block">{v.clientName}</span>
                   </td>
-                  <td className="px-1 py-2">{v.status.status}</td>
+                  <td className="px-1 py-2">{v.status}</td>
                 </tr>
               );
             })
