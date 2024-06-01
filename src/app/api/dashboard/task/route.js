@@ -1,19 +1,10 @@
-import { ObjectId, Binary } from "mongodb";
+import { Binary } from "mongodb";
 import prisma from "@/lib/prisma";
 import { strPascalcase } from "@/helpers/stringHandlers";
 
 export async function POST(request) {
-  // request body
-  // doc structure: {caseId,type,date,name}
   const { caseId, type, name, date } = await request.json();
-  //   console.log(
-  //     "POST REQUEST: new task: ",
-  //     name,
-  //     " of type ",
-  //     type,
-  //     " in case: ",
-  //     caseId
-  //   );
+  console.log("POST REQUEST: new task: ", name);
   try {
     //
     if (
@@ -27,7 +18,7 @@ export async function POST(request) {
     } else {
       // insert doc
       const res_ = await collection.updateOne(
-        { _id: new ObjectId(caseId) },
+        { id: caseId },
         {
           $push: {
             dueDates: {
@@ -65,7 +56,7 @@ export async function PUT(request) {
     // console.log("File binary: ", fileBinary);
     const res_ = await collection.updateOne(
       {
-        _id: new ObjectId(caseId),
+        id: caseId,
         "dueDates.task.name": taskName, // Match the task object with the specified name
       },
       {
@@ -94,7 +85,7 @@ export async function DELETE(request) {
     // delete (pull) object from the dueDates array
     const res_ = await collection.updateOne(
       {
-        _id: new ObjectId(caseId),
+        id: caseId,
       },
       {
         $pull: { dueDates: { "task.name": taskName } }, // Remove the task object with the specified name
@@ -114,7 +105,7 @@ export async function GET(request) {
   const id = url.searchParams.get("id");
   try {
     // retrieve doc
-    const res_ = await collection.findOne({ _id: new ObjectId(id) });
+    const res_ = await collection.findOne({ id: id });
     if (res_) return Response.json({ success: res_ });
     else return Response.json({ failed: "no case found" });
   } catch (err) {

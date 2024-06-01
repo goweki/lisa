@@ -53,6 +53,7 @@ export function ViewCase({
   const [description, setDescription] = useState(
     selectedCase.description ?? ""
   );
+  const [lawyer, setLawyer] = useState(selectedCase.lawyer ?? "");
 
   // load task classes
   useEffect(() => {
@@ -207,6 +208,7 @@ export function ViewCase({
                 }
                 errFields={errFields}
                 setErrFields={setErrFields}
+                valValidator={nameValidator}
                 readOnly={edit !== "profile"}
               />
               <div id="client-dropdown-button" className="mx-6">
@@ -257,6 +259,7 @@ export function ViewCase({
                       }
                       errFields={errFields}
                       setErrFields={setErrFields}
+                      valValidator={telValidator}
                       readOnly={edit !== "profile"}
                     />
                     <InputText
@@ -268,6 +271,7 @@ export function ViewCase({
                       }
                       errFields={errFields}
                       setErrFields={setErrFields}
+                      valValidator={emailValidator}
                       readOnly={edit !== "profile"}
                     />
                   </div>
@@ -286,6 +290,7 @@ export function ViewCase({
                   }
                   errFields={errFields}
                   setErrFields={setErrFields}
+                  valValidator={nameValidator}
                   readOnly={edit !== "profile"}
                 />
                 <div id="otherParty-dropdown-button" className="mx-6">
@@ -336,6 +341,7 @@ export function ViewCase({
                         }
                         errFields={errFields}
                         setErrFields={setErrFields}
+                        valValidator={telValidator}
                         readOnly={edit !== "profile"}
                       />
                       <InputText
@@ -347,6 +353,7 @@ export function ViewCase({
                         }
                         errFields={errFields}
                         setErrFields={setErrFields}
+                        valValidator={emailValidator}
                         readOnly={edit !== "profile"}
                       />
                     </div>
@@ -363,6 +370,7 @@ export function ViewCase({
                 setValue={(val) => setCourt(val)}
                 errFields={errFields}
                 setErrFields={setErrFields}
+                valValidator={nameValidator}
                 readOnly={edit !== "profile"}
               />
             </div>
@@ -730,7 +738,7 @@ export function ViewCase({
         toast.error("Invalid client name");
       }
       if (err_clientTel) {
-        setErrFields((prev) => [...prev, "client-tel"]);
+        setErrFields((prev) => new Set([...prev, "client-tel"]));
         toast.error("Invalid client Telephone No.");
       }
       if (err_clientEmail) {
@@ -764,6 +772,7 @@ export function ViewCase({
         otherPartyEmail: otherParty.email,
         court,
         status,
+        description,
       }),
     };
     setUIstate("loading");
@@ -780,7 +789,7 @@ export function ViewCase({
     );
     if (_res?.success) {
       console.log(
-        "SUCCESS: case updated successfully\n > " +
+        "SUCCESS: Case updated successfully\n > " +
           JSON.stringify(_res.success) +
           "\n.............."
       );
@@ -1018,8 +1027,7 @@ function InputText({
               const err_ = valValidator(e.target.value);
               if (!err_) {
                 setErrFields(
-                  (prev) =>
-                    new Set([[...prev].filter((name_) => name_ !== name)])
+                  (prev) => new Set([...prev].filter((name_) => name_ !== name))
                 );
               }
             }
