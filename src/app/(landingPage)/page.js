@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
 import { useDate } from "@/lib/dateTime";
@@ -72,7 +72,7 @@ export default function LandingPage() {
                 {`${wish()} ${session.user.name}`}
               </h1>
               <div className="mb-10 flex flex-wrap items-center justify-center space-x-4">
-                <ButtonText
+                <ButtonDestructive
                   label="Exit"
                   onClick={async () => {
                     await signOut();

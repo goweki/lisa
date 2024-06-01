@@ -32,6 +32,6 @@ export function telValidator(tel) {
     return "Tel field can't be empty";
   } else if (!re.test(tel)) {
     // console.log(" > Parsed a non-Kenyan phone number: " + tel);
-    return "Sorry, we dont support non-Kenyan phone numbers";
+    return "Sorry, we only support KENYAN phone numbers";
   } else return "";
 }

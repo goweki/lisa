@@ -5,13 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "../../providers";
 import { SVGpenscilSquare } from "@/components/atoms/svgs";
-import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
+import {
+  ButtonPrimary,
+  ButtonSecondary,
+  ButtonDestructive,
+} from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
 import { Loader1 } from "@/components/atoms/loader";
 import { ViewCase } from "./compo";
-import { telValidator } from "@/helpers/inputValidators";
+import { nameValidator, telValidator } from "@/helpers/inputValidators";
 
 export default function CasePage({ params }) {
   // const { data: session } = useSession();
@@ -62,6 +66,32 @@ export default function CasePage({ params }) {
   }, [newCase.type, caseTypes]);
   //submit new case
   async function initializeCase() {
+    //validate name
+    const nameError_ = nameValidator(newCase.client.name.value);
+    if (nameError_) {
+      setNewCase((prev) => ({
+        ...prev,
+        client: {
+          ...prev.client,
+          name: { ...prev.client.name, error: nameError_ },
+        },
+      }));
+      toast.error(nameError_);
+      return;
+    }
+    //validate tel
+    const telError_ = telValidator(newCase.client.tel.value);
+    if (telError_) {
+      setNewCase((prev) => ({
+        ...prev,
+        client: {
+          ...prev.client,
+          tel: { ...prev.client.tel, error: telError_ },
+        },
+      }));
+      toast.error(telError_);
+      return;
+    }
     try {
       // fetch options
       let fetchOptions = {
@@ -253,13 +283,23 @@ export default function CasePage({ params }) {
                         !newCase.client.tel.value
                       }
                     />
-                    <ButtonSecondary
+                    {/* <ButtonSecondary
                       label={`Clear`}
                       onClick={() => {
                         setNewCase(emptyCase);
                         setCaseType("");
                       }}
-                    />
+                    /> */}
+                    <div className="flex justify-center">
+                      <ButtonDestructive
+                        label="Clear Form"
+                        loading={UIstate === "loading"}
+                        onClick={() => {
+                          setNewCase(emptyCase);
+                          setCaseType("");
+                        }}
+                      />
+                    </div>
                   </>
                 )}
               </div>

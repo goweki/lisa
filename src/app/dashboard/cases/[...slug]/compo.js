@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import toast from "react-hot-toast";
 import { SVGbuilding, SVGdoc, SVGfilter } from "@/components/atoms/svgs";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import DocView from "@/components/mols/docViewer";
+import {
+  emailValidator,
+  nameValidator,
+  telValidator,
+} from "@/helpers/inputValidators";
 
 export function ViewCase({
   selectedCase,
@@ -19,7 +24,7 @@ export function ViewCase({
   const [edit, setEdit] = useState("");
   const [select, setSelect] = useState({ menu: "", item: "" });
   const [completeUpload, setCompleteUpload] = useState("");
-  const [errFields, setErrFields] = useState([]);
+  const [errFields, setErrFields] = useState(new Set());
   const [filterPhrase, setFilterPhrase] = useState("");
   const [expandedField, setExpanded] = useState("");
   // client State
@@ -43,7 +48,7 @@ export function ViewCase({
   const [otherParty, setOtherParty] = useState(defaultOtherParty);
   // states
   const [court, setCourt] = useState(selectedCase.court ?? "");
-  const [caseTasks, setCaseTasks] = useState(selectedCase.tasks);
+  const [caseTasks, setCaseTasks] = useState(selectedCase.tasks ?? []);
   const [status, setStatus] = useState(selectedCase.status ?? "");
   const [description, setDescription] = useState(
     selectedCase.description ?? ""
@@ -53,30 +58,30 @@ export function ViewCase({
   useEffect(() => {
     if (filterPhrase === "overdue")
       setCaseTasks(
-        selectedCase.dueDates?.filter(
+        selectedCase.tasks?.filter(
           ({ date, task }) => isDatePassed(new Date(date)) && !task.complete
         )
       );
     else if (filterPhrase === "due")
       setCaseTasks(
-        selectedCase.dueDates?.filter(
+        selectedCase.tasks?.filter(
           ({ date, task }) => !isDatePassed(new Date(date)) && !task.complete
         )
       );
     else if (filterPhrase === "done")
-      setCaseTasks(selectedCase.dueDates?.filter(({ task }) => task.complete));
-    else setCaseTasks(selectedCase.dueDates);
-  }, [filterPhrase, selectedCase.dueDates]);
+      setCaseTasks(selectedCase.tasks?.filter(({ task }) => task.complete));
+    else setCaseTasks(selectedCase.tasks);
+  }, [filterPhrase, selectedCase.tasks]);
   // if selectedTaskId
   useEffect(() => {
     if (selectedTaskName) {
       setTab("tasks");
-      const task = selectedCase.dueDates.find(
+      const task = selectedCase.tasks.find(
         ({ task }) => task.name === selectedTaskName
       );
       setSelect({ menu: "task", item: task });
     }
-  }, [selectedTaskName, selectedCase.dueDates]);
+  }, [selectedTaskName, selectedCase.tasks]);
 
   // render
   return (
@@ -201,6 +206,7 @@ export function ViewCase({
                   setClient((prev) => ({ ...prev, name: val }))
                 }
                 errFields={errFields}
+                setErrFields={setErrFields}
                 readOnly={edit !== "profile"}
               />
               <div id="client-dropdown-button" className="mx-6">
@@ -250,6 +256,7 @@ export function ViewCase({
                         setClient((prev) => ({ ...prev, tel: val }))
                       }
                       errFields={errFields}
+                      setErrFields={setErrFields}
                       readOnly={edit !== "profile"}
                     />
                     <InputText
@@ -260,6 +267,7 @@ export function ViewCase({
                         setClient((prev) => ({ ...prev, email: val }))
                       }
                       errFields={errFields}
+                      setErrFields={setErrFields}
                       readOnly={edit !== "profile"}
                     />
                   </div>
@@ -270,13 +278,14 @@ export function ViewCase({
               <div id="otherParty-details" className="mb-4">
                 <InputText
                   label={strPascalcase(otherParty.party)}
-                  name={otherParty.party}
+                  name="otherParty-name"
                   placeholder={`${otherParty.party} name`}
                   value={otherParty.name}
                   setValue={(val) =>
                     setOtherParty((prev) => ({ ...prev, name: val }))
                   }
                   errFields={errFields}
+                  setErrFields={setErrFields}
                   readOnly={edit !== "profile"}
                 />
                 <div id="otherParty-dropdown-button" className="mx-6">
@@ -326,6 +335,7 @@ export function ViewCase({
                           setOtherParty((prev) => ({ ...prev, tel: val }))
                         }
                         errFields={errFields}
+                        setErrFields={setErrFields}
                         readOnly={edit !== "profile"}
                       />
                       <InputText
@@ -336,6 +346,7 @@ export function ViewCase({
                           setOtherParty((prev) => ({ ...prev, email: val }))
                         }
                         errFields={errFields}
+                        setErrFields={setErrFields}
                         readOnly={edit !== "profile"}
                       />
                     </div>
@@ -351,6 +362,7 @@ export function ViewCase({
                 value={court}
                 setValue={(val) => setCourt(val)}
                 errFields={errFields}
+                setErrFields={setErrFields}
                 readOnly={edit !== "profile"}
               />
             </div>
@@ -359,11 +371,10 @@ export function ViewCase({
                 <input
                   id="case-status"
                   type="checkbox"
-                  checked={status.status === "open"}
+                  checked={status === "open"}
                   onChange={(e) => {
-                    if (e.target.checked)
-                      setStatus((prev) => ({ ...prev, status: "open" }));
-                    else setStatus((prev) => ({ ...prev, status: "closed" }));
+                    if (e.target.checked) setStatus("open");
+                    else setStatus("closed");
                   }}
                   className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
                   disabled={edit !== "profile"}
@@ -377,13 +388,12 @@ export function ViewCase({
               </label>
               <div className="ml-6 mt-4">
                 <InputText
-                  name="status-description"
+                  name="description"
                   placeholder="Status description"
-                  value={status.description}
-                  setValue={(val) =>
-                    setStatus((prev) => ({ ...prev, description: val }))
-                  }
+                  value={description}
+                  setValue={(val) => setDescription(val)}
                   errFields={errFields}
+                  setErrFields={setErrFields}
                   readOnly={edit !== "profile"}
                 />
               </div>
@@ -398,7 +408,7 @@ export function ViewCase({
                   />
                 </div>
                 <div className="flex justify-center">
-                  <ButtonText
+                  <ButtonDestructive
                     label="Delete Case"
                     loading={UIstate === "loading"}
                     onClick={handleDeleteCase}
@@ -527,7 +537,7 @@ export function ViewCase({
                 </span>
               </h3>
               <div>
-                <ButtonText
+                <ButtonDestructive
                   label="delete task"
                   onClick={handleDeleteTask}
                   loading={UIstate === "loading"}
@@ -630,6 +640,7 @@ export function ViewCase({
                 }))
               }
               errFields={errFields}
+              setErrFields={setErrFields}
             />
             <InputDate
               label="Date*"
@@ -651,6 +662,7 @@ export function ViewCase({
                   .split("T")[0]
               }
               errFields={errFields}
+              setErrFields={setErrFields}
             />
             <div className="pt-4">
               <ButtonPrimary
@@ -688,92 +700,143 @@ export function ViewCase({
   }
   //func to Update Case
   async function handleSubmitCaseChanges() {
-    if (!selectedCase._id) {
+    if (!selectedCase.id) {
       toast.error("Sorry, case could not be found");
-    } else {
-      // fetch options
-      let fetchOptions = {
-        method: "PUT",
-        body: JSON.stringify({
-          _id: selectedCase._id,
-          client: client,
-          otherParty: otherParty,
-          court,
-          status,
-        }),
-      };
-      setUIstate("loading");
-      // PUT request using fetch
-      const _res = await fetch("/api/dashboard/case", fetchOptions).then(
-        async (res_) => {
-          if (res_.ok) {
-            return await res_.json();
-          } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: case not updated");
-          }
-        }
-      );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: case updated successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        await refreshData();
-        toast.success("Case updated successfully!");
-        setUIstate("OK");
-      } else {
-        console.error(
-          "ERROR: failed to update case at /dashboard/cases/[slug] /compo\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
-        );
-        toast.error(_res?.error ?? "No Response, check internet connection");
+      return;
+    }
+    //validate fields
+    const err_clientName = client.name ? nameValidator(client.name) : "";
+    const err_clientTel = client.tel ? telValidator(client.tel) : "";
+    const err_clientEmail = client.email ? emailValidator(client.email) : "";
+    const err_otherPartyName = otherParty.name
+      ? nameValidator(otherParty.name)
+      : "";
+    const err_otherPartyTel = otherParty.tel
+      ? telValidator(otherParty.tel)
+      : "";
+    const err_otherPartyEmail = otherParty.email
+      ? emailValidator(otherParty.email)
+      : "";
+    if (
+      err_clientName ||
+      err_clientTel ||
+      err_clientEmail ||
+      err_otherPartyName ||
+      err_otherPartyTel ||
+      err_otherPartyEmail
+    ) {
+      if (err_clientName) {
+        setErrFields((prev) => new Set([...prev, "client-name"]));
+        toast.error("Invalid client name");
       }
+      if (err_clientTel) {
+        setErrFields((prev) => [...prev, "client-tel"]);
+        toast.error("Invalid client Telephone No.");
+      }
+      if (err_clientEmail) {
+        setErrFields((prev) => new Set([...prev, "client-email"]));
+        toast.error("Invalid client email");
+      }
+      if (err_otherPartyName) {
+        setErrFields((prev) => new Set([...prev, "otherParty-name"]));
+        toast.error("Invalid name for the other party");
+      }
+      if (err_otherPartyTel) {
+        setErrFields((prev) => new Set([...prev, "otherParty-tel"]));
+        toast.error("Invalid Telephone No. for the other party");
+      }
+      if (err_otherPartyEmail) {
+        setErrFields((prev) => new Set([...prev, "otherParty-email"]));
+        toast.error("Invalid email for the other party");
+      }
+      return;
+    }
+    // fetch options
+    let fetchOptions = {
+      method: "PUT",
+      body: JSON.stringify({
+        id: selectedCase.id,
+        clientName: client.name,
+        clientTel: client.tel,
+        clientEmail: client.email,
+        otherPartyName: otherParty.name,
+        otherPartyTel: otherParty.tel,
+        otherPartyEmail: otherParty.email,
+        court,
+        status,
+      }),
+    };
+    setUIstate("loading");
+    // PUT request using fetch
+    const _res = await fetch("/api/dashboard/case", fetchOptions).then(
+      async (res_) => {
+        if (res_.ok) {
+          return await res_.json();
+        } else {
+          console.log(`ERROR: ` + JSON.stringify(res_));
+          toast.error("OOPS: case not updated");
+        }
+      }
+    );
+    if (_res?.success) {
+      console.log(
+        "SUCCESS: case updated successfully\n > " +
+          JSON.stringify(_res.success) +
+          "\n.............."
+      );
+      await refreshData();
+      toast.success("Case updated successfully!");
+      setUIstate("OK");
+    } else {
+      console.error(
+        "ERROR: failed to update case at /dashboard/cases/[slug] /compo\n > " +
+          JSON.stringify(_res) +
+          "\n.............."
+      );
+      toast.error(_res?.error ?? "No Response, check internet connection");
     }
   }
   //func to Delete Case
   async function handleDeleteCase() {
-    if (!selectedCase._id) {
+    if (!selectedCase.id) {
       toast.error("Sorry, case could not be found");
-    } else {
-      // fetch options
-      let fetchOptions = {
-        method: "DELETE",
-        body: JSON.stringify({
-          _id: selectedCase._id,
-        }),
-      };
-      setUIstate("loading");
-      // PUT request using fetch
-      const _res = await fetch("/api/dashboard/case", fetchOptions).then(
-        async (res_) => {
-          if (res_.ok) {
-            return await res_.json();
-          } else {
-            console.error(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: case not deleted");
-          }
+      return;
+    }
+    // fetch options
+    let fetchOptions = {
+      method: "DELETE",
+      body: JSON.stringify({
+        id: selectedCase.id,
+      }),
+    };
+    setUIstate("loading");
+    // PUT request using fetch
+    const _res = await fetch("/api/dashboard/case", fetchOptions).then(
+      async (res_) => {
+        if (res_.ok) {
+          return await res_.json();
+        } else {
+          console.error(`ERROR: ` + JSON.stringify(res_));
+          toast.error("OOPS: case not deleted");
         }
-      );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: case deleted\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        await refreshData();
-        toast.success("Case deleted");
-        router.replace("/dashboard/cases");
-      } else {
-        console.error(
-          "ERROR: failed to delete case at /dashboard/cases/[slug] /compo\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
-        );
-        toast.error(_res?.error ?? "No Response, check internet connection");
       }
+    );
+    if (_res?.success) {
+      console.log(
+        "SUCCESS: case deleted\n > " +
+          JSON.stringify(_res.success) +
+          "\n.............."
+      );
+      await refreshData();
+      toast.success("Case deleted");
+      router.replace("/dashboard/cases");
+    } else {
+      console.error(
+        "ERROR: failed to delete case at /dashboard/cases/[slug] /compo\n > " +
+          JSON.stringify(_res) +
+          "\n.............."
+      );
+      toast.error(_res?.error ?? "No Response, check internet connection");
     }
   }
   //func to Create Task
@@ -914,12 +977,14 @@ export function ViewCase({
 function InputText({
   value,
   setValue,
+  valValidator = (val) => "",
   name = "inputName",
   label,
   type = "text",
   placeholder = "Text field",
   icon: Icon,
   errFields,
+  setErrFields,
   readOnly,
 }) {
   return (
@@ -942,13 +1007,22 @@ function InputText({
           id={name}
           type={type}
           className={`${
-            errFields.includes(name)
+            errFields.has(name)
               ? "border-red-500 dark:border-red-400"
               : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
           } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
           placeholder={placeholder}
           value={value}
           onChange={(e) => {
+            if (errFields.has(name)) {
+              const err_ = valValidator(e.target.value);
+              if (!err_) {
+                setErrFields(
+                  (prev) =>
+                    new Set([[...prev].filter((name_) => name_ !== name)])
+                );
+              }
+            }
             setValue(e.target.value);
           }}
           disabled={readOnly}
@@ -990,7 +1064,7 @@ function InputDate({
           id={name}
           type={type}
           className={`${
-            errFields.includes(name)
+            errFields.has(name)
               ? "border-red-500 dark:border-red-400"
               : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
           } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}

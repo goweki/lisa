@@ -49,8 +49,6 @@ model CaseType {
 
 enum caseStatus {
   open
-  won
-  lost
   closed
 }
 

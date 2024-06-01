@@ -25,16 +25,18 @@ export async function PUT(request) {
   try {
     // request body
     const doc = await request.json();
-    const { _id, ...doc_ } = doc;
-    // doc structure: { _id,name, type, source, institution }
-    // console.log("PUT REQUEST: updating case ", _id);
+    const { id, ...doc_ } = doc;
+
+    // console.log("PUT REQUEST: updating case ",id);
     // console.log(` > setting fields: ${Object.keys(doc_)}`);
     // update doc
-    const res_ = collection.updateOne(
-      { _id: new ObjectId(_id) },
-      { $set: { ...doc_ } }
-    );
-    console.log(`SUCCESS: case updated - ${_id}\n`);
+    const res_ = await prisma.case.update({
+      where: { id },
+      data: {
+        ...doc_,
+      },
+    });
+    console.log(`SUCCESS: case updated - ${id}\n`);
     // HTTP response
     return Response.json({ success: res_ });
   } catch (err) {
@@ -47,14 +49,13 @@ export async function DELETE(request) {
   try {
     // request body
     const doc = await request.json();
-    const { _id } = doc;
-    // doc structure: { _id,name, type, source, institution }
-    // console.log("DELETE REQUEST: deleting case: ", _id);
+    const { id } = doc;
+    console.log("DELETE REQUEST: deleting case: ", id);
     // delete doc
-    const res_ = collection.deleteOne({ _id: new ObjectId(_id) });
-    console.log(`SUCCESS: case deleted - ${_id}\n`);
+    const res = await prisma.case.delete({ where: { id } });
+    console.log(`SUCCESS: case deleted - ${id}\n`);
     // HTTP response
-    return Response.json({ success: res_ });
+    return Response.json({ success: res });
   } catch (err) {
     console.error(`ERROR: case deletion failed: ${_id}\n >> error: ${err}\n`);
     return Response.json({ error: err });

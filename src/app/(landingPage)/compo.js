@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { ButtonPrimary, ButtonText } from "@/components/atoms/buttons";
+import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
@@ -152,7 +152,10 @@ export function ReqDemoModal({ handleCloseModal }) {
                     loading={UIstate === "loading"}
                   />
                   <div className="self-end">
-                    <ButtonText label="Close" onClick={handleCloseModal} />
+                    <ButtonDestructive
+                      label="Close"
+                      onClick={handleCloseModal}
+                    />
                   </div>
                 </div>
               </div>

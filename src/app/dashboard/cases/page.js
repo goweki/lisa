@@ -52,7 +52,7 @@ export default function CasesPage() {
         {filtCases.length > 0 ? (
           <div className="grid gap-8 md:grid-cols-2 lg:gap-12 p-6 md:p-10">
             {filtCases.map((v) => (
-              <div key={v._id}>
+              <div key={v.id}>
                 <CardCase
                   item={v}
                   icon={
