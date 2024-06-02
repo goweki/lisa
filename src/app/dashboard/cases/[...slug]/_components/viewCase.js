@@ -538,7 +538,17 @@ export default function ViewCase({
                   </li>
                 ))}
               </ul>
-              <TaskViewArea select={selectedTask} />
+              <TaskViewArea
+                select={selectedTask}
+                reminders={reminders}
+                handleReminderChange={handleReminderChange}
+                addReminder={addReminder}
+                deleteReminder={deleteReminder}
+                UIstate={UIstate}
+                handleInitializeTask={handleInitializeTask}
+                errFields={errFields}
+                setErrFields={setErrFields}
+              />
             </div>
           </>
         ) : null}
