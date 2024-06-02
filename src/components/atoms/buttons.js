@@ -63,7 +63,7 @@ export function ButtonDestructive({
     <button
       disabled={disabled || loading}
       type={type}
-      className={`whitespace-nowrap relative disabled:cursor-not-allowed disabled:opacity-50 font-medium text-sm px-3 py-2 outline-none cursor-pointer transition-all duration-150 ease-in-out enabled:hover:scale-105 text-red-200 enabled:hover:text-red-700 enabled:dark:hover:text-red-500`}
+      className={`whitespace-nowrap relative disabled:cursor-not-allowed disabled:opacity-50 font-medium text-sm px-3 py-2 outline-none cursor-pointer transition-all duration-150 ease-in-out enabled:hover:scale-105 text-red-500 enabled:dark:text-red-200 enabled:hover:text-red-700 enabled:dark:hover:text-red-500`}
       onClick={onClick}
     >
       {!loading ? (

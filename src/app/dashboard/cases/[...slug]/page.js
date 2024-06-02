@@ -14,7 +14,7 @@ import { InputText } from "@/components/atoms/inputs";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
 import { Loader1 } from "@/components/atoms/loader";
-import { ViewCase } from "./compo";
+import ViewCase from "./_components/viewCase";
 import { nameValidator, telValidator } from "@/helpers/inputValidators";
 
 export default function CasePage({ params }) {

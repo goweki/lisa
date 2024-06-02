@@ -2,17 +2,23 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import toast from "react-hot-toast";
-import { SVGbuilding, SVGdoc, SVGfilter } from "@/components/atoms/svgs";
+import {
+  SVGbuilding,
+  SVGdoc,
+  SVGfilter,
+  SVGuser,
+} from "@/components/atoms/svgs";
+import TaskViewArea from "./taskView";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import { strPascalcase } from "@/helpers/stringHandlers";
-import DocView from "@/components/mols/docViewer";
 import {
   emailValidator,
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
+import { InputSelect, InputText, InputDate } from "./inputs";
 
-export function ViewCase({
+export default function ViewCase({
   selectedCase,
   selectedTaskName,
   template,
@@ -22,8 +28,8 @@ export function ViewCase({
   const [UIstate, setUIstate] = useState("OK");
   const [tab, setTab] = useState("profile");
   const [edit, setEdit] = useState("");
-  const [select, setSelect] = useState({ menu: "", item: "" });
-  const [completeUpload, setCompleteUpload] = useState("");
+  const [selectedTask, setTask] = useState({ type: "", item: "" });
+  const [docAttachment, setDocAttachment] = useState("");
   const [errFields, setErrFields] = useState(new Set());
   const [filterPhrase, setFilterPhrase] = useState("");
   const [expandedField, setExpanded] = useState("");
@@ -54,6 +60,23 @@ export function ViewCase({
     selectedCase.description ?? ""
   );
   const [lawyer, setLawyer] = useState(selectedCase.lawyer ?? "");
+  const [reminders, setReminders] = useState([
+    { type: "", count: "", regime: "" },
+  ]);
+  //reminders Handlers
+  const handleReminderChange = (index, field, value) => {
+    const newReminders = reminders.slice();
+    newReminders[index][field] = value;
+    setReminders(newReminders);
+  };
+
+  const addReminder = () => {
+    setReminders((prev) => [...prev, { type: "", count: "", regime: "" }]);
+  };
+
+  const deleteReminder = (index) => {
+    setReminders((prev) => prev.filter((_, i) => i !== index));
+  };
 
   // load task classes
   useEffect(() => {
@@ -80,7 +103,7 @@ export function ViewCase({
       const task = selectedCase.tasks.find(
         ({ task }) => task.name === selectedTaskName
       );
-      setSelect({ menu: "task", item: task });
+      setTask({ type: "task", item: task });
     }
   }, [selectedTaskName, selectedCase.tasks]);
 
@@ -141,33 +164,6 @@ export function ViewCase({
             Tasks
           </div>
         </li>
-        {/* <li className="me-2">
-          <div
-            className={`${
-              tab === "tasks"
-                ? "card m-0 mt-2"
-                : "border-transparent from-transparent to-transparent text-gray-500 dark:text-gray-400"
-            } rounded-lg m-0 mt-2 cursor-pointer inline-flex border border-transparent items-center justify-center p-4 hover:border-emerald-700 dark:hover:border-emerald-200 group`}
-            onClick={() => {
-              setTab("tasks");
-            }}
-          >
-            <svg
-              className="w-5 h-5 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                fillRule="evenodd"
-                d="M2.625 6.75a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.875 0A.75.75 0 0 1 8.25 6h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75ZM2.625 12a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0ZM7.5 12a.75.75 0 0 1 .75-.75h12a.75.75 0 0 1 0 1.5h-12A.75.75 0 0 1 7.5 12Zm-4.875 5.25a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm4.875 0a.75.75 0 0 1 .75-.75h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75Z"
-                clipule="evenodd"
-              />
-            </svg>
-            Tasks
-          </div>
-        </li> */}
       </ul>
       {/* content */}
       <form className="card p-6 overflow-x-auto">
@@ -361,7 +357,26 @@ export function ViewCase({
                 </div>
               </div>
             )}
-            <div id="court-name" className="mb-6">
+            <div id="case-lawyer" className="mb-4 space-y-2">
+              <label htmlFor="lawyer" className="px-2">
+                Lawyer
+              </label>
+              <InputSelect
+                name="lawyer"
+                optionItems={[
+                  { value: "overdue", text: "❗ overdue" },
+                  { value: "due", text: "✍🏾 due" },
+                  { value: "done", text: "✔️ Done" },
+                ]}
+                value={lawyer}
+                onChange={(e) => {
+                  setLawyer(e.target.value);
+                }}
+                icon={SVGuser}
+                defaultOption="lawyer"
+              />
+            </div>
+            <div id="court-name" className="mb-4">
               <InputText
                 label="Court"
                 name="court"
@@ -374,7 +389,7 @@ export function ViewCase({
                 readOnly={edit !== "profile"}
               />
             </div>
-            <div className="flex items-center mb-6 pl-4">
+            <div className="flex items-center mb-4 pl-4">
               <div className="flex items-center h-5">
                 <input
                   id="case-status"
@@ -438,7 +453,7 @@ export function ViewCase({
                 value={filterPhrase}
                 onChange={(e) => {
                   setFilterPhrase(e.target.value);
-                  setSelect({ menu: "", items: "" });
+                  setTask({ type: "", item: "" });
                 }}
                 icon={SVGfilter}
                 defaultOption="filter"
@@ -449,20 +464,22 @@ export function ViewCase({
               <ul className="flex-column space-y space-y-4 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 mb-4 md:mb-0">
                 <li
                   onClick={() => {
-                    setSelect({
-                      menu: "new",
+                    setTask({
+                      type: "new",
                       item: {
-                        date: "",
                         type: "",
-                        task: { name: "", complete: "" },
+                        name: "",
+                        description: "",
+                        dueDate: "",
+                        reminders: [],
                       },
                     });
-                    setCompleteUpload("");
+                    setDocAttachment("");
                   }}
                 >
                   <div
                     className={`${
-                      select.menu === "new"
+                      selectedTask.type === "new"
                         ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-700 dark:text-white border-transparent dark:border-transparent"
                         : ""
                     } min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg w-full border border-neutral-400 dark:border-neutral-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white hover:border-transparent dark:hover:border-transparent cursor-pointer`}
@@ -488,13 +505,13 @@ export function ViewCase({
                   <li
                     key={taskItem.task.name}
                     onClick={() => {
-                      setSelect({ menu: "task", item: taskItem });
-                      setCompleteUpload("");
+                      setTask({ type: "task", item: taskItem });
+                      setDocAttachment("");
                     }}
                   >
                     <div
                       className={`${
-                        select.item?.task?.name === taskItem.task.name
+                        selectedTask.item?.name === taskItem.task.name
                           ? "text-emerald-700 bg-gray-100 dark:bg-gray-700 dark:text-emerald-200"
                           : ""
                       } min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg  bg-slate-50 w-full dark:bg-gray-800 hover:text-emerald-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-emerald-200 cursor-pointer`}
@@ -502,7 +519,7 @@ export function ViewCase({
                       {taskItem.type === "document" ? (
                         <SVGdoc
                           className={`${
-                            select.item?.task?.name === taskItem.task.name
+                            selectedTask.item?.name === taskItem.task.name
                               ? "text-emerald-600"
                               : "text-gray-500 dark:text-gray-400"
                           } w-4 h-4 me-2 `}
@@ -510,7 +527,7 @@ export function ViewCase({
                       ) : (
                         <SVGbuilding
                           className={`${
-                            select.item?.task?.name === taskItem.task.name
+                            selectedTask.item?.task?.name === taskItem.task.name
                               ? "text-emerald-600"
                               : "text-gray-500 dark:text-gray-400"
                           } w-4 h-4 me-2 `}
@@ -521,7 +538,7 @@ export function ViewCase({
                   </li>
                 ))}
               </ul>
-              {viewArea(select)}
+              <TaskViewArea select={selectedTask} />
             </div>
           </>
         ) : null}
@@ -529,170 +546,6 @@ export function ViewCase({
     </div>
   );
 
-  //Details view area
-  function viewArea(select) {
-    return (
-      <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
-        {select.menu === "task" && select.item ? (
-          <>
-            <div className="flex flex-row justify-between">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                {strPascalcase(select.item.task.name) + " " + select.item.type}{" "}
-                <span className="font-light text-gray-500 dark:text-gray-400">
-                  {/* {select.item.type === "document" ? " Due Date" : " Date"}:{" "} */}
-                  {"-"}
-                  {dateShort(new Date(select.item.date))}
-                </span>
-              </h3>
-              <div>
-                <ButtonDestructive
-                  label="delete task"
-                  onClick={handleDeleteTask}
-                  loading={UIstate === "loading"}
-                />
-              </div>
-            </div>
-
-            <div>
-              {!select.item.task.complete ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <div>
-                    <label
-                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      htmlFor="file_input"
-                    >
-                      Upload report to complete task
-                    </label>
-                    <p
-                      className="mb-1 text-xs text-gray-500 dark:text-gray-300"
-                      id="file_input_help"
-                    >
-                      pdf,word (2MB max)
-                    </p>
-                    <input
-                      className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                      id="file_input"
-                      type="file"
-                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      placeholder="Select a file"
-                      onChange={(e) => {
-                        if (
-                          e.target.files[0] &&
-                          ["pdf", "doc", "docx"].includes(
-                            e.target.files[0].name.split(".").pop()
-                          ) &&
-                          e.target.files[0].size < 2100000
-                        )
-                          setCompleteUpload(e.target.files[0]);
-                        else toast.error("File must not exceed 2MB pdf,word");
-                      }}
-                    />
-                  </div>
-                  <div className="mt-auto">
-                    <ButtonPrimary
-                      label="Complete Task"
-                      onClick={handleCompleteTask}
-                      disabled={!completeUpload}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <DocView
-                  doc={
-                    new File(
-                      [
-                        Uint8Array.from(atob(select.item.task.complete), (c) =>
-                          c.charCodeAt(0)
-                        ).buffer,
-                      ],
-                      "task-report.pdf",
-                      {
-                        type: "application/pdf",
-                      }
-                    )
-                  }
-                />
-              )}
-              {completeUpload && <DocView doc={completeUpload} />}
-            </div>
-          </>
-        ) : select.menu === "new" && select.item ? (
-          <div>
-            <InputSelect
-              name="taskType"
-              optionItems={[
-                { value: "document", text: "📝 document" },
-                { value: "event", text: "⏲️ event" },
-              ]}
-              value={select.item.type}
-              onChange={(e) => {
-                setSelect((prev) => ({
-                  ...prev,
-                  item: { ...prev.item, type: e.target.value },
-                }));
-              }}
-              defaultOption="type of task"
-            />
-            <InputText
-              label="Task Name*"
-              name="taskName"
-              placeholder="Task name"
-              value={select.item.task.name}
-              setValue={(val) =>
-                setSelect((prev) => ({
-                  ...prev,
-                  item: {
-                    ...prev.item,
-                    task: { ...prev.item.task, name: val },
-                  },
-                }))
-              }
-              errFields={errFields}
-              setErrFields={setErrFields}
-            />
-            <InputDate
-              label="Date*"
-              name="taskDate"
-              value={select.item.date}
-              setValue={(val) =>
-                setSelect((prev) => ({
-                  ...prev,
-                  item: {
-                    ...prev.item,
-                    date: val,
-                  },
-                }))
-              }
-              min={new Date().toISOString().split("T")[0]}
-              max={
-                new Date(new Date().setFullYear(new Date().getFullYear() + 10))
-                  .toISOString()
-                  .split("T")[0]
-              }
-              errFields={errFields}
-              setErrFields={setErrFields}
-            />
-            <div className="pt-4">
-              <ButtonPrimary
-                label="Create Task"
-                disabled={
-                  !select.item.type ||
-                  !select.item.date ||
-                  !select.item.task.name
-                }
-                loading={UIstate === "loading"}
-                onClick={handleInitializeTask}
-              />
-            </div>
-          </div>
-        ) : (
-          <h3 className="text-lg font-light italic text-gray-500 mb-2">
-            Select an item on the left to view details
-          </h3>
-        )}
-      </div>
-    );
-  }
   //func to reset case-states
   function resetCaseProfileStates() {
     setClient(defaultClient);
@@ -703,8 +556,8 @@ export function ViewCase({
   //func to reset task-state
   function resetTaskStates() {
     setFilterPhrase("");
-    setSelect({ menu: "", item: "" });
-    setCompleteUpload("");
+    setTask({ type: "", item: "" });
+    setDocAttachment("");
   }
   //func to Update Case
   async function handleSubmitCaseChanges() {
@@ -850,19 +703,23 @@ export function ViewCase({
   }
   //func to Create Task
   async function handleInitializeTask() {
-    if (!select.item.type || !select.item.date || !select.item.task.name) {
-      if (!select.item.type) toast.error("Please select task type");
-      if (!select.item.date) toast.error("Please select task date");
-      if (!select.item.task.name) toast.error("Please provide task name");
+    if (
+      !selectedTask.item.type ||
+      !selectedTask.item.date ||
+      !selectedTask.item.task.name
+    ) {
+      if (!selectedTask.item.type) toast.error("Please select task type");
+      if (!selectedTask.item.date) toast.error("Please select task date");
+      if (!selectedTask.item.task.name) toast.error("Please provide task name");
     } else {
       // fetch options
       let fetchOptions = {
         method: "POST",
         body: JSON.stringify({
           caseId: selectedCase._id,
-          type: select.item.type,
-          date: select.item.date,
-          name: select.item.task.name,
+          type: selectedTask.item.type,
+          date: selectedTask.item.date,
+          name: selectedTask.item.task.name,
         }),
       };
       setUIstate("loading");
@@ -885,7 +742,7 @@ export function ViewCase({
         );
         await refreshData();
         toast.success("Task initialized successfully!");
-        setSelect({ menu: "", item: "" });
+        setTask({ type: "", item: "" });
       } else {
         if (_res?.failed) toast.error(_res?.failed);
         else
@@ -896,7 +753,7 @@ export function ViewCase({
   }
   //func to Complete Task
   async function handleCompleteTask() {
-    if (!completeUpload) {
+    if (!docAttachment) {
       toast.error("Please upload a task report/document");
     } else {
       //loading
@@ -904,9 +761,9 @@ export function ViewCase({
       //fetch options
       const formData = new FormData();
       formData.append("caseId", selectedCase._id);
-      formData.append("taskName", select.item.task.name);
-      formData.append("complete", completeUpload);
-      console.log("COMPLETE file ", completeUpload);
+      formData.append("taskName", selectedTask.item.task.name);
+      formData.append("complete", docAttachment);
+      console.log("COMPLETE file ", docAttachment);
       const fetchOptions = {
         method: "PUT",
         body: formData,
@@ -940,7 +797,7 @@ export function ViewCase({
   }
   //func to Delete Task
   async function handleDeleteTask() {
-    if (!select.item.task.name) {
+    if (!selectedTask.item.task.name) {
       toast.error("Selected task not found");
     } else {
       //loading
@@ -950,7 +807,7 @@ export function ViewCase({
         method: "DELETE",
         body: JSON.stringify({
           caseId: selectedCase._id,
-          taskName: select.item.task.name,
+          taskName: selectedTask.item.task.name,
         }),
       };
       // POST request using fetch
@@ -972,7 +829,7 @@ export function ViewCase({
         );
         toast.success("Task deleted!");
         await refreshData();
-        setSelect({ menu: "", item: "" });
+        setTask({ type: "", item: "" });
       } else {
         if (_res?.failed) toast.error(_res?.failed);
         else
@@ -981,145 +838,4 @@ export function ViewCase({
       setUIstate("OK");
     }
   }
-}
-
-function InputText({
-  value,
-  setValue,
-  valValidator = (val) => "",
-  name = "inputName",
-  label,
-  type = "text",
-  placeholder = "Text field",
-  icon: Icon,
-  errFields,
-  setErrFields,
-  readOnly,
-}) {
-  return (
-    <div className="space-y-2 mb-4">
-      {label && (
-        <div className="no-wrap">
-          <label htmlFor={name} className="px-2">
-            {label}
-          </label>
-        </div>
-      )}
-      <div className="relative mb-6 mt-0">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-          {Icon && (
-            <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
-          )}
-        </div>
-        <input
-          name={name}
-          id={name}
-          type={type}
-          className={`${
-            errFields.has(name)
-              ? "border-red-500 dark:border-red-400"
-              : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
-          } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => {
-            if (errFields.has(name)) {
-              const err_ = valValidator(e.target.value);
-              if (!err_) {
-                setErrFields(
-                  (prev) => new Set([...prev].filter((name_) => name_ !== name))
-                );
-              }
-            }
-            setValue(e.target.value);
-          }}
-          disabled={readOnly}
-        />
-      </div>
-    </div>
-  );
-}
-
-function InputDate({
-  value,
-  setValue,
-  name = "inputName",
-  label,
-  type = "date",
-  min = "2024-01-01",
-  max = "2060-12-31",
-  icon: Icon,
-  errFields,
-  readOnly,
-}) {
-  return (
-    <div className="space-y-2 mb-4">
-      {label && (
-        <div className="no-wrap">
-          <label htmlFor={name} className="px-2">
-            {label}
-          </label>
-        </div>
-      )}
-      <div className="relative mb-6 mt-0">
-        <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-          {Icon && (
-            <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
-          )}
-        </div>
-        <input
-          name={name}
-          id={name}
-          type={type}
-          className={`${
-            errFields.has(name)
-              ? "border-red-500 dark:border-red-400"
-              : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
-          } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-          }}
-          min={min}
-          max={max}
-          disabled={readOnly}
-        />
-      </div>
-    </div>
-  );
-}
-
-function InputSelect({
-  optionItems,
-  value,
-  onChange = () => "",
-  name = "inputName",
-  defaultOption = "type",
-  icon: Icon,
-}) {
-  return (
-    <div className="relative mb-6">
-      <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-        {Icon && (
-          <Icon className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
-        )}
-      </div>
-      <select
-        name={name}
-        id={name}
-        className={`border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
-        value={value}
-        onChange={onChange}
-      >
-        <option value="" className="italic font-light">
-          Select a {defaultOption}...
-        </option>
-        {optionItems.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.text}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
 }
