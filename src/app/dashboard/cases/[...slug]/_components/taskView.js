@@ -3,7 +3,7 @@ import DocView from "@/components/mols/docViewer";
 import { InputSelect, InputText, InputDate } from "./inputs";
 import Reminders from "./reminders";
 import { strPascalcase } from "@/helpers/stringHandlers";
-import { dateShort } from "@/helpers/dateHandlers";
+import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 
 export default function TaskView({
   select,
@@ -22,35 +22,41 @@ export default function TaskView({
   //render
   return (
     <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
-      {select.type === "task" && select.item.id ? (
+      {select.type === "task" && select.item?.id ? (
         <>
           <div className="flex flex-row justify-between">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              {strPascalcase(select.item.name) + " " + select.item.type}{" "}
-              <span className="font-light text-gray-500 dark:text-gray-400">
-                {/* {select.item.type === "document" ? " Due Date" : " Date"}:{" "} */}
-                {"-"}
+              {"Task: " +
+                strPascalcase(select.item.name) +
+                " " +
+                select.item.type}{" "}
+            </h3>
+            <span>
+              <span
+                className={
+                  select.item.completedByID
+                    ? `bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300`
+                    : isDatePassed(new Date(select.item.dueDate))
+                    ? "bg-red-100 text-red-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300"
+                    : "bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300"
+                }
+              >
                 {dateShort(new Date(select.item.dueDate))}
               </span>
-            </h3>
-            <div>
-              <ButtonDestructive
-                label="delete task"
-                onClick={handleDeleteTask}
-                loading={UIstate === "loading"}
-              />
-            </div>
+            </span>
           </div>
-
+          {select.item.description && (
+            <p className="mb-6">{select.item.description}</p>
+          )}
           <div>
-            {!select.item.complete ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {!select.item.completedByID &&
+              !select.item.documents?.length > 0 && (
                 <div>
                   <label
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     htmlFor="file_input"
                   >
-                    Upload report to complete task
+                    Attach document
                   </label>
                   <p
                     className="mb-1 text-xs text-gray-500 dark:text-gray-300"
@@ -77,34 +83,25 @@ export default function TaskView({
                     }}
                   />
                 </div>
-                <div className="mt-auto">
-                  <ButtonPrimary
-                    label="Complete Task"
-                    onClick={handleCompleteTask}
-                    // disabled={!docAttachment}
-                  />
-                </div>
-              </div>
-            ) : (
-              <DocView
-                doc={
-                  new File(
-                    [
-                      Uint8Array.from(atob(select.item.task.complete), (c) =>
-                        c.charCodeAt(0)
-                      ).buffer,
-                    ],
-                    "task-report.pdf",
-                    {
-                      type: "application/pdf",
-                    }
-                  )
-                }
+              )}
+
+            {select.item.documents?.length > 0 && (
+              <DocView doc={select.tem.documents[0].link} />
+            )}
+          </div>
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <ButtonPrimary
+                label="Complete Task"
+                onClick={handleCompleteTask}
+                disabled={select.item?.completedByID}
               />
-            )}
-            {select.documents?.length > 0 && (
-              <DocView doc={select.documents[0].link} />
-            )}
+            </div>
+            <ButtonDestructive
+              label="delete task"
+              onClick={handleDeleteTask}
+              loading={UIstate === "loading"}
+            />
           </div>
         </>
       ) : select.type === "new" && select.item ? (

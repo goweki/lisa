@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useEdgeStore } from "@/lib/edgestore";
 import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import toast from "react-hot-toast";
 import {
@@ -29,6 +30,7 @@ export default function ViewCase({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+  const { edgestore } = useEdgeStore();
   const [UIstate, setUIstate] = useState("OK");
   const [tab, setTab] = useState(selectedTaskID ? "tasks" : "profile");
   const [edit, setEdit] = useState("");
@@ -831,16 +833,37 @@ export default function ViewCase({
   //func to AttachDoc Task
   async function handleDocAttachment() {
     if (!docAttachment) {
-      toast.error("Please upload a task report/document");
-    } else {
-      //loading
-      setUIstate("loading");
+      toast.error("Cannot access file");
+      return;
+    }
+    //loading
+    setUIstate("loading");
+    try {
+      //edgestore upload
+      const edgeDoc = await edgestore.publicFiles.upload({
+        docAttachment,
+        onProgressChange: (progress) => {
+          // you can use this to show a progress bar
+          console.log(progress);
+        },
+      });
+      // you can run some server action or api here
+      // to add the necessary data to your database
+      console.log(edgeDoc);
+      //   expect res: {
+      //     url: string;
+      //     size: number;
+      //     uploadedAt: Date;
+      //     metadata: Record<string, never>;
+      //     path: Record<string, never>;
+      //     pathOrder: string[];
+      // }
       //fetch options
-      const formData = new FormData();
-      formData.append("caseId", selectedCase._id);
-      formData.append("taskName", selectedTask.item.task.name);
-      formData.append("complete", docAttachment);
-      console.log("COMPLETE file ", docAttachment);
+      // const formData = new FormData();
+      // formData.append("caseId", selectedCase._id);
+      // formData.append("taskName", selectedTask.item.task.name);
+      // formData.append("complete", docAttachment);
+      // console.log("COMPLETE file ", docAttachment);
       const fetchOptions = {
         method: "PUT",
         body: formData,
@@ -869,46 +892,65 @@ export default function ViewCase({
         else
           toast.error(_res?.error ?? "No Response, check internet connection");
       }
-      setUIstate("OK");
+    } catch (error) {
+      console.log("ERROR viewCase.js CFA");
     }
+    setUIstate("OK");
   }
   //func to Complete Task
   async function handleCompleteTask() {
     if (!session.user) {
       toast.error("User validation failed");
+      return;
     }
-
+    if (!selectedTask.item.id) {
+      toast.error("Task not found");
+      return;
+    }
     //loading
     setUIstate("loading");
-    //fetch options
-    const fetchOptions = {
-      method: "PUT",
-      body: JSON.stringify({
-        completedBy: session.user.id,
-      }),
-    };
-    // POST request using fetch
-    const _res = await fetch("/api/dashboard/task", fetchOptions).then(
-      async (res_) => {
-        if (res_.ok) {
+    try {
+      //fetch options
+      const fetchOptions = {
+        method: "PUT",
+        body: JSON.stringify({
+          id: selectedTask.item.id,
+          completedByID: session.user.id,
+        }),
+      };
+      // PUT request using fetch
+      const _resComplete = await fetch(
+        "/api/dashboard/task",
+        fetchOptions
+      ).then(async (res_) => {
+        if (res_.status === 200) {
           return await res_.json();
         } else {
           console.error(`ERROR: ` + JSON.stringify(res_));
           toast.error("OOPS: task not initialized");
         }
+      });
+      if (_resComplete?.success) {
+        console.log(
+          "SUCCESS: task completed\n > " +
+            JSON.stringify(_resComplete.success) +
+            "\n.............."
+        );
+        await refreshData();
+        toast.success("Task completed!");
+        // router.push(
+        //   `/dashboard/cases/${selectedCase.id}/${_resComplete.success.id}`
+        // );
+        router.refresh();
+      } else {
+        if (_resComplete?.failed) toast.error(_resComplete?.failed);
+        else
+          toast.error(
+            _resComplete?.error ?? "No Response, check internet connection"
+          );
       }
-    );
-    if (_res?.success) {
-      console.log(
-        "SUCCESS: task completed\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
-      );
-      await refreshData();
-      toast.success("Task status complete!");
-    } else {
-      if (_res?.failed) toast.error(_res?.failed);
-      else toast.error(_res?.error ?? "No Response, check internet connection");
+    } catch (error) {
+      console.error("ERROR: ", error.message);
     }
     setUIstate("OK");
   }

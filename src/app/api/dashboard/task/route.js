@@ -40,32 +40,25 @@ export async function POST(request) {
 
 export async function PUT(request) {
   // request body
-  const formData = await request.formData();
-  const caseId = formData.get("caseId");
-  const taskName = formData.get("taskName");
-  const complete = formData.get("complete");
-  console.log("PUT REQUEST: updating task ", taskName);
+  const { id, ...doc } = await request.json();
+  console.log("PUT REQUEST: updating task ", id);
   try {
     // update doc
     // const fileBinary = new Binary(Buffer.from(await complete.arrayBuffer()));
     // console.log("File binary: ", fileBinary);
-    const res_ = await collection.updateOne(
-      {
-        id: caseId,
-        "dueDates.task.name": taskName, // Match the task object with the specified name
-      },
-      {
-        $set: {
-          // "dueDates.$.task.complete": fileBinary,
-        }, // Update the matched task object
-      }
-    );
-    console.log(`SUCCESS: task completed - ${taskName}\n`);
+    const updateTask = await prisma.task.update({
+      where: { id },
+      data: doc,
+    });
+    console.log("SUCCESS: task updated\n >> ", updateTask);
     // HTTP response
-    return Response.json({ success: res_ });
+    return Response.json({ success: updateTask });
   } catch (err) {
     console.error(
-      `ERROR: task completion failed - ${taskName}\n >> error: ${err}`
+      "ERROR: task completion failed -id \n",
+      id,
+      " >> error: ",
+      err
     );
     return Response.json({ error: `Server error: please contact admin...` });
   }

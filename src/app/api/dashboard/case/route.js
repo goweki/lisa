@@ -28,7 +28,7 @@ export async function PUT(request) {
     const { id, ...doc_ } = doc;
 
     // console.log("PUT REQUEST: updating case ",id);
-    // console.log(` > setting fields: ${Object.keys(doc_)}`);
+    console.log(` > updating - data: ${doc}`);
     // update doc
     const res_ = await prisma.case.update({
       where: { id },
