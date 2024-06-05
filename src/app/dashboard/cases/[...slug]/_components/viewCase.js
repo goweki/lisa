@@ -33,10 +33,21 @@ export default function ViewCase({
   const [tab, setTab] = useState(selectedTaskID ? "tasks" : "profile");
   const [edit, setEdit] = useState("");
   const [selectedTask, setTask] = useState(
-    selectedTaskID
+    selectedTaskID && selectedTaskID !== "new"
       ? {
           type: "task",
           item: selectedCase.tasks.find(({ id }) => id === selectedTaskID),
+        }
+      : selectedTaskID === "new"
+      ? {
+          type: "new",
+          item: {
+            type: "",
+            name: "",
+            description: "",
+            dueDate: "",
+            reminders: [],
+          },
         }
       : ""
   );
@@ -484,20 +495,21 @@ export default function ViewCase({
                 //   setDocAttachment("");
                 // }}
                 >
-                  <div
-                    onClick={() => {
-                      setTask({
-                        type: "new",
-                        item: {
-                          type: "",
-                          name: "",
-                          description: "",
-                          dueDate: "",
-                          reminders: [],
-                        },
-                      });
-                      setDocAttachment("");
-                    }}
+                  <Link
+                    href={`/dashboard/cases/${selectedCase.id}/new?filter=${filterPhrase}`}
+                    // onClick={() => {
+                    //   setTask({
+                    //     type: "new",
+                    //     item: {
+                    //       type: "",
+                    //       name: "",
+                    //       description: "",
+                    //       dueDate: "",
+                    //       reminders: [],
+                    //     },
+                    //   });
+                    //   setDocAttachment("");
+                    // }}
                     className={`${
                       selectedTask.type === "new"
                         ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-700 dark:text-white border-transparent dark:border-transparent"
@@ -519,7 +531,7 @@ export default function ViewCase({
                       />
                     </svg>
                     New task
-                  </div>
+                  </Link>
                   {/* <div
                     className={`${
                       selectedTask.type === "new"
@@ -805,9 +817,9 @@ export default function ViewCase({
             JSON.stringify(_res.success) +
             "\n.............."
         );
-        await refreshData();
         toast.success("Task initialized successfully!");
-        setTask({ type: "", item: "" });
+        await refreshData();
+        router.push(`/dashboard/cases/${selectedCase.id}/${_res.success.id}`);
       } else {
         if (_res?.failed) toast.error(_res?.failed);
         else
@@ -934,7 +946,7 @@ export default function ViewCase({
         );
         toast.success("Task deleted!");
         await refreshData();
-        setTask({ type: "", item: "" });
+        router.push(`/dashboard/cases/${selectedCase.id}/new`);
       } else {
         if (_res?.failed) toast.error(_res?.failed);
         else
