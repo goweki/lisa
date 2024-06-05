@@ -5,7 +5,7 @@ import { InputText } from "@/components/atoms/inputs";
 import { strTruncate } from "@/helpers/stringHandlers";
 import { BlogContext } from "./providers";
 
-export default function BlogPage({ slug }) {
+export default function BlogPage(params) {
   const [searchPhrase, setSearchPhrase] = useState("");
   const blogposts = useContext(BlogContext);
   //render

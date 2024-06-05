@@ -1,17 +1,17 @@
-import db_cluster from "@/lib/mongodb";
+import prisma from "@/lib/prisma";
 export const revalidate = 0; // false | 'force-cache' | 0 | number
 
 export async function GET(req) {
   const url = new URL(req.url);
-  const collection_ = url.searchParams.get("colle");
+  const model_ = url.searchParams.get("model");
   try {
     console.log(
-      `........................\nGET REQUEST /api/data\n > collection: ${collection_}`
+      `........................\nGET REQUEST /api/data\n > collection: ${model_}`
     );
-    // target COLLECTION
-    const collection = db_cluster.collection(collection_);
-    // FIND Docs
-    const data_ = await collection.find({}).toArray();
+    // Access the model dynamically
+    const model = prisma[model_];
+    // Query
+    const data_ = await model.findMany();
     return Response.json({ success: data_ });
   } catch (error) {
     // handle ERROR if caught

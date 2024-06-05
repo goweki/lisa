@@ -3,7 +3,6 @@ import { useContext, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
-import { useDate } from "@/lib/dateTime";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGsearch } from "@/components/atoms/svgs";
@@ -19,48 +18,46 @@ export default function TasksPage() {
   const {
     data: { cases },
   } = useContext(DataContext);
-  const { rawDate } = useDate();
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [tasks, setTasks] = useState([]);
   const [filtTasks, setFiltTasks] = useState([]);
   const [selectedTask, setSelected] = useState(null);
   const [fileUpload, setFileUpload] = useState(null);
-  const rawDateMemo = useCallback(() => rawDate(), []);
 
   useEffect(() => {
     //onMount / onUpdate- set task by categories
     const cases_withCompletetasks = cases
-      .filter((case_) => case_.status.status === "open")
+      .filter((case_) => case_.status === "open")
       .map((case_) => {
         return {
-          _id: case_._id,
+          id: case_.id,
           name: case_.name,
           type: case_.type,
-          dueDates: case_.dueDates?.filter((obj) => obj.task.complete),
+          tasks: case_.tasks?.filter((task) => task.completedById),
         };
       })
-      .filter((case_) => case_.dueDates?.length);
+      .filter((case_) => case_.tasks?.length);
 
     const cases_withIncompletetasks = cases
-      .filter((case_) => case_.status.status === "open")
+      .filter((case_) => case_.status === "open")
       .map((case_) => {
         return {
-          _id: case_._id,
+          _id: case_.id,
           name: case_.name,
           type: case_.type,
-          dueDates: case_.dueDates?.filter((obj) => !obj.task.complete),
+          tasks: case_.tasks?.filter((task) => !task.completedById),
         };
       })
-      .filter((case_) => case_.dueDates?.length);
+      .filter((case_) => case_.tasks?.length);
     // incomplete tasks
     const inCompletes_2d = cases_withIncompletetasks.map((case_) => {
-      const innerIncompletes = case_.dueDates?.map((dueDate) => {
+      const innerIncompletes = case_.tasks?.map((task) => {
         return {
-          caseId: case_._id,
+          caseId: case_.id,
           caseName: case_.name,
           caseType: case_.type,
-          dueDate: dueDate.date,
-          task: dueDate.task,
+          dueDate: task.dueDate,
+          task: task.name,
         };
       });
       return innerIncompletes;
@@ -74,12 +71,12 @@ export default function TasksPage() {
       const almostOverdue = inCompletes.filter(
         (task) =>
           !isDatePassed(new Date(task.dueDate)) &&
-          hoursDifference(new Date(task.dueDate), rawDateMemo()) < 72
+          hoursDifference(new Date(task.dueDate), new Date()) < 72
       );
       const pending = inCompletes.filter(
         (task) =>
           !isDatePassed(new Date(task.dueDate)) &&
-          hoursDifference(new Date(task.dueDate), rawDateMemo()) > 72
+          hoursDifference(new Date(task.dueDate), new Date()) > 72
       );
       setTasks([]);
       // if overdues
@@ -103,13 +100,13 @@ export default function TasksPage() {
     }
     //complete tasks
     const completes_2d = cases_withCompletetasks.map((case_) => {
-      const innerCompletes = case_.dueDates?.map((dueDate) => {
+      const innerCompletes = case_.tasks?.map((task) => {
         return {
-          caseId: case_._id,
+          caseId: case_.id,
           caseName: case_.name,
           caseType: case_.type,
-          dueDate: dueDate.date,
-          task: dueDate.task,
+          dueDate: task.dueDate,
+          task: task.name,
         };
       });
       return innerCompletes;
@@ -124,7 +121,7 @@ export default function TasksPage() {
     //stop loading
     setUIstate("OK");
     //
-  }, [cases, rawDateMemo]);
+  }, [cases]);
   //filter tasks by searchPhrase
   useEffect(() => {
     setFiltTasks(

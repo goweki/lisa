@@ -44,8 +44,6 @@ export async function PUT(request) {
   console.log("PUT REQUEST: updating task ", id);
   try {
     // update doc
-    // const fileBinary = new Binary(Buffer.from(await complete.arrayBuffer()));
-    // console.log("File binary: ", fileBinary);
     const updateTask = await prisma.task.update({
       where: { id },
       data: doc,
