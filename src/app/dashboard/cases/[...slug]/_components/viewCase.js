@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import toast from "react-hot-toast";
 import {
@@ -17,21 +18,31 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { InputSelect, InputText, InputDate } from "./inputs";
+import Link from "next/link";
 
 export default function ViewCase({
   selectedCase,
-  selectedTaskName,
+  selectedTaskID,
   template,
   refreshData,
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const [UIstate, setUIstate] = useState("OK");
-  const [tab, setTab] = useState("profile");
+  const [tab, setTab] = useState(selectedTaskID ? "tasks" : "profile");
   const [edit, setEdit] = useState("");
-  const [selectedTask, setTask] = useState({ type: "", item: "" });
+  const [selectedTask, setTask] = useState(
+    selectedTaskID
+      ? {
+          type: "task",
+          item: selectedCase.tasks.find(({ id }) => id === selectedTaskID),
+        }
+      : ""
+  );
   const [docAttachment, setDocAttachment] = useState("");
   const [errFields, setErrFields] = useState(new Set());
-  const [filterPhrase, setFilterPhrase] = useState("");
+  const [filterPhrase, setFilterPhrase] = useState(searchParams.get("filter"));
   const [expandedField, setExpanded] = useState("");
   // client State
   const defaultClient = {
@@ -61,7 +72,7 @@ export default function ViewCase({
   );
   const [lawyer, setLawyer] = useState(selectedCase.lawyer ?? "");
   const [reminders, setReminders] = useState([
-    { type: "", count: "", regime: "" },
+    { channel: "", regime: "", count: "" },
   ]);
   //reminders Handlers
   const handleReminderChange = (index, field, value) => {
@@ -71,7 +82,7 @@ export default function ViewCase({
   };
 
   const addReminder = () => {
-    setReminders((prev) => [...prev, { type: "", count: "", regime: "" }]);
+    setReminders((prev) => [...prev, { channel: "", count: "", regime: "" }]);
   };
 
   const deleteReminder = (index) => {
@@ -83,29 +94,23 @@ export default function ViewCase({
     if (filterPhrase === "overdue")
       setCaseTasks(
         selectedCase.tasks?.filter(
-          ({ date, task }) => isDatePassed(new Date(date)) && !task.complete
+          ({ dueDate, completedBy }) =>
+            isDatePassed(new Date(dueDate)) && !completedBy
         )
       );
     else if (filterPhrase === "due")
       setCaseTasks(
         selectedCase.tasks?.filter(
-          ({ date, task }) => !isDatePassed(new Date(date)) && !task.complete
+          ({ dueDate, completedBy }) =>
+            !isDatePassed(new Date(dueDate)) && !completedBy
         )
       );
     else if (filterPhrase === "done")
-      setCaseTasks(selectedCase.tasks?.filter(({ task }) => task.complete));
+      setCaseTasks(
+        selectedCase.tasks?.filter(({ completedBy }) => completedBy)
+      );
     else setCaseTasks(selectedCase.tasks);
   }, [filterPhrase, selectedCase.tasks]);
-  // if selectedTaskId
-  useEffect(() => {
-    if (selectedTaskName) {
-      setTab("tasks");
-      const task = selectedCase.tasks.find(
-        ({ task }) => task.name === selectedTaskName
-      );
-      setTask({ type: "task", item: task });
-    }
-  }, [selectedTaskName, selectedCase.tasks]);
 
   // render
   return (
@@ -113,18 +118,19 @@ export default function ViewCase({
       {/* header */}
       <ul className="items-center justify-center flex flex-wrap -mb-px font-medium text-sm text-center">
         <li className="me-2">
-          <div
+          <Link
+            href={`/dashboard/cases/${selectedCase.id}`}
             className={`${
               tab === "profile"
                 ? "card m-0 mt-2"
                 : "border-transparent from-transparent to-transparent text-gray-500 dark:text-gray-400"
             } min-w-48 rounded-lg m-0 mt-2 cursor-pointer inline-flex border border-transparent items-center justify-center p-4 hover:border-emerald-700 dark:hover:border-emerald-200 group`}
-            onClick={() => {
-              setTab("profile");
-              setEdit("");
-              // resetCaseStates();
-              resetTaskStates();
-            }}
+            // onClick={() => {
+            //   setTab("profile");
+            //   setEdit("");
+            //   // resetCaseStates();
+            //   resetTaskStates();
+            // }}
           >
             <svg
               className="w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
@@ -136,21 +142,22 @@ export default function ViewCase({
               <path d="M5 11.424V1a1 1 0 1 0-2 0v10.424a3.228 3.228 0 0 0 0 6.152V19a1 1 0 1 0 2 0v-1.424a3.228 3.228 0 0 0 0-6.152ZM19.25 14.5A3.243 3.243 0 0 0 17 11.424V1a1 1 0 0 0-2 0v10.424a3.227 3.227 0 0 0 0 6.152V19a1 1 0 1 0 2 0v-1.424a3.243 3.243 0 0 0 2.25-3.076Zm-6-9A3.243 3.243 0 0 0 11 2.424V1a1 1 0 0 0-2 0v1.424a3.228 3.228 0 0 0 0 6.152V19a1 1 0 1 0 2 0V8.576A3.243 3.243 0 0 0 13.25 5.5Z" />
             </svg>
             Case Profile
-          </div>
+          </Link>
         </li>
         <li className="me-2">
-          <div
+          <Link
+            href={`/dashboard/cases/${selectedCase.id}/new`}
             className={`${
               tab === "tasks"
                 ? "card m-0 mt-2"
                 : "border-transparent from-transparent to-transparent text-gray-500 dark:text-gray-400"
             } min-w-48 rounded-lg m-0 mt-2 cursor-pointer inline-flex border border-transparent items-center justify-center p-4 hover:border-emerald-700 dark:hover:border-emerald-200 group`}
-            onClick={() => {
-              setTab("tasks");
-              setEdit("");
-              resetCaseProfileStates();
-              // resetTaskStates();
-            }}
+            // onClick={() => {
+            //   setTab("tasks");
+            //   setEdit("");
+            //   resetCaseProfileStates();
+            //   // resetTaskStates();
+            // }}
           >
             <svg
               className="w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
@@ -162,7 +169,7 @@ export default function ViewCase({
               <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
             </svg>
             Tasks
-          </div>
+          </Link>
         </li>
       </ul>
       {/* content */}
@@ -463,21 +470,34 @@ export default function ViewCase({
             <div className="md:flex">
               <ul className="flex-column space-y space-y-4 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 mb-4 md:mb-0">
                 <li
-                  onClick={() => {
-                    setTask({
-                      type: "new",
-                      item: {
-                        type: "",
-                        name: "",
-                        description: "",
-                        dueDate: "",
-                        reminders: [],
-                      },
-                    });
-                    setDocAttachment("");
-                  }}
+                // onClick={() => {
+                //   setTask({
+                //     type: "new",
+                //     item: {
+                //       type: "",
+                //       name: "",
+                //       description: "",
+                //       dueDate: "",
+                //       reminders: [],
+                //     },
+                //   });
+                //   setDocAttachment("");
+                // }}
                 >
                   <div
+                    onClick={() => {
+                      setTask({
+                        type: "new",
+                        item: {
+                          type: "",
+                          name: "",
+                          description: "",
+                          dueDate: "",
+                          reminders: [],
+                        },
+                      });
+                      setDocAttachment("");
+                    }}
                     className={`${
                       selectedTask.type === "new"
                         ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-700 dark:text-white border-transparent dark:border-transparent"
@@ -500,18 +520,45 @@ export default function ViewCase({
                     </svg>
                     New task
                   </div>
+                  {/* <div
+                    className={`${
+                      selectedTask.type === "new"
+                        ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-700 dark:text-white border-transparent dark:border-transparent"
+                        : ""
+                    } min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg w-full border border-neutral-400 dark:border-neutral-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white hover:border-transparent dark:hover:border-transparent cursor-pointer`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-4 h-4 me-2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
+                    </svg>
+                    New task
+                  </div> */}
                 </li>
                 {caseTasks?.map((taskItem) => (
-                  <li
-                    key={taskItem.task.name}
-                    onClick={() => {
-                      setTask({ type: "task", item: taskItem });
-                      setDocAttachment("");
-                    }}
-                  >
-                    <div
+                  <li key={taskItem.id}>
+                    <Link
+                      href={`/dashboard/cases/${selectedCase.id}/${taskItem.id}?filter=${filterPhrase}`}
+                      // onClick={() => {
+                      //   setTask({
+                      //     type: "task",
+                      //     item: selectedCase.tasks.find(
+                      //       ({ id }) => id === taskItem.id
+                      //     ),
+                      //   });
+                      //   setDocAttachment("");
+                      // }}
                       className={`${
-                        selectedTask.item?.name === taskItem.task.name
+                        selectedTask.item?.id === taskItem.id
                           ? "text-emerald-700 bg-gray-100 dark:bg-gray-700 dark:text-emerald-200"
                           : ""
                       } min-w-[124px] inline-flex items-center px-4 py-3 rounded-lg  bg-slate-50 w-full dark:bg-gray-800 hover:text-emerald-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-emerald-200 cursor-pointer`}
@@ -519,7 +566,7 @@ export default function ViewCase({
                       {taskItem.type === "document" ? (
                         <SVGdoc
                           className={`${
-                            selectedTask.item?.name === taskItem.task.name
+                            selectedTask.item?.id === taskItem.id
                               ? "text-emerald-600"
                               : "text-gray-500 dark:text-gray-400"
                           } w-4 h-4 me-2 `}
@@ -527,14 +574,14 @@ export default function ViewCase({
                       ) : (
                         <SVGbuilding
                           className={`${
-                            selectedTask.item?.task?.name === taskItem.task.name
+                            selectedTask.item?.id === taskItem.id
                               ? "text-emerald-600"
                               : "text-gray-500 dark:text-gray-400"
                           } w-4 h-4 me-2 `}
                         />
                       )}
-                      {taskItem.task.name}
-                    </div>
+                      {taskItem.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -548,6 +595,9 @@ export default function ViewCase({
                 handleInitializeTask={handleInitializeTask}
                 errFields={errFields}
                 setErrFields={setErrFields}
+                setTask={setTask}
+                handleDeleteTask={handleDeleteTask}
+                handleCompleteTask={handleCompleteTask}
               />
             </div>
           </>
@@ -661,7 +711,7 @@ export default function ViewCase({
       setUIstate("OK");
     } else {
       console.error(
-        "ERROR: failed to update case at /dashboard/cases/[slug] /compo\n > " +
+        "ERROR: failed to update case at /dashboard/cases/[slug] - viewCase.js iAA \n > " +
           JSON.stringify(_res) +
           "\n.............."
       );
@@ -704,7 +754,7 @@ export default function ViewCase({
       router.replace("/dashboard/cases");
     } else {
       console.error(
-        "ERROR: failed to delete case at /dashboard/cases/[slug] /compo\n > " +
+        "ERROR: failed to delete case at /dashboard/cases/[slug] - viewCase.js iBB\n > " +
           JSON.stringify(_res) +
           "\n.............."
       );
@@ -713,23 +763,28 @@ export default function ViewCase({
   }
   //func to Create Task
   async function handleInitializeTask() {
+    const reminderfields = reminders.reduce((acc, v) => {
+      return [...acc, ...Object.values(v)];
+    }, []);
     if (
       !selectedTask.item.type ||
-      !selectedTask.item.date ||
-      !selectedTask.item.task.name
+      !selectedTask.item.dueDate ||
+      !selectedTask.item.name ||
+      reminderfields.some((el) => !el)
     ) {
       if (!selectedTask.item.type) toast.error("Please select task type");
-      if (!selectedTask.item.date) toast.error("Please select task date");
-      if (!selectedTask.item.task.name) toast.error("Please provide task name");
+      if (!selectedTask.item.dueDate) toast.error("Please select task date");
+      if (!selectedTask.item.name) toast.error("Please provide task name");
+      if (reminderfields.some((el) => !el))
+        toast.error("Delete empty/incomplete reminders");
     } else {
       // fetch options
       let fetchOptions = {
         method: "POST",
         body: JSON.stringify({
-          caseId: selectedCase._id,
-          type: selectedTask.item.type,
-          date: selectedTask.item.date,
-          name: selectedTask.item.task.name,
+          caseID: selectedCase.id,
+          ...selectedTask.item,
+          reminders: reminders,
         }),
       };
       setUIstate("loading");
@@ -761,8 +816,8 @@ export default function ViewCase({
       setUIstate("OK");
     }
   }
-  //func to Complete Task
-  async function handleCompleteTask() {
+  //func to AttachDoc Task
+  async function handleDocAttachment() {
     if (!docAttachment) {
       toast.error("Please upload a task report/document");
     } else {
@@ -805,9 +860,49 @@ export default function ViewCase({
       setUIstate("OK");
     }
   }
+  //func to Complete Task
+  async function handleCompleteTask() {
+    if (!session.user) {
+      toast.error("User validation failed");
+    }
+
+    //loading
+    setUIstate("loading");
+    //fetch options
+    const fetchOptions = {
+      method: "PUT",
+      body: JSON.stringify({
+        completedBy: session.user.id,
+      }),
+    };
+    // POST request using fetch
+    const _res = await fetch("/api/dashboard/task", fetchOptions).then(
+      async (res_) => {
+        if (res_.ok) {
+          return await res_.json();
+        } else {
+          console.error(`ERROR: ` + JSON.stringify(res_));
+          toast.error("OOPS: task not initialized");
+        }
+      }
+    );
+    if (_res?.success) {
+      console.log(
+        "SUCCESS: task completed\n > " +
+          JSON.stringify(_res.success) +
+          "\n.............."
+      );
+      await refreshData();
+      toast.success("Task status complete!");
+    } else {
+      if (_res?.failed) toast.error(_res?.failed);
+      else toast.error(_res?.error ?? "No Response, check internet connection");
+    }
+    setUIstate("OK");
+  }
   //func to Delete Task
   async function handleDeleteTask() {
-    if (!selectedTask.item.task.name) {
+    if (!selectedTask.item.id) {
       toast.error("Selected task not found");
     } else {
       //loading
@@ -816,8 +911,8 @@ export default function ViewCase({
       let fetchOptions = {
         method: "DELETE",
         body: JSON.stringify({
-          caseId: selectedCase._id,
-          taskName: selectedTask.item.task.name,
+          caseID: selectedCase.id,
+          taskID: selectedTask.item.id,
         }),
       };
       // POST request using fetch

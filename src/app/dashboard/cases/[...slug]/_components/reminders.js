@@ -8,13 +8,15 @@ export default function Reminders({
     <div className="flex flex-col space-y-2">
       {reminders.map((reminder, index) => (
         <div key={index} className="grid grid-cols-10 gap-2">
-          <div className="col-span-3">
+          <div className="col-span-4">
             <select
-              name={`notification-type-${index}`}
-              id={`notification-type-${index}`}
+              name={`notification-channel-${index}`}
+              id={`notification-channel-${index}`}
               className="bg-slate-300 dark:bg-slate-900 border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:placeholder-gray-400 placeholder:italic dark:text-white"
-              value={reminder.type}
-              onChange={(e) => onReminderChange(index, "type", e.target.value)}
+              value={reminder.channel}
+              onChange={(e) =>
+                onReminderChange(index, "channel", e.target.value)
+              }
             >
               <option value="" className="italic font-light">
                 notifications
@@ -29,14 +31,16 @@ export default function Reminders({
               ))}
             </select>
           </div>
-          <div className="col-span-3">
+          <div className="col-span-2">
             <input
               name={`notification-count-${index}`}
               id={`notification-count-${index}`}
               type="number"
               className="border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border bg-slate-300 dark:bg-slate-900 shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic dark:text-white"
               value={reminder.count}
-              onChange={(e) => onReminderChange(index, "count", e.target.value)}
+              onChange={(e) =>
+                onReminderChange(index, "count", parseInt(e.target.value))
+              }
             />
           </div>
           <div className="col-span-3">

@@ -307,7 +307,7 @@ export default function CasePage({ params }) {
           ) : selected ? (
             <ViewCase
               selectedCase={selected}
-              selectedTaskName={slug[1] ?? null}
+              selectedTaskID={slug[1] ?? null}
               template={caseTypes.find(({ id }) => id === selected.caseTypeID)}
               refreshData={refreshData}
             />

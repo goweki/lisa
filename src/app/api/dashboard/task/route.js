@@ -1,35 +1,30 @@
-import { Binary } from "mongodb";
+// import { Binary } from "mongodb";
 import prisma from "@/lib/prisma";
 import { strPascalcase } from "@/helpers/stringHandlers";
 
 export async function POST(request) {
-  const { caseId, type, name, date } = await request.json();
-  console.log("POST REQUEST: new task: ", name);
+  const { caseID, dueDate, ...doc } = await request.json();
+  console.log("POST REQUEST: new task: ", doc.name);
   try {
     //
     if (
-      await prisma.case.findUnique({
-        where: { id: caseId },
-      })
+      !(await prisma.case.findUnique({
+        where: { id: caseID },
+      }))
     ) {
       // HTTP response - task name exists
-      console.log(` > FAILED: task-document already exists.\n..........`);
-      return Response.json({ failed: "task already exists" });
+      console.log(` > FAILED: Parent Case does not exist.\n..........`);
+      return Response.json({ failed: "Parent Case does not exist" });
     } else {
       // insert doc
-      const res_ = await collection.updateOne(
-        { id: caseId },
-        {
-          $push: {
-            dueDates: {
-              type,
-              date,
-              task: { name: strPascalcase(name), complete: "" },
-            },
-          },
-        }
-      );
-      console.log(` > SUCCESS: task-document inserted.\n..........`);
+      const res_ = await prisma.task.create({
+        data: {
+          ...doc,
+          caseID,
+          dueDate: new Date(dueDate),
+        },
+      });
+      console.log(` > SUCCESS: task inserted.\n..........`);
       // HTTP response
       return Response.json({ success: res_ });
     }
@@ -52,7 +47,7 @@ export async function PUT(request) {
   console.log("PUT REQUEST: updating task ", taskName);
   try {
     // update doc
-    const fileBinary = new Binary(Buffer.from(await complete.arrayBuffer()));
+    // const fileBinary = new Binary(Buffer.from(await complete.arrayBuffer()));
     // console.log("File binary: ", fileBinary);
     const res_ = await collection.updateOne(
       {
@@ -61,7 +56,7 @@ export async function PUT(request) {
       },
       {
         $set: {
-          "dueDates.$.task.complete": fileBinary,
+          // "dueDates.$.task.complete": fileBinary,
         }, // Update the matched task object
       }
     );
@@ -79,21 +74,19 @@ export async function PUT(request) {
 export async function DELETE(request) {
   // request body
   const doc = await request.json();
-  const { caseId, taskName } = doc;
-  console.log("DELETE REQUEST: deleting task: ", taskName, " ", caseId);
+  const { caseID, taskID } = doc;
+  console.log("DELETE REQUEST: deleting task: ", taskID, " of ", caseID);
   try {
     // delete (pull) object from the dueDates array
-    const res_ = await collection.updateOne(
-      {
-        id: caseId,
+    const deleteTask = await prisma.task.delete({
+      where: {
+        id: taskID,
+        caseID: caseID,
       },
-      {
-        $pull: { dueDates: { "task.name": taskName } }, // Remove the task object with the specified name
-      }
-    );
+    });
     console.log(`SUCCESS: task deleted.\n..........`);
     // HTTP response
-    return Response.json({ success: res_ });
+    return Response.json({ success: deleteTask });
   } catch (err) {
     console.log(" > ERROR: document deletion failed.", err, "\n..........");
     return Response.json({ error: err });

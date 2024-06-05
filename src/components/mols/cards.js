@@ -16,14 +16,14 @@ export default function CardIssue({ item, icon: Icon }) {
           <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
             <div
               className={`bg-slate-500 h-2.5 rounded-full w-${
-                item.status.status === "complete"
+                item.completedBy
                   ? "w-full"
-                  : item.tasks?.filter((v) => v.task.status).length === 0 ||
+                  : item.tasks?.filter((v) => v.completedBy).length === 0 ||
                     item.tasks?.length === 0
                   ? "0"
-                  : item.tasks?.filter((v) => v.task.status).length < 3
+                  : item.tasks?.filter((v) => v.completedBy).length < 3
                   ? "1/3"
-                  : item.tasks?.filter((v) => v.task.status).length < 4
+                  : item.tasks?.filter((v) => v.completedBy).length < 4
                   ? "2/3"
                   : "3/3"
               }/`}

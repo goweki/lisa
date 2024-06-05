@@ -2,6 +2,8 @@ import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import DocView from "@/components/mols/docViewer";
 import { InputSelect, InputText, InputDate } from "./inputs";
 import Reminders from "./reminders";
+import { strPascalcase } from "@/helpers/stringHandlers";
+import { dateShort } from "@/helpers/dateHandlers";
 
 export default function TaskView({
   select,
@@ -13,19 +15,22 @@ export default function TaskView({
   handleInitializeTask,
   errFields,
   setErrFields,
+  setTask,
+  handleDeleteTask,
+  handleCompleteTask,
 }) {
   //render
   return (
     <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
-      {select.task === "task" && select.item ? (
+      {select.type === "task" && select.item ? (
         <>
           <div className="flex flex-row justify-between">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              {strPascalcase(select.item.task.name) + " " + select.item.type}{" "}
+              {strPascalcase(select.item.name) + " " + select.item.type}{" "}
               <span className="font-light text-gray-500 dark:text-gray-400">
                 {/* {select.item.type === "document" ? " Due Date" : " Date"}:{" "} */}
                 {"-"}
-                {dateShort(new Date(select.item.date))}
+                {dateShort(new Date(select.item.dueDate))}
               </span>
             </h3>
             <div>
@@ -76,7 +81,7 @@ export default function TaskView({
                   <ButtonPrimary
                     label="Complete Task"
                     onClick={handleCompleteTask}
-                    disabled={!docAttachment}
+                    // disabled={!docAttachment}
                   />
                 </div>
               </div>
@@ -97,7 +102,9 @@ export default function TaskView({
                 }
               />
             )}
-            {docAttachment && <DocView doc={docAttachment} />}
+            {select.documents?.length > 0 && (
+              <DocView doc={select.documents[0].link} />
+            )}
           </div>
         </>
       ) : select.type === "new" && select.item ? (
@@ -186,7 +193,7 @@ export default function TaskView({
             <ButtonPrimary
               label="Create Task"
               disabled={
-                !select.item.type || !select.item.date || !select.item.task.name
+                !select.item.type || !select.item.name || !select.item.dueDate
               }
               loading={UIstate === "loading"}
               onClick={handleInitializeTask}

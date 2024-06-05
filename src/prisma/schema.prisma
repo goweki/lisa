@@ -34,8 +34,9 @@ model User {
 
   institutionIDs String[] @db.ObjectId
 
-  cases        Case[]
-  institutions Institution[] @relation(fields: [institutionIDs], references: [id])
+  cases          Case[]
+  completedTasks Task[]
+  institutions   Institution[] @relation(fields: [institutionIDs], references: [id])
 }
 
 model CaseType {
@@ -83,9 +84,9 @@ enum reminderChannels {
 }
 
 type Reminder {
-  regime           String //hours,days
-  count            Int
-  reminderChannels reminderChannels
+  regime  String //hours,days
+  count   Int
+  channel reminderChannels
 }
 
 enum taskType {
@@ -94,16 +95,18 @@ enum taskType {
 }
 
 model Task {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  type        taskType
-  name        String
-  dueDate     DateTime
-  description String
-  document    Document[]
-  caseID      String     @db.ObjectId
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  type          taskType
+  name          String
+  dueDate       DateTime
+  description   String
+  documents     Document[]
+  caseID        String     @db.ObjectId
+  completedByID String?    @db.ObjectId
 
-  reminders Reminder[]
-  case      Case       @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reminders   Reminder[]
+  case        Case       @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  completedBy User?      @relation(fields: [completedByID], references: [id])
 }
 
 model Document {
