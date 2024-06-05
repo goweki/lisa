@@ -25,12 +25,14 @@ model Institution {
 }
 
 model User {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  email    String  @unique
-  password String
-  role     String
-  imageUrl String?
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  email            String    @unique
+  password         String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  role             String
+  imageUrl         String?
 
   institutionIDs String[] @db.ObjectId
 
