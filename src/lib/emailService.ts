@@ -7,6 +7,7 @@ const emailTo = process.env.GMAIL_ACCOUNT_TO;
 export default async function sendEmail(data: {
   subject: string;
   text: string;
+  html?: string;
   cc?: string;
 }) {
   try {
@@ -24,6 +25,7 @@ export default async function sendEmail(data: {
       to: emailTo,
       subject: data.subject,
       text: data.text,
+      html: data.html,
       cc: data.cc,
     };
     // console.log(` > CHECKPOINT: Sending email`);

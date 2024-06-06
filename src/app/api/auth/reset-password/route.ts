@@ -42,7 +42,20 @@ export async function POST(request: Request) {
     const resetURL = `${CONICAL_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
     const emailOptions = {
       subject: "Reset Password for Lisa",
-      text: `Reset your password by clicking the following URL: ${resetURL}`,
+      html: `
+            <p>Reset your password by clicking the below URL:</p>
+            <p><a href="${resetURL}">${resetURL}</a></p>
+            <br/>
+            <br/>
+            <i>If you did not request a password reset, please ignore this email and do not share contents with anyone.</i>
+            `,
+
+      text: `
+      Reset your password by clicking the below URL or copying it into your address-bar:
+      ${resetURL}
+      
+      If you did not request a password reset, please ignore this email.
+      `,
     };
     const sendMail = await sendEmail(emailOptions);
     if (sendMail.success)

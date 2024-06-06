@@ -63,6 +63,17 @@ async function seed() {
   console.log("caseTypes initialized:", caseTypes);
 }
 
+seed()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
+
+// view seeded
 async function retrieveSeed() {
   const populatedInstitutions = await prisma.institution.findMany({
     include: {
@@ -74,7 +85,7 @@ async function retrieveSeed() {
   console.log("Users:", populatedInstitutions[0].users);
 }
 
-seed()
+retrieveSeed()
   .then(async () => {
     await prisma.$disconnect();
   })
@@ -83,13 +94,3 @@ seed()
     await prisma.$disconnect();
     process.exit(1);
   });
-
-// retrieveSeed()
-//   .then(async () => {
-//     await prisma.$disconnect();
-//   })
-//   .catch(async (e) => {
-//     console.error(e);
-//     await prisma.$disconnect();
-//     process.exit(1);
-//   });

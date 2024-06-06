@@ -39,7 +39,7 @@ export default function ResetPassword({
     (async () => {
       if (!email_ || !token || emailValidator(email_))
         router.push("/reset-password");
-      if (UIstate) setUIstate("");
+      setUIstate("");
       try {
         // API call to confirm user,token,expiry
         const fetchOptions = {
@@ -76,7 +76,7 @@ export default function ResetPassword({
         }
       } catch (error) {}
     })();
-  }, [email_]);
+  }, [email_, token, router]);
   // Notify on UIstate-error
   useEffect(() => {
     if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
