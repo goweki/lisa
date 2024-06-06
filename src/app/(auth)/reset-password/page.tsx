@@ -15,7 +15,7 @@ import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 
-export default function ResetPassword() {
+export default function ForgotPassword() {
   // states
   const [email, setEmail] = useState({ value: "", error: "" });
   const [UIstate, setUIstate] = useState("");

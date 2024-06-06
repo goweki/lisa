@@ -14,30 +14,36 @@ import {
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
+import { strIsSimilar } from "@/helpers/stringHandlers";
 
-export default function ResetPassword({ params }: any) {
+export default function ResetPassword({
+  params,
+  searchParams,
+}: {
+  params: { token: string };
+  searchParams: { [key: string]: string };
+}) {
+  const { token } = params;
+  const { email_ } = searchParams; // /token?email_=email@mail.com
   // states
-  const [user, setUser] = useState({ value: "", error: "" });
+  const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
-  const [passwordRepeat, setPasswordRepeat] = useState({
+  const [passwordRepeat, setRepeatPassword] = useState({
     value: "",
     error: "",
   });
   const [UIstate, setUIstate] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams();
   // onMount
   useEffect(() => {
-    if (searchParams.has("error")) {
-      const error_ = searchParams.get("error") as string;
-      // setUIstate(qParamsErrors[error_]);
-      if (error_ && error_ in qParamsErrors) {
-        setUIstate(qParamsErrors[error_]);
-      } else {
-        setUIstate("Unknown Error, try again later"); // Handle unknown errors
-      }
-    } else setUIstate("OK");
-  }, [searchParams]);
+    // validate
+    // email
+    // and token
+    // here
+    if (email_) {
+      setEmail({ value: email_, error: emailValidator(email_) });
+    } else router.push("/signin");
+  }, [email_]);
   // Notify on UIstate-error
   useEffect(() => {
     if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
@@ -45,38 +51,27 @@ export default function ResetPassword({ params }: any) {
       setUIstate("OK");
     }
   }, [UIstate]);
-  // Notify on input-Error
+  // Notify on password-error
   useEffect(() => {
-    if (email.error) {
-      setUIstate("OK");
-      if (email.error) toast.error(email.error);
+    if (password.error || passwordRepeat.error) {
+      toast.error(password.error || passwordRepeat.error);
     }
-  }, [email.error]);
+  }, [password.error, passwordRepeat.error]);
   // handle Submit
-  async function handleSendResetLink(e: React.FormEvent<HTMLFormElement>) {
+  async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!email.value) {
-      setUIstate("Could not parse email: Confirm email provided");
-    }
     setUIstate("loading");
-    // validate inputs: email & password
-    const emailError_ = emailValidator(email.value);
-    if (emailError_) {
-      setEmail((prev) => ({ ...prev, error: emailError_ }));
+    try {
+      // API call
+      const fetchOptions = {
+        method: "PUT",
+        body: JSON.stringify({ userEmail: email, token, password }),
+      };
 
-      return;
-    }
-    console.log(
-      `........................\nCHECKPOINT: sending reset password token to user\n > ${email.value}\n..................`
-    );
-    // API call
-    const fetchOptions = {
-      method: "POST",
-      body: JSON.stringify({ userEmail: email.value }),
-    };
-
-    const response = await fetch("/api/auth/reset-password", fetchOptions).then(
-      async (res_) => {
+      const response = await fetch(
+        "/api/auth/reset-password",
+        fetchOptions
+      ).then(async (res_) => {
         if (res_.status === 200) {
           return await res_.json();
         } else {
@@ -88,17 +83,19 @@ export default function ResetPassword({ params }: any) {
             setUIstate("Unknown Error, try again later"); // Handle unknown errors
           }
         }
+      });
+      //validate reseting password
+      if (response?.success) {
+        toast.success(response.success);
+        router.push(`/signin`);
+      } else {
+        setUIstate(
+          (Object.values(response)[0] as string) ??
+            "Unknown error, try again later"
+        );
       }
-    );
-    //validate sending reset link
-    if (response?.success) {
-      toast.success(response.success);
-      router.push(`/`);
-    } else {
-      setUIstate(
-        (Object.values(response)[0] as string) ??
-          "Unknown error, try again later"
-      );
+    } catch (err) {
+      console.log("ERROR caught - D27g");
     }
   }
   // Render
@@ -110,32 +107,50 @@ export default function ResetPassword({ params }: any) {
         <p
           className={`text-xl font-bold text-emerald-800 dark:text-emerald-500 text-center pb-6`}
         >
-          Reset Password
+          New Password
         </p>
         <form
-          id="reset-password"
+          id="new-password"
           className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33]"
-          onSubmit={handleSendResetLink}
+          onSubmit={handleChangePassword}
         >
           {/* INPUT FIELDS */}
-          <div className="mb-12">
+          <div className="space-y-4">
             <InputText
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="Enter your email address"
-              icon={SVGemail}
-              valObj={email}
-              setValue={setEmail}
-              valValidator={emailValidator}
+              label="Password"
+              name="password"
+              type="password"
+              placeholder="Enter new Password"
+              icon={SVGpassword}
+              valObj={password}
+              setValue={setPassword}
+              valValidator={passwordValidator}
+            />
+            <InputText
+              label="Repeat Password"
+              name="repeat-password"
+              type="password"
+              placeholder="Repeat Password"
+              icon={SVGpassword}
+              valObj={passwordRepeat}
+              setValue={setRepeatPassword}
+              valValidator={(val) => {
+                if (strIsSimilar(val, password)) return "";
+                else return "passwords dont match";
+              }}
             />
           </div>
-          {/* forgot passwords */}
+          {/* Buttons */}
           <div className="mx-2 pt-4">
             <ButtonPrimary
-              label="Get Password Reset Link"
+              label="Change Password"
               type="submit"
-              disabled={!email.value || email.error}
+              disabled={
+                !password.value ||
+                password.error ||
+                !passwordRepeat.value ||
+                passwordRepeat.error
+              }
               loading={UIstate === "loading"}
             />
           </div>

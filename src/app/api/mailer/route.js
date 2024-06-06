@@ -1,5 +1,5 @@
-import { sendEmail } from "@/lib/sendEmail";
-import { sendSMS } from "@/lib/sendSMS";
+import sendEmail from "@/lib/emailService";
+import sendSMS from "@/lib/smsService";
 
 export async function POST(request) {
   if (!process.env.NOTIFY_CHANNELS)
