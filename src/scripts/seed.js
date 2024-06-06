@@ -17,6 +17,7 @@ const caseTypes_ = [
 ];
 
 async function seed() {
+  console.log("SEEDING....");
   const institution = await prisma.institution.upsert({
     where: { name: "Lisa" },
     update: {
@@ -35,6 +36,7 @@ async function seed() {
     where: { email: "antonio@goweki.com" },
     update: {
       name: "Antonio",
+      email: "antonio@goweki.com",
       password: "$2a$10$8aYZYMNUMZsm77MbkGmyROKDIGu5DczxAAT8UDDx8LFhPe4RPHHD6",
       role: "admin",
       institutionIDs: [institution.id],
