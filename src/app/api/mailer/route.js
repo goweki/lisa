@@ -9,6 +9,7 @@ export async function POST(request) {
       "Sending to channels: " + process.env.NOTIFY_CHANNELS.split(" ")
     );
   }
+
   try {
     // sending channels
     const channels = process.env.NOTIFY_CHANNELS.split(" ");

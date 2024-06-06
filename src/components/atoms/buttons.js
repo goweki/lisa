@@ -1,7 +1,7 @@
 export function ButtonPrimary({
   label = "PrimaryButton",
   loading,
-  onClick = () => console.log("ButtonPrimary clicked"),
+  onClick = () => "",
   disabled,
   type = "button",
 }) {

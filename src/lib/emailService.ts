@@ -1,19 +1,27 @@
 import nodemailer from "nodemailer";
+const gmailAccountUser = process.env.GMAIL_ACCOUNT_USER;
+const gmailAccountKey = process.env.GMAIL_APP_KEY;
+const emailFrom = process.env.GMAIL_ACCOUNT_FROM;
+const emailTo = process.env.GMAIL_ACCOUNT_TO;
 
-export async function sendEmail(data) {
+export default async function sendEmail(data: {
+  subject: string;
+  text: string;
+  cc?: string;
+}) {
   try {
     // nodemailer transporter obj
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.GMAIL_ACCOUNT_USER,
-        pass: process.env.GMAIL_APP_KEY,
+        user: gmailAccountUser,
+        pass: gmailAccountKey,
       },
     });
     // nodemailer options
     const mailOptions = {
-      from: process.env.GMAIL_ACCOUNT_FROM,
-      to: process.env.GMAIL_ACCOUNT_TO,
+      from: emailFrom,
+      to: emailTo,
       subject: data.subject,
       text: data.text,
       cc: data.cc,
@@ -26,8 +34,8 @@ export async function sendEmail(data) {
       console.error(" > ERROR: email not sent ");
       return { error: "Email not sent " };
     }
-  } catch (error) {
-    console.error(" > ERROR: email not sent ");
+  } catch (err) {
+    console.error(" > ERROR: email not sent \n > ", err);
     return { error: "Email not sent" };
   }
 }

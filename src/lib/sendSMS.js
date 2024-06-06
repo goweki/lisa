@@ -5,7 +5,7 @@ const africastalking = AfricasTalking({
   username: process.env.AFRICASTALKING_USERNAME,
 });
 
-export async function sendSMS(data) {
+export default async function sendSMS(data) {
   try {
     const result = await africastalking.SMS.send({
       to: process.env.AFRICASTALKING_TO,

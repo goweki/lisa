@@ -1,4 +1,4 @@
-export const httpCodes = {
+export const httpCodes: { [key: number]: string } = {
   400: "Bad Request",
   401: "Unauthorized",
   403: "Forbidden",

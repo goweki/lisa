@@ -161,7 +161,7 @@ export default function SigninPage() {
               <SVGhome className="h-6 w-6" />
             </Link>
             <Link
-              href="/forgot-password"
+              href="/reset-password"
               className="text-font-inactive italic dark:text-font-dark-inactive dark:hover:text-font-dark-faded text-sm font-medium  hover:underline"
             >
               Forgot password?
