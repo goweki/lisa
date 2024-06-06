@@ -14,7 +14,7 @@ import {
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
-import { strIsSimilar } from "@/helpers/stringHandlers";
+import { strsMatch } from "@/helpers/stringHandlers";
 
 export default function ResetPassword({
   params,
@@ -25,8 +25,8 @@ export default function ResetPassword({
 }) {
   const { token } = params;
   const { email_ } = searchParams; // /token?email_=email@mail.com
+  // console.log("EMAIL....", email_);
   // states
-  const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
   const [passwordRepeat, setRepeatPassword] = useState({
     value: "",
@@ -36,13 +36,46 @@ export default function ResetPassword({
   const router = useRouter();
   // onMount
   useEffect(() => {
-    // validate
-    // email
-    // and token
-    // here
-    if (email_) {
-      setEmail({ value: email_, error: emailValidator(email_) });
-    } else router.push("/signin");
+    (async () => {
+      if (!email_ || !token || emailValidator(email_))
+        router.push("/reset-password");
+      if (UIstate) setUIstate("");
+      try {
+        // API call to confirm user,token,expiry
+        const fetchOptions = {
+          method: "GET",
+        };
+
+        const response = await fetch(
+          `/api/auth/reset-password?email=${email_}&token=${token}`,
+          fetchOptions
+        ).then(async (res_) => {
+          if (res_.status === 200) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            // setUIstate(httpCodes[res_.status]);
+            if (res_.status && res_.status in httpCodes) {
+              setUIstate(httpCodes[res_.status]);
+            } else {
+              setUIstate("Unknown Error, try again later"); // Handle unknown errors
+            }
+          }
+        });
+
+        //validate reseting password
+        if (response?.success) {
+          toast.success(response.success);
+          setUIstate("OK");
+        } else {
+          setUIstate(
+            (Object.values(response)[0] as string) ??
+              "Unknown error, try again later"
+          );
+          router.push(`/reset-password`);
+        }
+      } catch (error) {}
+    })();
   }, [email_]);
   // Notify on UIstate-error
   useEffect(() => {
@@ -56,16 +89,37 @@ export default function ResetPassword({
     if (password.error || passwordRepeat.error) {
       toast.error(password.error || passwordRepeat.error);
     }
+    setUIstate("OK");
   }, [password.error, passwordRepeat.error]);
   // handle Submit
   async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setUIstate("loading");
+    // if field errors
+    const passwordError_ = passwordValidator(password.value);
+    const passwordMismatch_ = !strsMatch(password.value, passwordRepeat.value);
+    if (passwordError_ || passwordMismatch_) {
+      if (passwordError_) {
+        setPassword((prev) => ({ ...prev, error: passwordError_ }));
+      }
+      if (passwordMismatch_) {
+        setRepeatPassword((prev) => ({
+          ...prev,
+          error: "Passwords dont match",
+        }));
+      }
+      return;
+    }
+    // if valid fields
     try {
       // API call
       const fetchOptions = {
         method: "PUT",
-        body: JSON.stringify({ userEmail: email, token, password }),
+        body: JSON.stringify({
+          userEmail: email_,
+          token,
+          password: password.value,
+        }),
       };
 
       const response = await fetch(
@@ -127,15 +181,15 @@ export default function ResetPassword({
               valValidator={passwordValidator}
             />
             <InputText
-              label="Repeat Password"
+              label="Re-enter Password"
               name="repeat-password"
               type="password"
-              placeholder="Repeat Password"
+              placeholder="Re-enter Password"
               icon={SVGpassword}
               valObj={passwordRepeat}
               setValue={setRepeatPassword}
               valValidator={(val) => {
-                if (strIsSimilar(val, password)) return "";
+                if (strsMatch(val, password.value)) return "";
                 else return "passwords dont match";
               }}
             />
@@ -152,6 +206,7 @@ export default function ResetPassword({
                 passwordRepeat.error
               }
               loading={UIstate === "loading"}
+              onClick={() => "Submitting"}
             />
           </div>
           <div className="flex flex-wrap items-center justify-between">
@@ -199,19 +254,3 @@ export default function ResetPassword({
     </div>
   );
 }
-
-const qParamsErrors: {
-  [key: string]: string;
-} = {
-  OAuthSignin: "Error in constructing an authorization URL",
-  OAuthCallback: "Error in handling the response from OAuth provider",
-  OAuthCreateAccount: "Could not create user",
-  EmailCreateAccount: "Could not create user",
-  Callback: "Error in the OAuth callback handler route",
-  OAuthAccountNotLinked:
-    "Email is already linked, but not with this OAuth account",
-  EmailSignin: "Sending the e-mail with verification token failed",
-  CredentialsSignin: "Invalid credentials",
-  SessionRequired: "The content of this page requires you to be signed in",
-  Default: "An error occured",
-};

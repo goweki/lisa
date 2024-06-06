@@ -63,7 +63,7 @@ export function InputText({
   setValue,
   name = "inputName",
   label,
-  valValidator = (val: string) => {
+  valValidator = (val: string | void) => {
     if (val) return "";
     else return "Empty value";
   },
@@ -98,9 +98,12 @@ export function InputText({
           placeholder={placeholder}
           value={valObj.value}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            const newValue = e.target.value;
-            const error = valValidator(newValue);
-            setValue({ value: newValue, error });
+            if (valObj.error) {
+              const error = valValidator(e.target.value);
+              setValue({ value: e.target.value, error });
+            } else {
+              setValue({ value: e.target.value, error: "" });
+            }
           }}
         />
       </div>

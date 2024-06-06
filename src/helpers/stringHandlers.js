@@ -7,6 +7,6 @@ export function strPascalcase(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
-export function strIsSimilar(str1, str2) {
+export function strsMatch(str1, str2) {
   return str1 === str2;
 }
