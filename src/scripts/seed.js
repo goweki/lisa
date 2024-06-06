@@ -76,23 +76,23 @@ seed()
   });
 
 // view seeded
-async function retrieveSeed() {
-  const populatedInstitutions = await prisma.institution.findMany({
-    include: {
-      users: true,
-    },
-  });
+// async function retrieveSeed() {
+//   const populatedInstitutions = await prisma.institution.findMany({
+//     include: {
+//       users: true,
+//     },
+//   });
 
-  console.log("Institutions:", populatedInstitutions);
-  console.log("Users:", populatedInstitutions[0].users);
-}
+//   console.log("Institutions:", populatedInstitutions);
+//   console.log("Users:", populatedInstitutions[0].users);
+// }
 
-retrieveSeed()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+// retrieveSeed()
+//   .then(async () => {
+//     await prisma.$disconnect();
+//   })
+//   .catch(async (e) => {
+//     console.error(e);
+//     await prisma.$disconnect();
+//     process.exit(1);
+//   });
