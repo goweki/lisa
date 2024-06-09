@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { SVGhamburger, SVGlogo } from "../atoms/svgs";
 import ThemeToggler from "../atoms/themeToggle";
 import { MenuDropdown } from "../atoms/menus";
 
 export default function Navbar(props) {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   return (
     <nav
       className={`z-40 sticky bg-backg-surface dark:bg-backg-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
@@ -33,8 +34,7 @@ export default function Navbar(props) {
                   href={v.onClick}
                   className={`${
                     pathname === v.onClick ||
-                    (pathname.length > 8 &&
-                      pathname.slice(0, 10) === v.onClick.slice(0, 10))
+                    pathname.includes(v.label.toLowerCase())
                       ? "underline font-bold"
                       : ""
                   } block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
@@ -105,6 +105,7 @@ const menuItemsOptions = {
   ],
   auth: [
     { label: "Home", type: "link", onClick: "/dashboard" },
+    { label: "Institutions", type: "link", onClick: "/dashboard/institutions" },
     { label: "Cases", type: "link", onClick: "/dashboard/cases" },
     { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
   ],

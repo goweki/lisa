@@ -15,7 +15,7 @@ export default function UserHome() {
   const [briefs, setBriefs] = useState({});
   const { date, time, rawDate } = useDate();
   const {
-    data: { cases, institutions, caseTypes },
+    data: { cases, institutions, caseTypes, users },
   } = useContext(DataContext);
   //onMount or //cases
   useEffect(() => {
@@ -48,28 +48,13 @@ export default function UserHome() {
     };
     const usersBrief = {
       headings: ["Email", "Name", "Role", "Institution"],
-      series: institutions
-        .map((v) => v.users)
-        .flat()
-        .map((v) => ({
-          ...v,
-          institutions: v.institutions
-            .map((institution) => institution.name)
-            .join(", "),
-        })),
-
-      // .filter((_case) => _case.status === "open")
-      // .slice(0, 8)
-      // .map((_case) => ({
-      //   id: _case.id,
-      //   case: _case.name,
-      //   type: _case.type,
-      //   client: {
-      //     clientName: _case.clientName,
-      //     clientParty: _case.clientParty,
-      //   },
-      //   status: _case.status,
-      // })),
+      series: users.map((user_) => ({
+        id: user_.id,
+        email: user_.email,
+        name: user_.name,
+        role: user_.role,
+        institutions: user_.institutions.map((inst) => inst.name).join(", "),
+      })),
     };
     const caseTypesBrief = {
       headings: ["Name", "Type", "primaryParty", "secondaryParty"],
@@ -80,22 +65,9 @@ export default function UserHome() {
         "Primary-Party": _type.primaryParty,
         "Secondary-Party": _type.secondaryParty,
       })),
-
-      // .filter((_case) => _case.status === "open")
-      // .slice(0, 8)
-      // .map((_case) => ({
-      //   id: _case.id,
-      //   case: _case.name,
-      //   type: _case.type,
-      //   client: {
-      //     clientName: _case.clientName,
-      //     clientParty: _case.clientParty,
-      //   },
-      //   status: _case.status,
-      // })),
     };
     setBriefs({ caseBrief, usersBrief, caseTypesBrief });
-  }, [cases, institutions, caseTypes]);
+  }, [cases, institutions, caseTypes, users]);
 
   // render
   return (
@@ -127,9 +99,9 @@ export default function UserHome() {
           <CardTable
             title={"Active Users"}
             data={briefs.usersBrief}
-            baseLink={"/dashboard/users"}
-            linkRows={false}
-            showViewAll={true}
+            baseLink={"/dashboard/institutions"}
+            linkRows={true}
+            // showViewAll={true}
           />
         )}
         {briefs.caseTypesBrief && (

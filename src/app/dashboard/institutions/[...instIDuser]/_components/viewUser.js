@@ -83,10 +83,7 @@ export default function UserViewArea({
         <>
           <div className="flex flex-row justify-between">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              {"User: " +
-                strPascalcase(selectedUser.name) +
-                " " +
-                userEdit.name}{" "}
+              {strPascalcase(selectedUser.name) + " " + selectedUser.name}{" "}
             </h3>
             <span>
               <span

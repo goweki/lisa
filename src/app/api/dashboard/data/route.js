@@ -14,10 +14,16 @@ export async function getHandler(req, user) {
       `........................\nGET REQUEST /api/dashboard/data\n > institution: ${institutionId}`
     );
     // GET institution
-    const _institution = await prisma.institution.findUnique({
-      where: { id: institutionId },
+    const institutions_ = await prisma.institution.findMany({
+      where: {
+        id: {
+          in: user.institutionIDs,
+        },
+      },
     });
-
+    if (institutions_.length < 1)
+      Response.json("Invalid institutionIDs", { status: 401 });
+    const _institution = institutions_[0];
     const institutions = await prisma.institution.findMany({
       where: _institution.name !== "Lisa" ? { id: institutionId } : {},
       include: {
@@ -34,6 +40,9 @@ export async function getHandler(req, user) {
             institutionIDs: {
               has: inst.id,
             },
+          },
+          include: {
+            institutions: true,
           },
         })),
       ];
