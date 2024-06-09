@@ -35,11 +35,18 @@ export default function ViewInstitution({
   // states
   const [userEdit, setUserEdits] = useState({});
   const [instEdit, setInstEdit] = useState({});
+  const [filtUsers, setFiltUsers] = useState([]);
   const [errFields, setErrFields] = useState(new Set());
   const [UIstate, setUIstate] = useState("");
 
   // load filt-Users
-  useEffect(() => {}, [filterPhrase, selected.users]);
+  useEffect(() => {
+    setFiltUsers(
+      filterPhrase
+        ? instUsers.filter(({ role }) => role === filterPhrase)
+        : instUsers
+    );
+  }, [filterPhrase, instUsers]);
 
   // render
   return (
@@ -369,15 +376,13 @@ export default function ViewInstitution({
               <InputSelect
                 name="filterPhrase"
                 optionItems={[
-                  { value: "overdue", text: "❗ overdue" },
-                  { value: "due", text: "✍🏾 due" },
-                  { value: "done", text: "✔️ Done" },
+                  { value: "lawyer", text: "✍🏾 lawyer" },
+                  { value: "admin", text: "💼 administrator" },
                 ]}
                 value={filterPhrase}
-                // onChange={(e) => {
-                //   setFilterPhrase(e.target.value);
-                //   setUser({ type: "", item: "" });
-                // }}
+                onChange={(e) => {
+                  setFilterPhrase(e.target.value);
+                }}
                 icon={SVGfilter}
                 defaultOption="filter"
               />
@@ -454,7 +459,7 @@ export default function ViewInstitution({
                     New task
                   </div> */}
                 </li>
-                {instUsers?.map((users_) => (
+                {filtUsers?.map((users_) => (
                   <li key={users_.id}>
                     <Link
                       href={`/dashboard/institutions/${selected.id}/${users_.id}?filter=${filterPhrase}`}

@@ -1,9 +1,10 @@
 import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
-import { InputSelect, InputText, InputDate } from "./inputs";
+import { InputSelect, InputText, InputDate, InputImage } from "./inputs";
 import { strPascalcase } from "@/helpers/stringHandlers";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
 import { SVGfilter } from "@/components/atoms/svgs";
+import { useEdgeStore } from "@/lib/edgestore";
 
 export default function UserViewArea({
   selectedUser,
@@ -16,6 +17,7 @@ export default function UserViewArea({
   UIstate,
 }) {
   const { userEdit, setUserEdits } = userEdits;
+  const { edgestore } = useEdgeStore();
   //render
   return (
     <div className="p-6 bg-gray-50 text-medium text-gray-500 dark:text-gray-400 dark:bg-gray-800 rounded-lg w-full">
@@ -97,13 +99,13 @@ export default function UserViewArea({
                     : "bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300"
                 }
               >
-                {userEdit.email}
+                {selectedUser.name}
               </span>
             </span>
           </div>
-          <p className="mb-6">{userEdit.email}</p>
+          <p className="mb-6">{selectedUser.email}</p>
           <div>
-            {!userEdit.logoUrl && (
+            {/* {!selectedUser.logoUrl ? (
               <div>
                 <label
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -136,9 +138,32 @@ export default function UserViewArea({
                   }}
                 />
               </div>
-            )}
-
-            {userEdit.logoUrl && <img src={userEdit.logoUrl} alt="img" />}
+            ) : (
+              <img src={selectedUser.logoUrl} alt="img" />
+            )} */}
+            <InputImage
+              photo={userEdit.photoUrl}
+              setPhoto={async (photo_) => {
+                const resPhoto = await edgestore.publicFiles.upload({
+                  photo_,
+                  onProgressChange: (progress) => {
+                    // you can use this to show a progress bar
+                    console.log(progress);
+                  },
+                });
+                // you can run some server action or api here
+                // to add the necessary data to your database
+                //   const res: {
+                //     url: string;
+                //     size: number;
+                //     uploadedAt: Date;
+                //     metadata: Record<string, never>;
+                //     path: Record<string, never>;
+                //     pathOrder: string[];
+                // }
+                console.log(resPhoto);
+              }}
+            />
           </div>
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">

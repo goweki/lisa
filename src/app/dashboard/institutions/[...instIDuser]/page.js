@@ -252,8 +252,8 @@ export default function InstitutionsPage({ params }) {
               selected={selected}
               refreshData={refreshData}
               instUsers={users.filter(({ institutionIDs }) => {
-                for (const str of institutionIDs) {
-                  if (str === instIDuser[0]) return true;
+                for (const id of institutionIDs) {
+                  if (id === instIDuser[0]) return true;
                 }
               })}
               selectedUser={

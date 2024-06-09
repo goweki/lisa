@@ -32,7 +32,7 @@ model User {
   resetToken       String?
   resetTokenExpiry DateTime?
   role             String
-  imageUrl         String?
+  photoUrl         String?
 
   institutionIDs String[] @db.ObjectId
 

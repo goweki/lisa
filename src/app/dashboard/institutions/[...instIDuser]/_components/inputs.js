@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 export function InputText({
   value = "",
   setValue,
@@ -135,6 +137,90 @@ export function InputSelect({
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+export function InputImage({ _photo }) {
+  const [photo, setFile] = useState("");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(
+    "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true"
+  );
+  const [name, setName] = useState("");
+  const [status, setStatus] = useState("");
+  const [active, setActive] = useState("edit");
+
+  const photoUpload = (e) => {
+    e.preventDefault();
+    const reader = new FileReader();
+    const photo_ = e.target.files[0];
+    reader.onloadend = () => {
+      setFile(photo_);
+      setImagePreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(photo_);
+  };
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   setActive((prevActive) => (prevActive === "edit" ? "profile" : "edit"));
+  // };
+
+  return (
+    <div>
+      {active === "edit" ? (
+        <div className="card">
+          <form>
+            {/* onSubmit={handleSubmit}> */}
+            <label htmlFor="photo-upload" className="custom-file-upload fas">
+              <div className="img-wrap img-upload">
+                {/* <img
+                  htmlFor="photo-upload"
+                  src={imagePreviewUrl}
+                  alt="Upload"
+                /> */}
+                <span className="material-icons md-48">face</span>
+              </div>
+              <input id="photo-upload" type="file" onChange={photoUpload} />
+            </label>
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            />
+            <button type="submit" className="save">
+              Save
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="card">
+          <form onSubmit={handleSubmit}>
+            <h1>Profile Card</h1>
+            <label className="custom-file-upload fas">
+              <div className="img-wrap">
+                <img
+                  htmlFor="photo-upload"
+                  src={imagePreviewUrl}
+                  alt="Profile"
+                />
+              </div>
+            </label>
+            <div className="name">{name}</div>
+            <div className="status">{status}</div>
+            <button type="submit" className="edit">
+              Edit Profile
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
