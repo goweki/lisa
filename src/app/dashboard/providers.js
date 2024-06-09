@@ -2,7 +2,10 @@
 import Link from "next/link";
 import { createContext, useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
+import { EdgeStoreProvider } from "@/lib/edgestore";
 import { Loader1 } from "@/components/atoms/loader";
+import { httpCodes } from "@/lib/configs";
 export const DataContext = createContext();
 
 export default function Providers({ children }) {
@@ -14,25 +17,31 @@ export default function Providers({ children }) {
       const fetchOptions = {
         method: "GET",
       };
-      // console.log("FETCHING: ", session.user);
+      console.log("FETCHING: ", session.user.institutionIDs[0]);
+      // const response = await fetch(
+      //   `/api/dashboard/data?institution=${session.user.institutionIDs[0]}`,
+      //   fetchOptions
+      // );
+      // POST request using fetch
       const response = await fetch(
-        `/api/dashboard/data?institution=${session.user.institutionIDs}`,
+        `/api/dashboard/data?institution=${session.user.institutionIDs[0]}`,
         fetchOptions
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data. Status: ${response.status}`);
-      }
-
-      const json_ = await response.json();
+      ).then(async (res_) => {
+        if (res_?.status === 200) {
+          return await res_.json();
+        } else {
+          console.log(`ERROR: ` + JSON.stringify(res_));
+          toast.error(httpCodes[res_?.status] ?? "Unknown error");
+        }
+      });
 
       // console.log("RESPONSE", json_);
-      if (json_.success) {
-        setData(json_.success);
+      if (response?.success) {
+        setData(response.success);
       } else {
         console.error(
           "FAILED: could not fetch data\n > " +
-            JSON.stringify(json_.error ?? "....")
+            (response?.failed ?? response?.error ?? "Unknown error")
         );
         setData("failed");
       }
@@ -53,10 +62,9 @@ export default function Providers({ children }) {
   return !session || !data || status === "loading" ? (
     <Loader1 />
   ) : data === "failed" ? (
-    <div>
+    <div className="mt-12">
       <p className="text-center">
-        There was an error loading the contents of this page. Check internet
-        connectivity
+        There was an error loading the contents of this page. Try again later.
       </p>
       <p className="text-center">
         <Link href="/" className="text-red-800 dark:text-red-400 underline">
@@ -66,8 +74,10 @@ export default function Providers({ children }) {
       </p>
     </div>
   ) : (
-    <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
-      {children}
-    </DataContext.Provider>
+    <EdgeStoreProvider>
+      <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
+        {children}
+      </DataContext.Provider>
+    </EdgeStoreProvider>
   );
 }

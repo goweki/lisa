@@ -1,9 +1,110 @@
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
-export default function CardIssue({ item, icon: Icon }) {
+export function CardCase({ item, icon }) {
+  return <BaseCardLarge item={item} baseLink="/dashboard/cases" icon={icon} />;
+}
+export function CardInstitution({ item, icon }) {
+  return (
+    <BaseCardLarge item={item} baseLink="/dashboard/institutions" icon={icon} />
+  );
+}
+
+export function CardTable({ title, data, baseLink, linkRows, showViewAll }) {
+  const { headings, series } = data;
+  const router = useRouter();
+  const [series_, setSeries] = useState("");
+  useEffect(() => {
+    const arr = series.map((item) => {
+      const values = Object.values(item).map((value) => {
+        // If the value is an object, extract its values
+        if (typeof value === "object") {
+          return Object.values(value);
+        } else return value;
+      });
+      // return values.flat(); // Flatten the array to remove nested arrays
+      return values;
+    });
+    setSeries(arr);
+  }, [series]);
+  return (
+    <div className="card overflow-x-auto m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal p-2 md:p-4">
+      <div className="flex items-center justify-start">
+        {title && <h5 className="text-xl font-bold leading-none">{title}</h5>}
+        <div className="ml-4">
+          {showViewAll && (
+            <Link
+              href={baseLink}
+              className="text-sm text-emerald-600 hover:underline dark:text-emerald-400"
+            >
+              View all
+            </Link>
+          )}
+        </div>
+      </div>
+      <table className="mt-2 w-full text-xs text-left">
+        <thead className="rounded uppercase border-b border-gray-500">
+          <tr>
+            {headings.map((v, i) => (
+              <th key={i} scope="col" className="px-1 py-3">
+                {v}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {series_?.length > 0 ? (
+            series_.map((v) => {
+              return (
+                <tr
+                  key={v[0]}
+                  className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised cursor-pointer"
+                  onClick={
+                    linkRows
+                      ? () => router.push(`${baseLink}/${v.id}`)
+                      : () => ""
+                  }
+                >
+                  <th scope="row" className="px-1 py-2 whitespace-nowrap">
+                    {v[1]}
+                  </th>
+                  <td className="px-1 py-2">
+                    {/* <span className="block">{v.type}</span> */}
+                    {/* <span className="block">{v.type}</span> */}
+                    {v[2]}
+                  </td>
+                  <td className="px-1 py-2">
+                    {typeof v[3] === "object" ? (
+                      <>
+                        <span className="block">{v[3][0]}</span>
+                        <span className="block">{v[3][1]}</span>
+                      </>
+                    ) : (
+                      <span className="block">{v[3]}</span>
+                    )}
+                  </td>
+                  <td className="px-1 py-2">{v[4]}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={4} className="text-center py-6 italic">
+                No active cases found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function BaseCardLarge({ item, baseLink, icon: Icon }) {
   return (
     <Link
-      href={`/dashboard/cases/${item.id}`}
+      href={`${baseLink}/${item.id}`}
       className="card hover:scale-105 m-0 flex flex-col p-6 space-y-6 lg:p-8 lg:flex-row lg:space-y-0 lg:space-x-6 shadow dark:shadow-backg-dark hover:shadow-lg"
     >
       <div className="flex items-center justify-center w-16 h-16 lg:h-20 lg:w-20">

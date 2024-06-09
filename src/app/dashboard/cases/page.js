@@ -2,7 +2,7 @@
 import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { DataContext } from "../providers";
-import CardCase from "@/components/mols/cards";
+import { CardCase } from "@/components/mols/cards";
 import {
   SVGbriefcase,
   SVGpenscilSquare,
@@ -55,9 +55,7 @@ export default function CasesPage() {
               <div key={v.id}>
                 <CardCase
                   item={v}
-                  icon={
-                    v.type.type === "petition" ? SVGpenscilSquare : SVGbriefcase
-                  }
+                  icon={v.type === "petition" ? SVGpenscilSquare : SVGbriefcase}
                 />
               </div>
             ))}

@@ -74,7 +74,8 @@ model Case {
   institutionID String  @db.ObjectId
   userID        String? @db.ObjectId
 
-  tasks       Task[]
+  tasks Task[]
+
   caseType    CaseType    @relation(fields: [caseTypeID], references: [id])
   institution Institution @relation(fields: [institutionID], references: [id])
   lawyer      User?       @relation(fields: [userID], references: [id])

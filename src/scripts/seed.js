@@ -49,20 +49,36 @@ async function seed() {
       institutionIDs: [institution.id],
     },
   });
-  const caseTypes = await prisma.caseType.createMany({
-    data: caseTypes_,
-  });
-  const updatedInstitution = await prisma.institution.update({
+  // const caseTypes = await prisma.caseType.createMany({
+  //   data: caseTypes_,
+  // });
+  for (const caseType of caseTypes_) {
+    await prisma.caseType.upsert({
+      where: { name: caseType.name },
+      update: {}, // No update operation if the record exists
+      create: caseType, // Create operation if the record does not exist
+    });
+  }
+  //add created user to institution
+  // First, fetch the current userIDs for the institution
+  const userExists = await prisma.institution.findUnique({
     where: { id: institution.id },
-    data: {
-      userIDs: {
-        push: user.id,
-      },
-    },
+    select: { userIDs: true },
   });
-  console.log("Institution initialized:", updatedInstitution);
-  console.log("User initialized:", user);
-  console.log("caseTypes initialized:", caseTypes);
+  if (!institution.userIDs.includes(user.id)) {
+    // If user.id is not in the array, update the institution by pushing the new user.id
+    await prisma.institution.update({
+      where: { id: institution.id },
+      data: {
+        userIDs: {
+          push: user.id,
+        },
+      },
+    });
+  }
+  console.log("Institution initialized:", await prisma.institution.findMany());
+  console.log("User initialized:", await prisma.user.findMany());
+  console.log("caseTypes initialized:", await prisma.caseType.findMany());
 }
 
 seed()
@@ -74,25 +90,3 @@ seed()
     await prisma.$disconnect();
     process.exit(1);
   });
-
-// view seeded
-// async function retrieveSeed() {
-//   const populatedInstitutions = await prisma.institution.findMany({
-//     include: {
-//       users: true,
-//     },
-//   });
-
-//   console.log("Institutions:", populatedInstitutions);
-//   console.log("Users:", populatedInstitutions[0].users);
-// }
-
-// retrieveSeed()
-//   .then(async () => {
-//     await prisma.$disconnect();
-//   })
-//   .catch(async (e) => {
-//     console.error(e);
-//     await prisma.$disconnect();
-//     process.exit(1);
-//   });

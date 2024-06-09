@@ -83,7 +83,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       // Persist role to the token right after signIn
-      if (user?.role) {
+      if (user) {
         // console.log("token here: ", user);
         token.id = user.id;
         token.role = user.role;
