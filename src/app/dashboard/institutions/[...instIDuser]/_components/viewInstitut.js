@@ -1,3 +1,6 @@
+/**VERSION 0
+ * This is version 0 of my code: optimized and standardized to develop the above
+ */
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,7 +21,7 @@ import {
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
-import { InputSelect, InputText, InputDate } from "./inputs";
+import { InputSelect, InputText, InputDate, InputImage } from "./inputs";
 import Link from "next/link";
 
 export default function ViewInstitution({
@@ -30,11 +33,15 @@ export default function ViewInstitution({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const [filterPhrase, setFilterPhrase] = useState(searchParams.get("filter"));
+  const { edgestore } = useEdgeStore();
 
   // states
+  const [filterPhrase, setFilterPhrase] = useState(
+    searchParams.get("filter") ?? ""
+  );
   const [userEdit, setUserEdits] = useState({});
   const [instEdit, setInstEdit] = useState({});
+  const [isInstUpdated, setIsInstUpdated] = useState(false);
   const [filtUsers, setFiltUsers] = useState([]);
   const [errFields, setErrFields] = useState(new Set());
   const [UIstate, setUIstate] = useState("");
@@ -47,6 +54,26 @@ export default function ViewInstitution({
         : instUsers
     );
   }, [filterPhrase, instUsers]);
+  //check if any updates
+  useEffect(() => {
+    if (Object.keys(instEdit).length > 0) {
+      const userIsUpdated = ((selected__, editObj) => {
+        for (const key in editObj) {
+          if (
+            (selected__.hasOwnProperty(key) &&
+              selected__[key] !== editObj[key]) ||
+            editObj.hasOwnProperty("photoFile_")
+          ) {
+            console.log("Updates");
+            return true;
+          }
+        }
+        console.log("NO updates");
+        return false;
+      })(selected, instEdit);
+      setIsInstUpdated(userIsUpdated);
+    }
+  }, [selected, instEdit]);
 
   // render
   return (
@@ -91,285 +118,89 @@ export default function ViewInstitution({
       {/* content */}
       <form className="card p-6 overflow-x-auto">
         {!selectedUser ? (
-          <>
-            <div className="flex items-center justify-center mb-6">
-              <div className="flex items-center h-5">
-                <input
-                  id="edit-profile"
-                  type="checkbox"
-                  // // defaultChecked={edit === "profile"}
-                  // checked={edit === "profile"}
-                  // onChange={(e) => {
-                  //   if (e.target.checked) setEdit("profile");
-                  //   else {
-                  //     setEdit("");
-                  //     resetCaseProfileStates();
-                  //   }
-                  // }}
-                  className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                />
-              </div>
-              <label
-                htmlFor="edit-profile"
-                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                edit
-              </label>
-            </div>
-            <div id="name-details" className="mb-4">
-              {/* <InputText
-                label={`Client (${client.party})`}
-                name="client-name"
-                placeholder="Client name"
-                value={client.name}
-                setValue={(val) =>
-                  setClient((prev) => ({ ...prev, name: val }))
-                }
-                errFields={errFields}
-                setErrFields={setErrFields}
-                valValidator={nameValidator}
-                readOnly={edit !== "profile"}
-              /> */}
-              Inputs Here
-              <div id="name-dropdown-button" className="mx-6">
-                <button
-                  type="button"
-                  className="flex items-center justify-between w-full font-medium text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 gap-3"
-                  // onClick={() => {
-                  //   setExpanded((prev) =>
-                  //     prev === "client-name" ? "" : "client-name"
-                  //   );
-                  // }}
-                >
-                  <span className="text-xs">more fields</span>
-                  <svg
-                    data-accordion-icon
-                    // className={`w-3 h-3 shrink-0 ${
-                    //   expandedField !== "client-name" ? "rotate-180" : ""
-                    // }`}
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 10 6"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5 5 1 1 5"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <div
-                id="client-more-fields"
-                // className={`${
-                //   expandedField === "client-name" ? "" : "hidden"
-                // } mx-6 md:mx-8`}
-              >
-                <div className="py-5 border-b border-gray-200 dark:border-gray-700">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {/* <InputText
-                      name="client-tel"
-                      placeholder="Telephone number"
-                      value={client.tel}
-                      setValue={(val) =>
-                        setClient((prev) => ({ ...prev, tel: val }))
-                      }
-                      errFields={errFields}
-                      setErrFields={setErrFields}
-                      valValidator={telValidator}
-                      readOnly={edit !== "profile"}
-                    />
-                    <InputText
-                      name="client-email"
-                      placeholder="Email address"
-                      value={client.email}
-                      setValue={(val) =>
-                        setClient((prev) => ({ ...prev, email: val }))
-                      }
-                      errFields={errFields}
-                      setErrFields={setErrFields}
-                      valValidator={emailValidator}
-                      readOnly={edit !== "profile"}
-                    /> */}{" "}
-                    Inputs here
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* {otherParty.party && ( */}
-            <div id="otherParty-details" className="mb-4">
-              {/* <InputText
-                  label={strPascalcase(otherParty.party)}
-                  name="otherParty-name"
-                  placeholder={`${otherParty.party} name`}
-                  value={otherParty.name}
-                  setValue={(val) =>
-                    setOtherParty((prev) => ({ ...prev, name: val }))
-                  }
-                  errFields={errFields}
-                  setErrFields={setErrFields}
-                  valValidator={nameValidator}
-                  readOnly={edit !== "profile"}
-                /> */}
-              Input here
-              <div id="otherParty-dropdown-button" className="mx-6">
-                <button
-                  type="button"
-                  className="flex items-center justify-between w-full font-medium text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 gap-3"
-                  // onClick={() => {
-                  //   setExpanded((prev) =>
-                  //     prev === "otherParty-name" ? "" : "otherParty-name"
-                  //   );
-                  // }}
-                >
-                  <span className="text-xs">more fields</span>
-                  <svg
-                    data-accordion-icon
-                    // className={`w-3 h-3 shrink-0 ${
-                    //   expandedField !== "otherParty-name" ? "rotate-180" : ""
-                    // }`}
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 10 6"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5 5 1 1 5"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <div
-                id="otherParty-more-fields"
-                // className={`${
-                //   expandedField === "otherParty-name" ? "" : "hidden"
-                // } mx-6 md:mx-8`}
-              >
-                <div className="py-5 border-b border-gray-200 dark:border-gray-700">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {/* <InputText
-                      name="otherParty-tel"
-                      placeholder="Telephone number"
-                      value={otherParty.tel}
-                      setValue={(val) =>
-                        setOtherParty((prev) => ({ ...prev, tel: val }))
-                      }
-                      errFields={errFields}
-                      setErrFields={setErrFields}
-                      valValidator={telValidator}
-                      readOnly={edit !== "profile"}
-                    /> */}
-                    {/* <InputText
-                        name="otherParty-email"
-                        placeholder="Email address"
-                        value={otherParty.email}
-                        setValue={(val) =>
-                          setOtherParty((prev) => ({ ...prev, email: val }))
-                        }
-                        errFields={errFields}
-                        setErrFields={setErrFields}
-                        valValidator={emailValidator}
-                        readOnly={edit !== "profile"}
-                      /> */}
-                    Input here
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* )} */}
-            <div id="case-lawyer" className="mb-4 space-y-2">
-              <label htmlFor="lawyer" className="px-2">
-                Lawyer
-              </label>
-              {/* <InputSelect
-                name="lawyer"
-                optionItems={[
-                  { value: "overdue", text: "❗ overdue" },
-                  { value: "due", text: "✍🏾 due" },
-                  { value: "done", text: "✔️ Done" },
-                ]}
-                value={lawyer}
-                onChange={(e) => {
-                  setLawyer(e.target.value);
+          <div className="flex flex-col space-y-4">
+            <InputText
+              label="Institution Name"
+              name="inst-name"
+              placeholder="Institution Name"
+              value={instEdit.name ?? selected.name}
+              setValue={(name_) =>
+                setInstEdit((prev) => ({ ...prev, name: name_ }))
+              }
+              errFields={errFields}
+              setErrFields={setErrFields}
+              valValidator={nameValidator}
+              // readOnly={edit !== "profile"}
+            />
+
+            <InputText
+              label="Email Address"
+              name="email-address"
+              placeholder={`Email address of Institution`}
+              value={instEdit.email ?? selected.email}
+              setValue={(email_) =>
+                setInstEdit((prev) => ({ ...prev, email: email_ }))
+              }
+              errFields={errFields}
+              setErrFields={setErrFields}
+              valValidator={emailValidator}
+              // readOnly={edit !== "profile"}
+            />
+
+            <InputText
+              label="Location"
+              name="location"
+              placeholder={`Location of Institution`}
+              value={instEdit.location ?? selected.location ?? ""}
+              setValue={(location_) =>
+                setInstEdit((prev) => ({ ...prev, location: location_ }))
+              }
+              errFields={errFields}
+              setErrFields={setErrFields}
+              valValidator={nameValidator}
+              // readOnly={edit !== "profile"}
+            />
+            <InputText
+              label="Phone No."
+              name="tel"
+              placeholder={`Phone number of Institution`}
+              value={instEdit.tel ?? selected.tel ?? ""}
+              setValue={(tel_) =>
+                setInstEdit((prev) => ({ ...prev, tel: tel_ }))
+              }
+              errFields={errFields}
+              setErrFields={setErrFields}
+              valValidator={telValidator}
+              // readOnly={edit !== "profile"}
+            />
+            <div id="image-container" className="py-4">
+              <InputImage
+                _photo={selected.logoUrl ?? ""}
+                setPhoto={async (photoFile_) => {
+                  setInstEdit((prev_) => ({ ...prev_, photoFile_ }));
                 }}
-                icon={SVGuser}
-                defaultOption="lawyer"
-              /> */}
-              Inputs here 324
+              />
             </div>
-            <div id="court-name" className="mb-4">
-              {/* <InputText
-                label="Court"
-                name="court"
-                placeholder="Court name"
-                value={court}
-                setValue={(val) => setCourt(val)}
-                errFields={errFields}
-                setErrFields={setErrFields}
-                valValidator={nameValidator}
-                readOnly={edit !== "profile"}
-              /> */}{" "}
-              Input here court
-            </div>
-            <div className="flex items-center mb-4 pl-4">
-              <div className="flex items-center h-5">
-                <input
-                  id="case-status"
-                  type="checkbox"
-                  // checked={status === "open"}
-                  // onChange={(e) => {
-                  //   if (e.target.checked) setStatus("open");
-                  //   else setStatus("closed");
-                  // }}
-                  className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                  // disabled={edit !== "profile"}
-                />
-              </div>
-              <label
-                htmlFor="case-status"
-                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Active
-              </label>
-              <div className="ml-6 mt-4">
-                {/* <InputText
-                  name="description"
-                  placeholder="Status description"
-                  value={description}
-                  setValue={(val) => setDescription(val)}
-                  errFields={errFields}
-                  setErrFields={setErrFields}
-                  readOnly={edit !== "profile"}
-                /> */}{" "}
-                Input here 32r
-              </div>
-            </div>
-            {/* {edit === "profile" && ( */}
+
             <div className="max-w-lg mx-auto">
               <div className="mb-4">
                 <ButtonPrimary
-                  label="Submit Case changes"
+                  label="Submit Institution changes"
                   loading={UIstate === "loading"}
                   onClick={handleEditInstit}
+                  disabled={!isInstUpdated}
                 />
               </div>
               <div className="flex justify-center">
                 <ButtonDestructive
-                  label="Delete Case"
+                  label="Delete Institution"
                   loading={UIstate === "loading"}
                   onClick={handleDeleteInstit}
                 />
               </div>
             </div>
             {/* )} */}
-          </>
+          </div>
         ) : selectedUser ? (
           <>
             <div className="max-w-xs mb-4 mr-auto">
@@ -493,7 +324,7 @@ export default function ViewInstitution({
               </ul>
               <UserViewArea
                 selectedUser={selectedUser}
-                userEdits={{ userEdit, setUserEdits }}
+                userEdits={{ userEdit: userEdit, setUserEdits }}
                 handleCreateUser={handleCreateUser}
                 handleEditUser={handleEditUser}
                 handleDeleteUser={handleDeleteUser}
@@ -524,112 +355,129 @@ export default function ViewInstitution({
   //func to Update Case
   async function handleEditInstit() {
     if (!selected.id) {
-      toast.error("Sorry, case could not be found");
+      toast.error("Sorry, institution could not be found");
       return;
     }
     console.log("EDIT: \n > ", instEdit);
-    // const { name, email, role, institutions } = instEdit;
-    return;
-    //validate fields
-    const err_clientName = client.name ? nameValidator(client.name) : "";
-    const err_clientTel = client.tel ? telValidator(client.tel) : "";
-    const err_clientEmail = client.email ? emailValidator(client.email) : "";
-    const err_otherPartyName = otherParty.name
-      ? nameValidator(otherParty.name)
-      : "";
-    const err_otherPartyTel = otherParty.tel
-      ? telValidator(otherParty.tel)
-      : "";
-    const err_otherPartyEmail = otherParty.email
-      ? emailValidator(otherParty.email)
-      : "";
-    if (
-      err_clientName ||
-      err_clientTel ||
-      err_clientEmail ||
-      err_otherPartyName ||
-      err_otherPartyTel ||
-      err_otherPartyEmail
-    ) {
-      if (err_clientName) {
-        setErrFields((prev) => new Set([...prev, "client-name"]));
-        toast.error("Invalid client name");
-      }
-      if (err_clientTel) {
-        setErrFields((prev) => new Set([...prev, "client-tel"]));
-        toast.error("Invalid client Telephone No.");
-      }
-      if (err_clientEmail) {
-        setErrFields((prev) => new Set([...prev, "client-email"]));
-        toast.error("Invalid client email");
-      }
-      if (err_otherPartyName) {
-        setErrFields((prev) => new Set([...prev, "otherParty-name"]));
-        toast.error("Invalid name for the other party");
-      }
-      if (err_otherPartyTel) {
-        setErrFields((prev) => new Set([...prev, "otherParty-tel"]));
-        toast.error("Invalid Telephone No. for the other party");
-      }
-      if (err_otherPartyEmail) {
-        setErrFields((prev) => new Set([...prev, "otherParty-email"]));
-        toast.error("Invalid email for the other party");
-      }
-      return;
+    // const { email, location, name, photoFile_ } = instEdit;
+    //upload image and retain url
+    let photoUrl = null;
+    if (instEdit.photoFile_) {
+      photoUrl = await edgestore.publicFiles.upload({
+        file: instEdit.photoFile_,
+        // onProgressChange: (progress) => {
+        //   // you can use this to show a progress bar
+        //   console.log(progress);
+        // },
+      });
     }
+    // console.log("photoUrl - ", photoUrl?.url || "NO LINK");
+    // const { photoFile_, ...instEditWithoutPhotoFile_ } = instEdit;
+    //Inst Object fields
+    const fetchBody = {
+      id: selected.id,
+      name: instEdit.name || selected.name,
+      email: instEdit.email || selected.email,
+      location: instEdit.location || selected.location,
+      logoUrl: photoUrl?.url || selected.logoUrl,
+      tel: instEdit.tel || selected.tel,
+    };
+    // console.log("fetchBody - ", fetchBody);
+    // return;
+    // const err_clientName = client.name ? nameValidator(client.name) : "";
+    // const err_clientTel = client.tel ? telValidator(client.tel) : "";
+    // const err_clientEmail = client.email ? emailValidator(client.email) : "";
+    // const err_otherPartyName = otherParty.name
+    //   ? nameValidator(otherParty.name)
+    //   : "";
+    // const err_otherPartyTel = otherParty.tel
+    //   ? telValidator(otherParty.tel)
+    //   : "";
+    // const err_otherPartyEmail = otherParty.email
+    //   ? emailValidator(otherParty.email)
+    //   : "";
+    // if (
+    //   err_clientName ||
+    //   err_clientTel ||
+    //   err_clientEmail ||
+    //   err_otherPartyName ||
+    //   err_otherPartyTel ||
+    //   err_otherPartyEmail
+    // ) {
+    //   if (err_clientName) {
+    //     setErrFields((prev) => new Set([...prev, "client-name"]));
+    //     toast.error("Invalid client name");
+    //   }
+    //   if (err_clientTel) {
+    //     setErrFields((prev) => new Set([...prev, "client-tel"]));
+    //     toast.error("Invalid client Telephone No.");
+    //   }
+    //   if (err_clientEmail) {
+    //     setErrFields((prev) => new Set([...prev, "client-email"]));
+    //     toast.error("Invalid client email");
+    //   }
+    //   if (err_otherPartyName) {
+    //     setErrFields((prev) => new Set([...prev, "otherParty-name"]));
+    //     toast.error("Invalid name for the other party");
+    //   }
+    //   if (err_otherPartyTel) {
+    //     setErrFields((prev) => new Set([...prev, "otherParty-tel"]));
+    //     toast.error("Invalid Telephone No. for the other party");
+    //   }
+    //   if (err_otherPartyEmail) {
+    //     setErrFields((prev) => new Set([...prev, "otherParty-email"]));
+    //     toast.error("Invalid email for the other party");
+    //   }
+    //   return;
+    // }
+
     // fetch options
     let fetchOptions = {
       method: "PUT",
-      body: JSON.stringify({
-        id: selected.id,
-        clientName: client.name,
-        clientTel: client.tel,
-        clientEmail: client.email,
-        otherPartyName: otherParty.name,
-        otherPartyTel: otherParty.tel,
-        otherPartyEmail: otherParty.email,
-        court,
-        status,
-        description,
-      }),
+      body: JSON.stringify(fetchBody),
     };
     setUIstate("loading");
     // PUT request using fetch
-    const _res = await fetch("/api/dashboard/case", fetchOptions).then(
+    const res = await fetch("/api/dashboard/institution", fetchOptions).then(
       async (res_) => {
-        if (res_.ok) {
+        if (res_?.ok) {
           return await res_.json();
         } else {
+          setUIstate("OK");
           console.log(`ERROR: ` + JSON.stringify(res_));
-          toast.error("OOPS: case not updated");
+          toast.error(httpCodes[res_?.status] ?? "Unknown error");
+          return;
         }
       }
     );
-    if (_res?.success) {
+
+    if (!res) return;
+
+    if (res.success) {
       console.log(
-        "SUCCESS: Case updated successfully\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
+        "SUCCESS: Institution updated\n > ",
+        res.success,
+        "\n.............."
       );
+      toast.success("Institution updated");
       await refreshData();
-      toast.success("Case updated successfully!");
-      setUIstate("OK");
     } else {
-      console.error(
-        "ERROR: failed to update case at /dashboard/institutions/[...instIDuser] - viewCase.js iAA \n > " +
-          JSON.stringify(_res) +
-          "\n.............."
+      console.log(
+        "FAILED: Institution not updated\n > ",
+        res,
+        "\n.............."
       );
-      toast.error(_res?.error ?? "No Response, check internet connection");
+      toast.error(res.failed ?? res.error ?? "Unknown error");
     }
+    setUIstate("OK");
   }
   //func to Delete Case
   async function handleDeleteInstit() {
     if (!selected.id) {
-      toast.error("Sorry, case could not be found");
+      toast.error("Sorry, institution could not be found");
       return;
     }
-    console.log("To delete: \n > ", selected);
+    console.log("To delete inst: \n > ", selected);
     // fetch options
     let fetchOptions = {
       method: "DELETE",
@@ -638,34 +486,40 @@ export default function ViewInstitution({
       }),
     };
     setUIstate("loading");
-    // PUT request using fetch
-    const _res = await fetch("/api/dashboard/case", fetchOptions).then(
+    // DELETE api-call using fetch
+    const res = await fetch("/api/dashboard/institution", fetchOptions).then(
       async (res_) => {
-        if (res_.ok) {
+        if (res_?.ok) {
           return await res_.json();
         } else {
-          console.error(`ERROR: ` + JSON.stringify(res_));
-          toast.error("OOPS: case not deleted");
+          setUIstate("OK");
+          console.log(`ERROR: ` + JSON.stringify(res_));
+          toast.error(httpCodes[res_?.status] ?? "Unknown error");
+          return;
         }
       }
     );
-    if (_res?.success) {
+
+    if (!res) return;
+
+    if (res.success) {
       console.log(
-        "SUCCESS: case deleted\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
+        "SUCCESS: Institution deleted\n > ",
+        res.success,
+        "\n.............."
       );
+      toast.success("Institution deleted");
       await refreshData();
-      toast.success("Institution");
-      router.replace("/dashboard/institutions");
+      router.replace(`/dashboard/institutions/`);
     } else {
-      console.error(
-        "ERROR: failed to delete case at /dashboard/Institution/[...instIDuser] - viewCase.js iBB\n > " +
-          JSON.stringify(_res) +
-          "\n.............."
+      console.log(
+        "FAILED: Institution not deleted\n > ",
+        res,
+        "\n.............."
       );
-      toast.error(_res?.error ?? "No Response, check internet connection");
+      toast.error(res.failed ?? res.error ?? "Unknown error");
     }
+    setUIstate("OK");
   }
   //func to Create User
   async function handleCreateUser() {
@@ -674,15 +528,28 @@ export default function ViewInstitution({
       toast.error("User validation failed");
       return;
     }
+    setUIstate("loading");
+    //upload image and retain url
+    let photoUrl = "";
+    if (userEdit.photoFile_) {
+      photoUrl = await edgestore.publicFiles.upload({
+        file: userEdit.photoFile_,
+        // onProgressChange: (progress) => {
+        //   // you can use this to show a progress bar
+        //   console.log(progress);
+        // },
+      }).url;
+    }
+    const { photoFile_, ...userEditWithoutPhotoFile } = userEdit;
     // fetch options
     let fetchOptions = {
       method: "POST",
       body: JSON.stringify({
-        ...userEdit,
+        ...userEditWithoutPhotoFile,
+        photoUrl,
         institutionId: selected.id,
       }),
     };
-    setUIstate("loading");
     // POST request using fetch
     const response = await fetch("/api/dashboard/user", fetchOptions).then(
       async (res_) => {
@@ -700,7 +567,7 @@ export default function ViewInstitution({
     if (response.success) {
       console.log(
         "SUCCESS: user created\n > ",
-        response.success,
+        response.success.email,
         "\n.............."
       );
       toast.success("User created!");
@@ -718,6 +585,7 @@ export default function ViewInstitution({
     }
     setUIstate("OK");
   }
+
   //func to Edit User
   async function handleEditUser() {
     if (session.user.role !== "admin") {
@@ -725,50 +593,47 @@ export default function ViewInstitution({
       return;
     }
 
-    console.log("UPDATES: \n > ", userEdit);
-    // const { name, email, role, institutions } = userEdit;
-    return;
+    console.log("UPDATES: \n > ", { ...userEdit, userID: selectedUser.id });
+    // return;
     //loading
     setUIstate("loading");
     try {
       //fetch options
       const fetchOptions = {
         method: "PUT",
-        body: JSON.stringify({
-          id: selectedTask.item.id,
-          completedByID: session.user.id,
-        }),
+        body: JSON.stringify({ ...userEdit, userID: selectedUser.id }),
       };
       // PUT request using fetch
       const _resComplete = await fetch(
-        "/api/dashboard/task",
+        "/api/dashboard/user",
         fetchOptions
       ).then(async (res_) => {
-        if (res_.status === 200) {
+        if (res_?.status === 200) {
           return await res_.json();
         } else {
-          console.error(`ERROR: ` + JSON.stringify(res_));
-          toast.error("OOPS: task not initialized");
+          setUIstate("OK");
+          console.log(`ERROR: ` + JSON.stringify(res_));
+          toast.error(httpCodes[res_?.status] ?? "Unknown error");
+          return;
         }
       });
-      if (_resComplete?.success) {
+      if (!_resComplete) return;
+      if (_resComplete.success) {
         console.log(
-          "SUCCESS: task completed\n > " +
-            JSON.stringify(_resComplete.success) +
-            "\n.............."
+          "SUCCESS: user updated\n > ",
+          _resComplete.success,
+          "\n.............."
         );
+        toast.success("User updated");
         await refreshData();
-        toast.success("Upser Info updated!");
         // router.push(
-        //   `/dashboard/institution/${selectedCase.id}/${_resComplete.success.id}`
+        //   `/dashboard/institutions/${selected.id}/${_resComplete.success.id}`
         // );
-        router.refresh();
       } else {
-        if (_resComplete?.failed) toast.error(_resComplete?.failed);
-        else
-          toast.error(
-            _resComplete?.error ?? "No Response, check internet connection"
-          );
+        console.log("FAILED: User NOT updated\n > ", _resComplete);
+        toast.error(
+          _resComplete.failed || _resComplete.error || "Unknown error"
+        );
       }
     } catch (error) {
       console.error("ERROR: ", error.message);
@@ -782,8 +647,6 @@ export default function ViewInstitution({
     }
 
     console.log("Delete: \n > ", selectedUser);
-    // const { name, email, role, institutions } = userEdit;
-    return;
 
     //loading
     setUIstate("loading");
@@ -791,8 +654,7 @@ export default function ViewInstitution({
     let fetchOptions = {
       method: "DELETE",
       body: JSON.stringify({
-        instiID: selected.id,
-        userD: selectedUser.id,
+        userID: selectedUser.id,
       }),
     };
     // POST request using fetch
@@ -802,7 +664,7 @@ export default function ViewInstitution({
           return await res_.json();
         } else {
           console.error(`ERROR: ` + JSON.stringify(res_));
-          toast.error("OOPS: user not deleted");
+          toast.error("user NOT deleted");
         }
       }
     );
@@ -814,11 +676,422 @@ export default function ViewInstitution({
       );
       toast.success("User deleted!");
       await refreshData();
-      router.push(`/dashboard/institution/${selected.id}/new`);
+      // router.replace(`/dashboard/institution/${selected.id}/new`);
     } else {
-      if (_res?.failed) toast.error(_res?.failed);
-      else toast.error(_res?.error ?? "No Response, check internet connection");
+      toast.error(_res?.failed || _res?.error || "Unknown error");
     }
     setUIstate("OK");
   }
 }
+
+/** ONGOING OPTIMIZATION: version2
+ *
+ *
+ */
+// import { useState, useEffect } from "react";
+// import { useRouter, useSearchParams } from "next/navigation";
+// import { useSession } from "next-auth/react";
+// import { useEdgeStore } from "@/lib/edgestore";
+// import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
+// import toast from "react-hot-toast";
+// import {
+//   SVGbuilding,
+//   SVGdoc,
+//   SVGfilter,
+//   SVGuser,
+// } from "@/components/atoms/svgs";
+// import UserViewArea from "./viewUser";
+// import { httpCodes } from "@/lib/configs";
+// import {
+//   emailValidator,
+//   nameValidator,
+//   telValidator,
+// } from "@/helpers/inputValidators";
+// import { InputSelect, InputText, InputDate, InputImage } from "./inputs";
+// import Link from "next/link";
+
+// export default function ViewInstitution({
+//   instUsers,
+//   selected,
+//   selectedUser,
+//   refreshData,
+// }) {
+//   const router = useRouter();
+//   const searchParams = useSearchParams();
+//   const { data: session } = useSession();
+//   const { edgestore } = useEdgeStore();
+//   const [filterPhrase, setFilterPhrase] = useState(searchParams.get("filter"));
+//   const [userEdit, setUserEdits] = useState({});
+//   const [instEdit, setInstEdit] = useState({});
+//   const [isInstUpdated, setIsInstUpdated] = useState(false);
+//   const [filtUsers, setFiltUsers] = useState([]);
+//   const [errFields, setErrFields] = useState(new Set());
+//   const [UIstate, setUIstate] = useState("");
+
+//   useEffect(() => {
+//     setFiltUsers(
+//       filterPhrase
+//         ? instUsers.filter(({ role }) => role === filterPhrase)
+//         : instUsers
+//     );
+//   }, [filterPhrase, instUsers]);
+
+//   useEffect(() => {
+//     setIsInstUpdated(checkIfInstUpdated(selected, instEdit));
+//   }, [selected, instEdit]);
+
+//   const handleInputChange = (field, value) => {
+//     setInstEdit((prev) => ({ ...prev, [field]: value }));
+//   };
+
+//   const handleEditInstit = async () => {
+//     if (!selected.id) {
+//       toast.error("Sorry, institution could not be found");
+//       return;
+//     }
+
+//     const photoUrl = instEdit.photoFile_
+//       ? await edgestore.publicFiles.upload({ file: instEdit.photoFile_ }).url
+//       : selected.logoUrl;
+
+//     const fetchBody = {
+//       ...selected,
+//       ...instEdit,
+//       logoUrl: photoUrl,
+//     };
+
+//     if (validateInputs(fetchBody)) {
+//       setUIstate("loading");
+
+//       const res = await fetch("/api/dashboard/institution", {
+//         method: "PUT",
+//         body: JSON.stringify(fetchBody),
+//       });
+
+//       handleResponse(res, "Institution updated", refreshData, router.refresh);
+//     }
+//   };
+
+//   const handleDeleteInstit = async () => {
+//     if (!selected.id) {
+//       toast.error("Sorry, institution could not be found");
+//       return;
+//     }
+
+//     setUIstate("loading");
+
+//     const res = await fetch("/api/dashboard/institution", {
+//       method: "DELETE",
+//       body: JSON.stringify({ id: selected.id }),
+//     });
+
+//     handleResponse(res, "Institution deleted", () =>
+//       router.replace(`/dashboard/institutions/`)
+//     );
+//   };
+
+//   const handleCreateUser = async () => {
+//     if (session.user.role !== "admin") {
+//       toast.error("User validation failed");
+//       return;
+//     }
+
+//     setUIstate("loading");
+
+//     const photoUrl = userEdit.photoFile_
+//       ? await edgestore.publicFiles.upload({ file: userEdit.photoFile_ }).url
+//       : "";
+
+//     const fetchBody = { ...userEdit, photoUrl, institutionId: selected.id };
+
+//     const res = await fetch("/api/dashboard/user", {
+//       method: "POST",
+//       body: JSON.stringify(fetchBody),
+//     });
+
+//     handleResponse(res, "User created!", refreshData, () =>
+//       router.push(`/dashboard/institutions/${selected.id}/${res.success.id}`)
+//     );
+//   };
+
+//   const handleEditUser = async () => {
+//     if (session.user.role !== "admin") {
+//       toast.error("User validation failed");
+//       return;
+//     }
+
+//     setUIstate("loading");
+
+//     const res = await fetch("/api/dashboard/task", {
+//       method: "PUT",
+//       body: JSON.stringify({
+//         id: selectedTask.item.id,
+//         completedByID: session.user.id,
+//       }),
+//     });
+
+//     handleResponse(res, "User Info updated!", refreshData, router.refresh);
+//   };
+
+//   const handleDeleteUser = async () => {
+//     if (!selectedUser) {
+//       toast.error("Selected user not found");
+//       return;
+//     }
+
+//     setUIstate("loading");
+
+//     const res = await fetch("/api/dashboard/user", {
+//       method: "DELETE",
+//       body: JSON.stringify({
+//         instiID: selected.id,
+//         userD: selectedUser.id,
+//       }),
+//     });
+
+//     handleResponse(res, "User deleted!", refreshData, () =>
+//       router.push(`/dashboard/institution/${selected.id}/new`)
+//     );
+//   };
+
+//   const validateInputs = (inputs) => {
+//     const validationErrors = [];
+
+//     if (inputs.name && nameValidator(inputs.name))
+//       validationErrors.push("Invalid institution name");
+//     if (inputs.email && emailValidator(inputs.email))
+//       validationErrors.push("Invalid institution email");
+//     if (inputs.tel && telValidator(inputs.tel))
+//       validationErrors.push("Invalid institution telephone");
+
+//     validationErrors.forEach((error) => toast.error(error));
+
+//     return validationErrors.length === 0;
+//   };
+
+//   const checkIfInstUpdated = (selected, editObj) => {
+//     for (const key in editObj) {
+//       if (
+//         (selected.hasOwnProperty(key) && selected[key] !== editObj[key]) ||
+//         editObj.hasOwnProperty("photoFile_")
+//       ) {
+//         return true;
+//       }
+//     }
+//     return false;
+//   };
+
+//   const handleResponse = async (
+//     response,
+//     successMessage,
+//     onSuccess,
+//     onFinally
+//   ) => {
+//     const res = await response.json();
+//     setUIstate("OK");
+
+//     if (response.ok && res.success) {
+//       toast.success(successMessage);
+//       onSuccess();
+//       onFinally();
+//     } else {
+//       toast.error(res.failed || res.error || "Unknown error");
+//     }
+//   };
+
+//   return (
+//     <div id="view-institution">
+//       <ul className="items-center justify-center flex flex-wrap -mb-px font-medium text-sm text-center">
+//         <li className="me-2">
+//           <Link
+//             href={`/dashboard/institutions/${selected.id}`}
+//             className={linkClass(selectedUser, true)}
+//           >
+//             <SVGdoc className={svgClass(selectedUser, true)} />
+//             Details
+//           </Link>
+//         </li>
+//         <li className="me-2">
+//           <Link
+//             href={`/dashboard/institutions/${selected.id}/new`}
+//             className={linkClass(selectedUser, false)}
+//           >
+//             <SVGuser className={svgClass(selectedUser, false)} />
+//             Users
+//           </Link>
+//         </li>
+//       </ul>
+//       <form className="card p-6 overflow-x-auto">
+//         {!selectedUser ? (
+//           <>
+//             <InputText
+//               label="Institution Name"
+//               name="inst-name"
+//               placeholder="Institution Name"
+//               value={instEdit.name ?? selected.name}
+//               setValue={(val) => handleInputChange("name", val)}
+//               errFields={errFields}
+//               setErrFields={setErrFields}
+//               valValidator={nameValidator}
+//             />
+//             <InputText
+//               label="Email Address"
+//               name="email-address"
+//               placeholder="Email address of Institution"
+//               value={instEdit.email ?? selected.email}
+//               setValue={(val) => handleInputChange("email", val)}
+//               errFields={errFields}
+//               setErrFields={setErrFields}
+//               valValidator={emailValidator}
+//             />
+//             <InputText
+//               label="Location"
+//               name="location"
+//               placeholder="Location of Institution"
+//               value={instEdit.location ?? selected.location ?? ""}
+//               setValue={(val) => handleInputChange("location", val)}
+//               errFields={errFields}
+//               setErrFields={setErrFields}
+//               valValidator={nameValidator}
+//             />
+//             <InputText
+//               label="Phone No."
+//               name="tel"
+//               placeholder="Phone number of Institution"
+//               value={instEdit.tel ?? selected.tel ?? ""}
+//               setValue={(val) => handleInputChange("tel", val)}
+//               errFields={errFields}
+//               setErrFields={setErrFields}
+//               valValidator={telValidator}
+//             />
+//             <InputImage
+//               _photo={selected.logoUrl ?? ""}
+//               setPhoto={async (photoFile_) =>
+//                 setInstEdit((prev) => ({ ...prev, photoFile_ }))
+//               }
+//             />
+
+//             <div className="max-w-lg mx-auto">
+//               <div className="mb-4">
+//                 <ButtonPrimary
+//                   label="Submit Institution changes"
+//                   loading={UIstate === "loading"}
+//                   onClick={handleEditInstit}
+//                   disabled={!isInstUpdated}
+//                 />
+//               </div>
+//               <div className="flex justify-center">
+//                 <ButtonDestructive
+//                   label="Delete Institution"
+//                   loading={UIstate === "loading"}
+//                   onClick={handleDeleteInstit}
+//                 />
+//               </div>
+//             </div>
+//           </>
+//         ) : (
+//           <InstitutionUsersSection
+//             filterPhrase={filterPhrase}
+//             filtUsers={filtUsers}
+//             setFilterPhrase={setFilterPhrase}
+//             selectedUser={selectedUser}
+//             selected={selected}
+//             handleCreateUser={handleCreateUser}
+//             handleEditUser={handleEditUser}
+//             handleDeleteUser={handleDeleteUser}
+//             userEdit={userEdit}
+//             setUserEdits={setUserEdits}
+//             errFields={errFields}
+//             setErrFields={setErrFields}
+//             UIstate={UIstate}
+//           />
+//         )}
+//       </form>
+//     </div>
+//   );
+// }
+
+// const InstitutionUsersSection = ({
+//   filterPhrase,
+//   filtUsers,
+//   setFilterPhrase,
+//   selectedUser,
+//   selected,
+//   handleCreateUser,
+//   handleEditUser,
+//   handleDeleteUser,
+//   userEdit,
+//   setUserEdits,
+//   errFields,
+//   setErrFields,
+//   UIstate,
+// }) => (
+//   <>
+//     <div className="max-w-lg mx-auto">
+//       <InputSelect
+//         name="roles"
+//         label="Role Filter"
+//         placeholder="filter by role"
+//         value={filterPhrase ?? ""}
+//         options={[...new Set(instUsers.map(({ role }) => role))]}
+//         setValue={setFilterPhrase}
+//       />
+//       {filtUsers.length > 0 ? (
+//         <table className="table w-full mt-4">
+//           <thead>
+//             <tr>
+//               <th>Username</th>
+//               <th>Role</th>
+//               <th>Created On</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {filtUsers.map((user) => (
+//               <tr key={user.id}>
+//                 <td>
+//                   <Link
+//                     href={`/dashboard/institutions/${selected.id}/${user.id}`}
+//                     className="font-medium whitespace-nowrap hover:text-blue-700"
+//                   >
+//                     {user.username}
+//                   </Link>
+//                 </td>
+//                 <td>{user.role}</td>
+//                 <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       ) : (
+//         <p className="text-center text-muted-foreground mt-3">
+//           <SVGfilter className="w-6 h-6 inline-block me-2" />
+//           No users found with {filterPhrase}
+//         </p>
+//       )}
+//     </div>
+//     <UserViewArea
+//       selectedUser={selectedUser}
+//       userEdit={userEdit}
+//       setUserEdits={setUserEdits}
+//       errFields={errFields}
+//       setErrFields={setErrFields}
+//       handleCreateUser={handleCreateUser}
+//       handleEditUser={handleEditUser}
+//       handleDeleteUser={handleDeleteUser}
+//       UIstate={UIstate}
+//     />
+//   </>
+// );
+
+// // Define the linkClass and svgClass functions to conditionally apply styles
+// const linkClass = (selectedUser, isDetails) => {
+//   return selectedUser && isDetails
+//     ? "your-selected-styles"
+//     : "your-normal-styles";
+// };
+
+// const svgClass = (selectedUser, isDetails) => {
+//   return selectedUser && isDetails
+//     ? "your-selected-styles-for-svg"
+//     : "your-normal-styles-for-svg";
+// };

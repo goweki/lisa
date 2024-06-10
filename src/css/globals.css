@@ -1,5 +1,6 @@
 /* material-icons */
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+/* @import "material-icons/iconfont/material-icons.css"; */
+@import "material-icons/iconfont/filled.css";
 /* base layer */
 @tailwind base;
 @layer base {

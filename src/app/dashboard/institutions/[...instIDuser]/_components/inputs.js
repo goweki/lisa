@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export function InputText({
   value = "",
@@ -141,25 +142,19 @@ export function InputSelect({
   );
 }
 
-export function InputImage({ _photo }) {
-  const [photo, setFile] = useState("");
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(
-    "https://github.com/OlgaKoplik/CodePen/blob/master/profile.jpg?raw=true"
-  );
-  const [name, setName] = useState("");
-  const [status, setStatus] = useState("");
-  const [active, setActive] = useState("edit");
+export function InputImage({ _photo, setPhoto }) {
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
 
-  const photoUpload = (e) => {
-    e.preventDefault();
-    const reader = new FileReader();
-    const photo_ = e.target.files[0];
-    reader.onloadend = () => {
-      setFile(photo_);
-      setImagePreviewUrl(reader.result);
-    };
-    reader.readAsDataURL(photo_);
-  };
+  // const photoUpload = (e) => {
+  //   e.preventDefault();
+  //   const reader = new FileReader();
+  //   const photo_ = e.target.files[0];
+  //   reader.onloadend = () => {
+  //     setFile(photo_);
+  //     setImagePreviewUrl(reader.result);
+  //   };
+  //   reader.readAsDataURL(photo_);
+  // };
 
   // const handleSubmit = (e) => {
   //   e.preventDefault();
@@ -167,60 +162,66 @@ export function InputImage({ _photo }) {
   // };
 
   return (
-    <div>
-      {active === "edit" ? (
-        <div className="card">
-          <form>
-            {/* onSubmit={handleSubmit}> */}
-            <label htmlFor="photo-upload" className="custom-file-upload fas">
-              <div className="img-wrap img-upload">
-                {/* <img
-                  htmlFor="photo-upload"
-                  src={imagePreviewUrl}
-                  alt="Upload"
-                /> */}
-                <span className="material-icons md-48">face</span>
-              </div>
-              <input id="photo-upload" type="file" onChange={photoUpload} />
-            </label>
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            />
-            <button type="submit" className="save">
-              Save
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className="card">
-          <form onSubmit={handleSubmit}>
-            <h1>Profile Card</h1>
-            <label className="custom-file-upload fas">
-              <div className="img-wrap">
-                <img
-                  htmlFor="photo-upload"
-                  src={imagePreviewUrl}
-                  alt="Profile"
-                />
-              </div>
-            </label>
-            <div className="name">{name}</div>
-            <div className="status">{status}</div>
-            <button type="submit" className="edit">
-              Edit Profile
-            </button>
-          </form>
-        </div>
-      )}
+    <div className="flex flex-row">
+      <span className="m-4 h-full">Photo:</span>
+      <label
+        htmlFor="profile-image"
+        className="group relative flex justify-center aspect-square min-w-24 max-w-48 items-center bg-gray-200 dark:bg-slate-900 rounded-full hover:cursor-pointer"
+      >
+        {!imagePreviewUrl && !_photo ? (
+          <span className="group-hover:opacity-0 material-icons text-6xl transition-opacity duration-300">
+            person
+          </span>
+        ) : (
+          <img
+            alt="display-photo"
+            src={imagePreviewUrl || _photo}
+            className="group-hover:opacity-50 transition-opacity duration-300 min-w-24 max-w-48 rounded-full "
+          />
+        )}
+        <span className="material-icons text-6xl absolute inset-0 flex justify-center items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          upload
+        </span>
+        <input
+          id="profile-image"
+          className="hidden"
+          type="file"
+          onChange={(e) => {
+            if (!e.target?.files[0]) return;
+            const photo_ = e.target.files[0];
+            if (
+              photo_ &&
+              photo_.type.startsWith("image/") &&
+              photo_.size / (1024 * 1024) < 2
+            ) {
+              setImagePreviewUrl(URL.createObjectURL(photo_));
+              setPhoto(photo_);
+            } else {
+              console.error(
+                "Invalid file or file-size. Please select an image less than 2MB."
+              );
+              // alert("Please select an image file.");
+              toast.error("Please select an image less than 2MB.");
+            }
+          }}
+        />
+      </label>
     </div>
   );
+
+  // (
+  //   <label htmlFor="profile-image">
+  //     <img
+  //       alt="User Pic"
+  //       src="https://d30y9cdsu7xlg0.cloudfront.net/png/138926-200.png"
+  //       className="rounded-full cursor-pointer w-24 h-24 mx-auto border border-gray-300"
+  //     />
+  //     <input
+  //       id="profile-image"
+  //       className="hidden"
+  //       type="file"
+  //       onChange={() => "Clicked-KUKU"}
+  //     />
+  //   </label>
+  // )
 }

@@ -122,7 +122,7 @@ export function ReqDemoModal({ handleCloseModal }) {
                   type="text"
                   placeholder="Enter your prefered name"
                   icon={SVGuser}
-                  value={firstName}
+                  valObj={firstName}
                   setValue={setFirstName}
                 />
                 {/* email FIELD */}
@@ -132,7 +132,7 @@ export function ReqDemoModal({ handleCloseModal }) {
                   type="email"
                   placeholder="Enter your email address"
                   icon={SVGemail}
-                  value={email}
+                  valObj={email}
                   setValue={setEmail}
                 />
                 {/* tel FIELD */}
@@ -142,7 +142,7 @@ export function ReqDemoModal({ handleCloseModal }) {
                   type="tel"
                   placeholder="Enter your tel"
                   icon={SVGcell}
-                  value={tel}
+                  valObj={tel}
                   setValue={setTel}
                 />
                 <div className="my-6 flex flex-col">

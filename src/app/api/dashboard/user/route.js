@@ -14,7 +14,7 @@ async function postHandler(request, user) {
     )
       Response.json("Forbidden", { status: 403 });
     console.log("POST REQUEST: create new user: ", doc_);
-    console.log("USER - ", user);
+    // console.log("by USER - ", user);
     // return;
     // insert doc
     const newUser = await prisma.user.create({
@@ -43,25 +43,26 @@ export async function putHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
-    const { id, ...doc_ } = doc;
+    const { userID, ...doc_ } = doc;
+
+    // ***test
+    // return Response.json({ success: doc });
 
     // console.log("PUT REQUEST: updating institution ",id);
-    console.log(` > updating - data: ${doc}`);
+    console.log(`PUT - /api/dashboard/user\n >:`, doc);
     // update doc
-    const res_ = await prisma.institution.update({
-      where: { id },
+    const updatedUser = await prisma.user.update({
+      where: { id: userID },
       data: {
         ...doc_,
       },
     });
-    console.log(`SUCCESS: institution updated - ${id}\n`);
+    console.log(`SUCCESS: user updated`, updatedUser);
     // HTTP response
-    return Response.json({ success: res_ });
+    return Response.json({ success: "User Updated" });
   } catch (err) {
-    console.error(
-      `ERROR: institution update failed - ${_id}\n >> error: ${err}, \n`
-    );
-    return Response.json({ error: err });
+    console.error(`ERROR: user not updated`, err);
+    return Response.json({ error: "Server error" });
   }
 }
 
@@ -69,18 +70,17 @@ export async function deleteHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
-    const { id } = doc;
-    console.log("DELETE REQUEST: deleting institution: ", id);
+    const { userID } = doc;
+    console.log("DELETE REQUEST: deleting user: ", userID);
     // delete doc
-    const res = await prisma.institution.delete({ where: { id } });
-    console.log(`SUCCESS: institution deleted - ${id}\n`);
+    const res = await prisma.user.delete({ where: { id: userID } });
+    if (!res) Response.json({ failed: "Database error" });
+    else console.log(`SUCCESS: user deleted - ${userID}\n`);
     // HTTP response
-    return Response.json({ success: res });
+    return Response.json({ success: "User deleted" });
   } catch (err) {
-    console.error(
-      `ERROR: institution deletion failed: ${_id}\n >> error: ${err}\n`
-    );
-    return Response.json({ error: err });
+    console.error(`ERROR: User deletion failed:}\n >`, err);
+    return Response.json({ error: `Server error` });
   }
 }
 

@@ -14,14 +14,12 @@ export default function Providers({ children }) {
   // func update UI data
   const fetchUIuserData = useCallback(async () => {
     try {
+      //fetch options
       const fetchOptions = {
         method: "GET",
       };
       console.log("FETCHING: ", session.user.institutionIDs[0]);
-      // const response = await fetch(
-      //   `/api/dashboard/data?institution=${session.user.institutionIDs[0]}`,
-      //   fetchOptions
-      // );
+
       // POST request using fetch
       const response = await fetch(
         `/api/dashboard/data?institution=${session.user.institutionIDs[0]}`,

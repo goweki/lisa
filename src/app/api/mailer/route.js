@@ -36,21 +36,21 @@ export async function POST(request) {
       }
     }
     //return
-    if (Object.values(mailerRes).includes("success"))
-      return Response.json({ success: mailerRes });
-    else {
-      console.error(
-        " > Failure in route /mailer POST: " +
-          JSON.stringify(mailerRes) +
-          `\n.........................`
+    if (Object.values(mailerRes).includes("success")) {
+      console.log(
+        "SUCCESS-WRAP: message sent - route /mailer POST: >> ",
+        mailerRes
       );
-      return Response.json({ error: mailerRes });
+      return Response.json({ success: "Message sent" });
+    } else {
+      console.error("FAILED:  route /mailer POST: >> ", mailerRes);
+      return Response.json({ error: "Message NOT sent" });
     }
   } catch (error) {
     // handle ERROR if caught
     console.log(
       `ERROR: error caught in route /mailer POST\n >> ${error}\n.........................`
     );
-    return Response.json({ error: "Message not sent" });
+    return Response.json({ error: "Message NOT sent" });
   }
 }

@@ -30,6 +30,16 @@ export default function UserHome() {
       })
       .filter((case_) => case_.dueDates?.length > 0);
     setOverdues(_overdues);
+    const institutionsBrief = {
+      headings: ["Institution", "Location", "Users", "Cases"],
+      series: institutions.map((inst) => ({
+        id: inst.id,
+        name: inst.name,
+        location: inst.location,
+        users: inst.userIDs.length,
+        cases: inst.cases.length,
+      })),
+    };
     const caseBrief = {
       headings: ["Case", "Case Type", "Client", "Status"],
       series: cases
@@ -66,7 +76,7 @@ export default function UserHome() {
         "Secondary-Party": _type.secondaryParty,
       })),
     };
-    setBriefs({ caseBrief, usersBrief, caseTypesBrief });
+    setBriefs({ caseBrief, usersBrief, caseTypesBrief, institutionsBrief });
   }, [cases, institutions, caseTypes, users]);
 
   // render
@@ -86,24 +96,27 @@ export default function UserHome() {
             showViewAll={true}
           />
         )}
+
+        {briefs.usersBrief && (
+          <CardTable
+            title={"Users"}
+            data={briefs.usersBrief}
+            baseLink={"/dashboard/institutions"}
+            linkRows={false}
+            // showViewAll={true}
+          />
+        )}
+
         {briefs.caseBrief && (
           <CardTable
-            title={"Active Cases"}
+            title={"Cases"}
             data={briefs.caseBrief}
             baseLink={"/dashboard/cases"}
             linkRows={true}
             showViewAll={true}
           />
         )}
-        {briefs.usersBrief && (
-          <CardTable
-            title={"Active Users"}
-            data={briefs.usersBrief}
-            baseLink={"/dashboard/institutions"}
-            linkRows={true}
-            // showViewAll={true}
-          />
-        )}
+
         {briefs.caseTypesBrief && (
           <CardTable
             title={"Case Types"}
