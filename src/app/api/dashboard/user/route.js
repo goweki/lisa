@@ -39,7 +39,7 @@ async function postHandler(request, user) {
   }
 }
 
-export async function putHandler(request, user) {
+async function putHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
@@ -66,7 +66,7 @@ export async function putHandler(request, user) {
   }
 }
 
-export async function deleteHandler(request, user) {
+async function deleteHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
@@ -84,7 +84,7 @@ export async function deleteHandler(request, user) {
   }
 }
 
-export async function getHandler(request, user) {
+async function getHandler(request, user) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   try {

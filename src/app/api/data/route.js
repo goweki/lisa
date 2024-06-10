@@ -2,14 +2,14 @@ import prisma from "@/lib/prisma";
 export const revalidate = 3600; // false | 0 | number
 const allowedModels = ["blog"];
 
-export async function GET() {
+export async function GET(request) {
   const url = new URL(request.url);
   const model_ = url.searchParams.get("model");
   if (!model_) {
-    return Response.status(400).json({ message: "Bad Request" });
+    return Response.json("Bad Request", { status: 400 });
   }
   if (!allowedModels.includes(model_)) {
-    return Response.status(401).json({ message: "Unauthorized" });
+    return Response.json("Unauthorized", { status: 401 });
   }
   try {
     console.log(
@@ -18,10 +18,10 @@ export async function GET() {
     );
     // Query
     const data = await prisma[model_].findMany({});
-    return Response.json({ success: cases });
+    return Response.json({ success: data });
   } catch (error) {
     // handle ERROR if caught
-    console.log(` > Error caught at api/data GET \n >> ${error}\n`);
-    return Response.status(500).json({ message: "Could not fetch data" });
+    console.log(` > Error caught at api/data GET \n`, error);
+    return Response.json("Server Error", { status: 500 });
   }
 }

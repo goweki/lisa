@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 export const revalidate = 60; // false | 'force-cache' | 0 | number
 
-export async function getHandler(req, user) {
+async function getHandler(req, user) {
   const url = new URL(req.url);
   const institutionId = url.searchParams.get("institution");
   // validation checks
