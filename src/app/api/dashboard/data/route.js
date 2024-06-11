@@ -22,7 +22,7 @@ async function getHandler(req, user) {
       },
     });
     if (institutions_.length < 1)
-      Response.json("Invalid institutionIDs", { status: 401 });
+      Response.json("No institutions", { status: 401 });
     const _institution = institutions_[0];
     const institutions = await prisma.institution.findMany({
       where: _institution.name !== "Lisa" ? { id: institutionId } : {},
@@ -34,18 +34,21 @@ async function getHandler(req, user) {
     // GET users
     let users = [];
     for (const inst of institutions) {
-      users = [
-        ...(await prisma.user.findMany({
-          where: {
-            institutionIDs: {
-              has: inst.id,
-            },
+      const instUsers = await prisma.user.findMany({
+        where: {
+          institutionIDs: {
+            has: inst.id,
           },
-          include: {
-            institutions: true,
+          id: {
+            not: user.id,
           },
-        })),
-      ];
+        },
+        include: {
+          institutions: true,
+        },
+      });
+
+      users = [...users, ...instUsers];
     }
 
     // GET cases

@@ -29,6 +29,14 @@ async function postHandler(request, user) {
       return Response.json({ failed: "Failed creating new user" });
     }
     // console.log("SUCCESS: user inserted.\n > ", newUser);
+    await prisma.institution.update({
+      where: { id: institutionId },
+      data: {
+        userIDs: {
+          push: newUser.id,
+        },
+      },
+    });
     return Response.json({ success: newUser });
   } catch (err) {
     console.error(

@@ -3,6 +3,7 @@ import { type NextRequest } from "next/server";
 import sendEmail from "@/lib/emailService";
 import crypto from "crypto";
 import { hash } from "@/helpers/bcryptHandlers";
+import { emailHTML } from "@/app/api/mailer/emailTemplates";
 const CONICAL_URL =
   process.env.ENV === "development"
     ? process.env.CONICAL_URL_DEV
@@ -40,20 +41,22 @@ export async function POST(request: Request) {
     console.log("Password Reset link SAVED: \n", updatedUser);
     //reset password URL
     const resetURL = `${CONICAL_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
+    const html = emailHTML(updatedUser.name, resetURL);
+
     const emailOptions = {
       subject: "Reset Password for Lisa",
-      html: `
-            <p>Reset your password by clicking the below URL:</p>
-            <p><a href="${resetURL}">${resetURL}</a></p>
-            <br/>
-            <br/>
-            <i>If you did not request a password reset, please ignore this email and do not share contents with anyone.</i>
-            `,
-
+      html,
+      // `
+      //       <p>Reset your password by clicking the below URL:</p>
+      //       <p><a href="${resetURL}">${resetURL}</a></p>
+      //       <br/>
+      //       <br/>
+      //       <i>If you did not request a password reset, please ignore this email and do not share contents with anyone.</i>
+      //       `
       text: `
       Reset your password by clicking the below URL or copying it into your address-bar:
       ${resetURL}
-      
+
       If you did not request a password reset, please ignore this email.
       `,
     };

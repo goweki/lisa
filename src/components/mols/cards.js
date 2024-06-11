@@ -19,7 +19,7 @@ export function CardTable({ title, data, baseLink, linkRows, showViewAll }) {
     const arr = series.map((item) => {
       const values = Object.values(item).map((value) => {
         // If the value is an object, extract its values
-        if (typeof value === "object") {
+        if (value && typeof value === "object") {
           return Object.values(value);
         } else return value;
       });
