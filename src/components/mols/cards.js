@@ -29,7 +29,7 @@ export function CardTable({ title, data, baseLink, linkRows, showViewAll }) {
     setSeries(arr);
   }, [series]);
   return (
-    <div className="card overflow-x-auto m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal p-2 md:p-4">
+    <div className="card min-h-60 max-h-80 overflow-x-auto m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal p-2 md:p-4">
       <div className="flex items-center justify-start">
         {title && <h5 className="text-xl font-bold leading-none">{title}</h5>}
         <div className="ml-4">

@@ -725,7 +725,7 @@ export default function ViewCase({
       setUIstate("OK");
     } else {
       console.error(
-        "ERROR: failed to update case at /dashboard/cases/[slug] - viewCase.js iAA \n > " +
+        "ERROR: failed to update case - ivt \n > " +
           JSON.stringify(_res) +
           "\n.............."
       );
@@ -768,7 +768,7 @@ export default function ViewCase({
       router.replace("/dashboard/cases");
     } else {
       console.error(
-        "ERROR: failed to delete case at /dashboard/cases/[slug] - viewCase.js iBB\n > " +
+        "ERROR: failed to delete case - iBsadB\n > " +
           JSON.stringify(_res) +
           "\n.............."
       );

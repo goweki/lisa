@@ -6,7 +6,7 @@ export interface InstitutionType extends Institution {
 
 export interface UserType extends User {
   institutions?: InstitutionType[];
-  cases: CaseType[];
+  cases?: CaseType[];
 }
 
 export interface CaseType extends Case {

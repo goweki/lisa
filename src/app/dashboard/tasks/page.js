@@ -6,138 +6,60 @@ import { DataContext } from "../providers";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGsearch } from "@/components/atoms/svgs";
-import {
-  dateShort,
-  hoursDifference,
-  isDatePassed,
-} from "@/helpers/dateHandlers";
+import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import { Loader1 } from "@/components/atoms/loader";
 
 export default function TasksPage() {
-  const [UIstate, setUIstate] = useState("loading");
+  const [UIstate, setUIstate] = useState("");
   const {
-    data: { cases },
+    data: { cases, institutions },
   } = useContext(DataContext);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [tasks, setTasks] = useState([]);
   const [filtTasks, setFiltTasks] = useState([]);
-  const [selectedTask, setSelected] = useState(null);
-  const [fileUpload, setFileUpload] = useState(null);
+  const [selectedTask, setSelected] = useState("");
+  const [fileUpload, setFileUpload] = useState("");
 
   useEffect(() => {
-    //onMount / onUpdate- set task by categories
-    const cases_withCompletetasks = cases
-      .filter((case_) => case_.status === "open")
-      .map((case_) => {
-        return {
-          id: case_.id,
-          name: case_.name,
-          type: case_.type,
-          tasks: case_.tasks?.filter((task) => task.completedById),
-        };
-      })
-      .filter((case_) => case_.tasks?.length);
-
-    const cases_withIncompletetasks = cases
-      .filter((case_) => case_.status === "open")
-      .map((case_) => {
-        return {
-          _id: case_.id,
-          name: case_.name,
-          type: case_.type,
-          tasks: case_.tasks?.filter((task) => !task.completedById),
-        };
-      })
-      .filter((case_) => case_.tasks?.length);
-    // incomplete tasks
-    const inCompletes_2d = cases_withIncompletetasks.map((case_) => {
-      const innerIncompletes = case_.tasks?.map((task) => {
-        return {
-          caseId: case_.id,
-          caseName: case_.name,
-          caseType: case_.type,
-          dueDate: task.dueDate,
-          task: task.name,
-        };
-      });
-      return innerIncompletes;
-    });
-    const inCompletes = inCompletes_2d.flat();
-    if (inCompletes.length > 0) {
-      // incomplete categories
-      const overdues = inCompletes.filter((task) =>
-        isDatePassed(new Date(task.dueDate))
-      );
-      const almostOverdue = inCompletes.filter(
-        (task) =>
-          !isDatePassed(new Date(task.dueDate)) &&
-          hoursDifference(new Date(task.dueDate), new Date()) < 72
-      );
-      const pending = inCompletes.filter(
-        (task) =>
-          !isDatePassed(new Date(task.dueDate)) &&
-          hoursDifference(new Date(task.dueDate), new Date()) > 72
-      );
-      setTasks([]);
-      // if overdues
-      if (overdues.length)
-        setTasks((prev) => [
-          ...prev,
-          ...overdues.map((item) => ({ ...item, status: "overdue" })),
-        ]);
-      // if almost overdue
-      if (almostOverdue.length)
-        setTasks((prev) => [
-          ...prev,
-          ...almostOverdue.map((item) => ({ ...item, status: "late" })),
-        ]);
-      //if pending
-      if (pending.length)
-        setTasks((prev) => [
-          ...prev,
-          ...pending.map((item) => ({ ...item, status: "pending" })),
-        ]);
-    }
-    //complete tasks
-    const completes_2d = cases_withCompletetasks.map((case_) => {
-      const innerCompletes = case_.tasks?.map((task) => {
-        return {
-          caseId: case_.id,
-          caseName: case_.name,
-          caseType: case_.type,
-          dueDate: task.dueDate,
-          task: task.name,
-        };
-      });
-      return innerCompletes;
-    });
-    const completes = completes_2d.flat();
-    if (completes.length)
-      setTasks((prev) => [
-        ...prev,
-        ...completes.map((item) => ({ ...item, status: "complete" })),
-      ]);
-    // setTasks(completes.map((item) => ({ ...item, status: "complete" })));
-    //stop loading
+    //onMount / onUpdate- set tasks with completion status:completed,due,overdue
+    const _tasks = cases.reduce((acc, case_) => {
+      let caseTasks = [];
+      for (const task of case_.tasks) {
+        caseTasks.push({
+          ...task,
+          case: case_.name,
+          status: task.completedByID
+            ? "completed"
+            : isDatePassed(new Date(task.dueDate))
+            ? "overdue"
+            : "due",
+          lawyer: case_.lawyer || "",
+        });
+      }
+      return [...acc, ...caseTasks];
+    }, []);
+    setTasks(_tasks);
     setUIstate("OK");
     //
   }, [cases]);
   //filter tasks by searchPhrase
   useEffect(() => {
-    setFiltTasks(
-      tasks?.filter(
-        ({ caseName, caseType, task }) =>
-          caseName.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
-          caseType.category
-            .toLowerCase()
-            .includes(searchPhrase.value?.toLowerCase()) ||
-          task.name.toLowerCase().includes(searchPhrase.value?.toLowerCase())
-      )
-    );
-  }, [searchPhrase, tasks]);
+    !searchPhrase.value
+      ? setFiltTasks(tasks)
+      : setFiltTasks(
+          tasks.filter(
+            (task) =>
+              task.name.includes(searchPhrase.value) ||
+              task.case.includes(searchPhrase.value) ||
+              task.type.includes(searchPhrase.value)
+          )
+        );
+  }, [searchPhrase.value, tasks]);
   //
   //render
-  return UIstate === "OK" ? (
+  return !UIstate ? (
+    <Loader1 />
+  ) : (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="max-w-screen-lg py-6 mx-auto px-4 lg:px-6 w-full">
         <div className="space-y-2 md:space-y-5 mb-4">
@@ -169,6 +91,9 @@ export default function TasksPage() {
                     Task
                   </th>
                   <th scope="col" className="px-6 py-3 text-start">
+                    Type
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-start">
                     Status
                   </th>
                   <th scope="col" className="px-6 py-3 text-start">
@@ -179,15 +104,79 @@ export default function TasksPage() {
               </thead>
               <tbody>
                 {/* TASKS */}
-                {filtTasks.length > 0 &&
-                  filtTasks.map((v, i) => (
+                {filtTasks.length > 0 ? (
+                  filtTasks.map((task) => (
                     <tr
-                      key={i}
+                      key={task.id}
                       className="border-b border-backg-raised dark:border-backg-dark-raised hover:bg-backg-raised dark:hover:bg-backg-dark-raised"
                     >
-                      {listItem(v)}
+                      <th
+                        scope="row"
+                        className="flex px-6 py-4 whitespace-nowrap"
+                      >
+                        <div className="text-start">
+                          <div className="font-semibold">{task.name}</div>
+                          <div className="font-light text-neutral-500">
+                            {task.case}
+                          </div>
+                          <div className="font-light text-neutral-500">
+                            {task.lawyer ? (
+                              task.lawyer
+                            ) : (
+                              <span className="italic text-xs">
+                                not assigned
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </th>
+                      <td className="px-6 py-4">{task.type}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              task.status === "overdue"
+                                ? "bg-red-500"
+                                : task.status === "due"
+                                ? "bg-blue-500"
+                                : task.status === "complete"
+                                ? "bg-green-500"
+                                : "bg-slate-500"
+                            } me-2`}
+                          ></div>{" "}
+                          {task.status}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {dateShort(new Date(task.dueDate))}
+                      </td>
+                      <td className="px-6 py-4">
+                        {/* <!-- Modal toggle --> */}
+                        <Link
+                          href="#"
+                          className="font-medium text-blue-600 dark:text-blue-500"
+                        >
+                          <button
+                            data-modal-show="editTaskModal"
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSelected(task);
+                            }}
+                          >
+                            View task
+                          </button>
+                        </Link>
+                      </td>
                     </tr>
-                  ))}
+                  ))
+                ) : (
+                  <tr className="italic">
+                    <td colSpan="5" className="p-3 text-center">
+                      No tasks matching filter
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           ) : (
@@ -201,7 +190,7 @@ export default function TasksPage() {
               id="editTaskModal"
               tabIndex="-1"
               aria-hidden="true"
-              className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full bg-backg/50 dark:bg-backg-dark/50 backdrop-blur-sm"
+              className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full bg-backg/50 dark:bg-backg-dark/50 backdrop-blur-lg"
             >
               <div className="relative w-full max-w-2xl max-h-full">
                 {/* <!-- Modal content --> */}
@@ -209,27 +198,13 @@ export default function TasksPage() {
                   {/* <!-- Modal header --> */}
                   <div className="flex items-start justify-between p-4 border-b rounded-t border-gray-100 dark:border-gray-600">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                        <span className="font-normal">Task: </span>
-                        {selectedTask.task.name}
-                      </h3>
-                      <Link
-                        href={`/dashboard/cases/${selectedTask.caseId}/${selectedTask.task.name}`}
-                      >
-                        <button
-                          type="button"
-                          className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-emerald-500 rounded-lg text-sm ms-auto inline-block justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                          onClick={() => ""}
-                        >
-                          Go to task
-                        </button>
-                      </Link>
+                      <h3 className="text-xl font-bold">Task</h3>
                     </div>
                     <button
                       type="button"
                       className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-red-500 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                       data-modal-hide="editTaskModal"
-                      onClick={() => setSelected(null)}
+                      onClick={() => setSelected("")}
                     >
                       <svg
                         className="w-3 h-3"
@@ -251,32 +226,42 @@ export default function TasksPage() {
                   </div>
                   {/* <!-- task details --> */}
                   <div className="py-6 px-12 md:px-16">
-                    <ul className="grid grid-cols-6 gap-6 [&>*]:col-span-6 [&>*]:md:col-span-3">
+                    <ul className="grid grid-cols-6 gap-6 [&>*]:col-span-6 [&>*]:md:col-span-3 [&>*:last-child]:col-span-6">
                       <li className="flex flex-col">
                         <div className="text-xs">
-                          <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
-                            Parent case:
-                          </span>
+                          <span className="text-gray-500">Task name</span>
                         </div>
-                        <div className="flex h-full items-start py-1 px-3 text-base">
-                          {`${selectedTask.caseType.category}, ${selectedTask.caseType.type} - ${selectedTask.caseName}`}
+                        <div className="flex h-full items-start py-1 text-base">
+                          {selectedTask.name}
                         </div>
                       </li>
                       <li className="flex flex-col">
                         <div className="text-xs">
-                          <span className="text-emerald-900 dark:text-emerald-100 border-b border-emerald-900 dark:border-emerald-100">
-                            Due date:
-                          </span>
+                          <span className="text-gray-500"> Parent case:</span>
                         </div>
-                        <div className="flex h-full items-start py-1 px-3 text-base">
+                        <div className="flex h-full items-start py-1 text-base">
+                          {selectedTask.case}
+                        </div>
+                      </li>
+                      <li className="flex flex-col">
+                        <div className="text-xs">
+                          <span className="text-gray-500"> Type</span>
+                        </div>
+                        <div className="flex h-full items-start py-1 text-base">
+                          {selectedTask.type}
+                        </div>
+                      </li>
+                      <li className="flex flex-col">
+                        <div className="text-xs">
+                          <span className="text-gray-500"> Due date:</span>
+                        </div>
+                        <div className="flex h-full items-start py-1 text-base">
                           <div className="flex h-full items-center justify-center">
                             <div
                               className={`h-2.5 w-2.5 rounded-full ${
                                 selectedTask.status === "overdue"
                                   ? "bg-red-500"
-                                  : selectedTask.status === "late"
-                                  ? "bg-yellow-500"
-                                  : selectedTask.status === "pending"
+                                  : selectedTask.status === "due"
                                   ? "bg-blue-500"
                                   : selectedTask.status === "complete"
                                   ? "bg-green-500"
@@ -289,17 +274,36 @@ export default function TasksPage() {
                           </div>
                         </div>
                       </li>
+                      <li className="flex flex-col">
+                        <div className="text-xs">
+                          <span className="text-gray-500"> Description</span>
+                        </div>
+                        <div className="flex h-full items-start py-1 text-base">
+                          {selectedTask.description}
+                        </div>
+                      </li>
                     </ul>
                   </div>
                   {/* <!-- task doc upload --> */}
-                  <div className="flex items-center p-6 rounded-b border-t border-gray-100 dark:border-gray-600">
-                    {selectedTask.task.complete ? (
+                  <div className="flex items-center justify-between p-6 rounded-b border-t border-gray-100 dark:border-gray-600">
+                    {selectedTask.status === "complete" ? (
                       <>completed</>
                     ) : (
                       <span className="text-red-700 dark:text-red-200">
                         This task is incomplete
                       </span>
                     )}
+                    <Link
+                      href={`/dashboard/cases/${selectedTask.caseID}/${selectedTask.id}`}
+                    >
+                      <button
+                        type="button"
+                        className="text-gray-400 bg-transparent hover:text-emerald-500 rounded-lg text-sm ms-auto inline-block justify-center items-center"
+                        onClick={() => ""}
+                      >
+                        Edit Task
+                      </button>
+                    </Link>
                   </div>
                 </form>
               </div>
@@ -308,60 +312,5 @@ export default function TasksPage() {
         </div>
       </div>
     </main>
-  ) : (
-    <Loader1 />
   );
-  //funcs
-  function listItem(task) {
-    return (
-      <>
-        <th scope="row" className="flex px-6 py-4 whitespace-nowrap">
-          <div className="text-start ps-3">
-            <div className="font-semibold">{task.task.name}</div>
-            <div className="font-light text-neutral-500">{task.caseName}</div>
-            <div className="font-light text-xs text-neutral-500">
-              {task.caseType.category}, {task.caseType.type}
-            </div>
-          </div>
-        </th>
-        <td className="px-6 py-4">
-          <div className="flex items-center">
-            <div
-              className={`h-2.5 w-2.5 rounded-full ${
-                task.status === "overdue"
-                  ? "bg-red-500"
-                  : task.status === "late"
-                  ? "bg-yellow-500"
-                  : task.status === "pending"
-                  ? "bg-blue-500"
-                  : task.status === "complete"
-                  ? "bg-green-500"
-                  : "bg-slate-500"
-              } me-2`}
-            ></div>{" "}
-            {task.status}
-          </div>
-        </td>
-        <td className="px-6 py-4">{dateShort(new Date(task.dueDate))}</td>
-        <td className="px-6 py-4">
-          {/* <!-- Modal toggle --> */}
-          <Link
-            href="#"
-            className="font-medium text-blue-600 dark:text-blue-500"
-          >
-            <button
-              data-modal-show="editTaskModal"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setSelected(task);
-              }}
-            >
-              View task
-            </button>
-          </Link>
-        </td>
-      </>
-    );
-  }
 }

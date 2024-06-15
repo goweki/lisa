@@ -56,7 +56,7 @@ export default function Navbar(props) {
                   await signOut();
                 }}
               >
-                Sign Out, {props.user.name}
+                Sign Out
               </Link>
             ) : (
               <Link
@@ -106,6 +106,7 @@ const menuItemsOptions = {
   auth: [
     { label: "Home", type: "link", onClick: "/dashboard" },
     { label: "Institutions", type: "link", onClick: "/dashboard/institutions" },
+    { label: "Users", type: "link", onClick: "/dashboard/users" },
     { label: "Cases", type: "link", onClick: "/dashboard/cases" },
     { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
   ],

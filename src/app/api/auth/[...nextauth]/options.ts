@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       credentials: {},
       async authorize(credentials): Promise<any> {
-        if (!credentials) throw new Error("no credentials to log in as");
+        if (!credentials) throw new Error("no credentials provided");
         const { email, password } = credentials as {
           email: string;
           password: string;
@@ -42,10 +42,7 @@ export const authOptions: NextAuthOptions = {
         //        */
 
         // run query on db
-        // const mongodbClient = await clientPromise; // resolve MongoClient promise
-        // const db = mongodbClient.db(process.env.ATLAS_DB); //target DB
-        // const collection = db.collection("users");
-        //check if user exists
+        // check if user exists
         let user = await prisma.user.findUnique({
           where: {
             email: email,
@@ -54,7 +51,11 @@ export const authOptions: NextAuthOptions = {
         //check
         // console.log(user);
         // ifCredentialsValid
-        if (user && (await compareHash(password, user.password))) {
+        if (
+          user &&
+          user.password &&
+          (await compareHash(password, user.password))
+        ) {
           // delete user.password;
           const { password, ...user_ } = user;
           // valid credentials

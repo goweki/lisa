@@ -37,13 +37,11 @@ export default function CasePage({ params }) {
       name: { value: "", error: "" },
       tel: { value: "", error: "" },
     },
-    institution: {
-      value: userInstitutions.some((inst) => inst.name === "Lisa")
-        ? ""
-        : userInstitutions.length === 1
-        ? userInstitutions[0].id
-        : "",
-    },
+    institution: userInstitutions.some((inst) => inst.name === "Lisa")
+      ? ""
+      : userInstitutions.length === 1
+      ? userInstitutions[0].id
+      : "",
   };
   // case state Object
   const [newCase, setNewCase] = useState(emptyCase);
@@ -107,12 +105,11 @@ export default function CasePage({ params }) {
           clientName: newCase.client.name.value,
           clientTel: newCase.client.tel.value,
           caseTypeID: caseType.id,
-          institutionID: userInstitutions.find(
-            (inst) => inst.name === newCase.institution
-          ).id,
+          institutionID: newCase.institution,
         }),
       };
       setUIstate("loading");
+
       // POST request using fetch
       const _res = await fetch("/api/dashboard/case", fetchOptions).then(
         async (res_) => {
@@ -165,10 +162,14 @@ export default function CasePage({ params }) {
               >
                 {!newCase.type || !newCase.client.party ? (
                   <>
+                    {/* institution: if Lisa staff */}
                     {(userInstitutions.some((inst) => inst.name === "Lisa") ||
                       userInstitutions.length > 1) &&
-                      inputSelect(
-                        userInstitutions.map((inst) => inst.name),
+                      inputSelect2(
+                        userInstitutions.map((inst) => ({
+                          name: inst.name,
+                          value: inst.id,
+                        })),
                         newCase.institution,
                         (e) => {
                           setNewCase((prev) => {
@@ -181,6 +182,7 @@ export default function CasePage({ params }) {
                         "user-institution",
                         "target institution"
                       )}
+                    {/* Case type */}
                     {inputSelect(
                       caseTypes.map((template) => template.name),
                       newCase.type,
@@ -193,6 +195,7 @@ export default function CasePage({ params }) {
                       "case-type",
                       "case type"
                     )}
+                    {/* Client/Primary Party */}
                     {newCase.type &&
                       inputSelect(
                         [caseType.primaryParty, caseType.secondaryParty],
@@ -218,7 +221,7 @@ export default function CasePage({ params }) {
                       <div className="mr-4">{strPascalcase(newCase.type)}</div>
                     </div>
                     <div className="inline m-auto"></div>
-                    <div className="mb-6 space-y-3">
+                    <div className="mb-6 space-y-6">
                       <InputText
                         label={`${strPascalcase(
                           newCase.type.split(" ").pop()
@@ -360,6 +363,38 @@ function inputSelect(
         {optionItems.map((option, i) => (
           <option key={i} value={option}>
             {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function inputSelect2(
+  optionItems,
+  value,
+  onChange = () => "",
+  name = "inputName",
+  defaultOption = "type"
+) {
+  return (
+    <div className="relative mb-6">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+        <SVGpenscilSquare className="w-4 h-4 text-emerald-800 dark:text-emerald-500" />
+      </div>
+      <select
+        name={name}
+        id={name}
+        className={`border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
+        value={value}
+        onChange={onChange}
+      >
+        <option value="" className="italic font-light">
+          Select a {defaultOption}...
+        </option>
+        {optionItems.map(({ name, value }, i) => (
+          <option key={i} value={value}>
+            {name}
           </option>
         ))}
       </select>

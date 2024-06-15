@@ -4,12 +4,16 @@ const gmailAccountKey = process.env.GMAIL_APP_KEY;
 const emailFrom = process.env.GMAIL_ACCOUNT_FROM;
 const emailTo = process.env.GMAIL_ACCOUNT_TO;
 
-export default async function sendEmail(data: {
-  subject: string;
-  text: string;
-  html?: string;
-  cc?: string;
-}) {
+export default async function sendEmail(
+  data: {
+    subject: string;
+    text: string;
+    html: string;
+    to?: string;
+    cc?: string;
+  },
+  sendTo?: string
+) {
   try {
     // nodemailer transporter obj
     const transporter = nodemailer.createTransport({
@@ -22,11 +26,11 @@ export default async function sendEmail(data: {
     // nodemailer options
     const mailOptions = {
       from: emailFrom,
-      to: emailTo,
+      to: sendTo || emailTo,
       subject: data.subject,
       text: data.text,
       html: data.html,
-      cc: data.cc,
+      cc: data.cc || (sendTo ? emailTo : ""),
     };
     // console.log(` > CHECKPOINT: Sending email`);
     // send email

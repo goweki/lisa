@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
+import { excludeFields } from "@/helpers/dataHandlers";
 export const revalidate = 60; // false | 'force-cache' | 0 | number
 
 async function getHandler(req, user) {
@@ -23,9 +24,15 @@ async function getHandler(req, user) {
     });
     if (institutions_.length < 1)
       Response.json("No institutions", { status: 401 });
-    const _institution = institutions_[0];
+    // id institution includes Lisa
     const institutions = await prisma.institution.findMany({
-      where: _institution.name !== "Lisa" ? { id: institutionId } : {},
+      where: !institutions_.map((inst) => inst.name).includes("Lisa")
+        ? {
+            id: {
+              in: user.institutionIDs,
+            },
+          }
+        : {},
       include: {
         cases: true,
       },
@@ -45,10 +52,18 @@ async function getHandler(req, user) {
         },
         include: {
           institutions: true,
+          cases: true,
         },
       });
 
-      users = [...users, ...instUsers];
+      users = [
+        ...users,
+        ...excludeFields(instUsers, [
+          "password",
+          "resetToken",
+          "resetTokenExpiry",
+        ]),
+      ];
     }
 
     // GET cases
@@ -64,7 +79,9 @@ async function getHandler(req, user) {
           }
         : {
             where: {
-              institutionID: institutionId,
+              institutionID: {
+                in: institutions.map((inst_) => inst_.id),
+              },
             },
             include: {
               caseType: true,
@@ -84,9 +101,7 @@ async function getHandler(req, user) {
   } catch (error) {
     // handle ERROR if caught
     console.log(` > Error caught at api/dashboard/data GET \n  >> ${error}\n`);
-    // return Response.json({
-    //   error: "SERVER ERROR: Did not fetch data",
-    // });
+    // return Response.json({ error: "SERVER ERROR" });
     return Response.json({ status: 500 }, "Server error");
   }
 }

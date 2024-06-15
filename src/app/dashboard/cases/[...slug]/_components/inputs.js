@@ -106,11 +106,12 @@ export function InputDate({
 
 export function InputSelect({
   optionItems,
-  value,
   onChange = () => "",
   name = "inputName",
   defaultOption = "type",
   icon: Icon,
+  readOnly,
+  defaultValue,
 }) {
   return (
     <div className="relative mb-6">
@@ -123,8 +124,9 @@ export function InputSelect({
         name={name}
         id={name}
         className={`bg-slate-300 dark:bg-slate-900 border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800 border shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic dark:text-white `}
-        value={value}
         onChange={onChange}
+        disabled={readOnly}
+        defaultValue={defaultValue}
       >
         <option value="" className="italic font-light">
           Select a {defaultOption}...

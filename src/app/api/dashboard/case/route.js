@@ -1,7 +1,21 @@
 import prisma from "@/lib/prisma";
 // const collection = db_cluster.collection("cases");
+import { withAuthAdmin } from "@/lib/authRouteWrappers";
+import { UserType } from "@/types/models";
 
-export async function POST(request) {
+export const POST = withAuthAdmin(postHandler);
+export const PUT = withAuthAdmin(putHandler);
+export const DELETE = withAuthAdmin(deleteHandler);
+// export const GET = withAuthAdmin(getHandler);
+
+/** HANDLER functions */
+/**
+ *
+ * @param {Request} request
+ * @param {UserType} user
+ * @returns {Response}
+ */
+async function postHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
@@ -14,38 +28,49 @@ export async function POST(request) {
     // HTTP response
     return Response.json({ success: res_ });
   } catch (err) {
-    console.error(
-      `ERROR: case insertion failed -route:/api/dashboard/case POST\n >> error: ${err}\n`
-    );
-    return Response.json({ error: err });
+    console.error(`ERROR: /api/dashboard/case POST\n >> error: `, err);
+    return Response.json({ error: "SERVER ERROR" });
   }
 }
 
-export async function PUT(request) {
+/**
+ *
+ * @param {Request} request
+ * @param {UserType} user
+ * @returns {Response}
+ */
+async function putHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
-    const { id, ...doc_ } = doc;
+    const { id, userID, ...doc_ } = doc;
 
-    // console.log("PUT REQUEST: updating case ",id);
-    console.log(` > updating - data: ${doc}`);
+    // console.log("PUT REQUEST: updating case ",doc);
+    console.log(`PUT REQUEST: case data: `, doc);
     // update doc
     const res_ = await prisma.case.update({
       where: { id },
       data: {
         ...doc_,
+        userID: userID || null,
       },
     });
-    console.log(`SUCCESS: case updated - ${id}\n`);
+    console.log(`SUCCESS: case updated\n`, res_);
     // HTTP response
     return Response.json({ success: res_ });
   } catch (err) {
-    console.error(`ERROR: case update failed - ${_id}\n >> error: ${err}, \n`);
-    return Response.json({ error: err });
+    console.error(`ERROR: case update failed\n>> error: `, err);
+    return Response.json({ error: "SERVER ERROR" });
   }
 }
 
-export async function DELETE(request) {
+/**
+ *
+ * @param {Request} request
+ * @param {UserType} user
+ * @returns {Response}
+ */
+async function deleteHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
@@ -58,11 +83,17 @@ export async function DELETE(request) {
     return Response.json({ success: res });
   } catch (err) {
     console.error(`ERROR: case deletion failed: ${_id}\n >> error: ${err}\n`);
-    return Response.json({ error: err });
+    return Response.json({ error: "SERVER ERROR" });
   }
 }
 
-export async function GET(request) {
+/**
+ *
+ * @param {Request} request
+ * @param {UserType} user
+ * @returns {Response}
+ */
+async function getHandler(request, user) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   try {
@@ -72,6 +103,6 @@ export async function GET(request) {
     else return Response.json({ failed: "no case found" });
   } catch (err) {
     console.log(`ERROR: case retrieval erred.\n >> ${err} \n..........`);
-    return Response.json({ error: err });
+    return Response.json({ error: "SERVER ERROR" });
   }
 }

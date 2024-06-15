@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEdgeStore } from "@/lib/edgestore";
@@ -20,6 +20,7 @@ import {
 } from "@/helpers/inputValidators";
 import { InputSelect, InputText, InputDate } from "./inputs";
 import Link from "next/link";
+import { DataContext } from "@/app/dashboard/providers";
 
 export default function ViewCase({
   selectedCase,
@@ -55,7 +56,9 @@ export default function ViewCase({
   );
   const [docAttachment, setDocAttachment] = useState("");
   const [errFields, setErrFields] = useState(new Set());
-  const [filterPhrase, setFilterPhrase] = useState(searchParams.get("filter"));
+  const [filterPhrase, setFilterPhrase] = useState(
+    searchParams.get("filter") || ""
+  );
   const [expandedField, setExpanded] = useState("");
   // client State
   const defaultClient = {
@@ -87,6 +90,11 @@ export default function ViewCase({
   const [reminders, setReminders] = useState([
     { channel: "", regime: "", count: "" },
   ]);
+  //
+  const {
+    data: { users },
+  } = useContext(DataContext);
+
   //reminders Handlers
   const handleReminderChange = (index, field, value) => {
     const newReminders = reminders.slice();
@@ -124,6 +132,8 @@ export default function ViewCase({
       );
     else setCaseTasks(selectedCase.tasks);
   }, [filterPhrase, selectedCase.tasks]);
+  //load lawyers
+  useEffect(() => {}, []);
 
   // render
   return (
@@ -165,12 +175,6 @@ export default function ViewCase({
                 ? "card m-0 mt-2"
                 : "border-transparent from-transparent to-transparent text-gray-500 dark:text-gray-400"
             } min-w-48 rounded-lg m-0 mt-2 cursor-pointer inline-flex border border-transparent items-center justify-center p-4 hover:border-emerald-700 dark:hover:border-emerald-200 group`}
-            // onClick={() => {
-            //   setTab("tasks");
-            //   setEdit("");
-            //   resetCaseProfileStates();
-            //   // resetTaskStates();
-            // }}
           >
             <svg
               className="w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
@@ -383,17 +387,20 @@ export default function ViewCase({
               </label>
               <InputSelect
                 name="lawyer"
-                optionItems={[
-                  { value: "overdue", text: "❗ overdue" },
-                  { value: "due", text: "✍🏾 due" },
-                  { value: "done", text: "✔️ Done" },
-                ]}
-                value={lawyer}
+                optionItems={users
+                  .filter(({ role }) => role === "lawyer")
+                  .map(({ name, id }) => ({ text: name, value: id }))}
                 onChange={(e) => {
-                  setLawyer(e.target.value);
+                  setLawyer(
+                    users
+                      .filter(({ role }) => role === "lawyer")
+                      .find(({ id }) => id === e.target.value)
+                  );
                 }}
                 icon={SVGuser}
                 defaultOption="lawyer"
+                readOnly={edit !== "profile"}
+                defaultValue={lawyer?.id}
               />
             </div>
             <div id="court-name" className="mb-4">
@@ -626,6 +633,7 @@ export default function ViewCase({
     setOtherParty(defaultOtherParty);
     setCourt(selectedCase.court ?? "");
     setStatus(selectedCase.status ?? "");
+    setLawyer(selectedCase.lawyer ?? "");
   }
   //func to reset task-state
   function resetTaskStates() {
@@ -700,6 +708,8 @@ export default function ViewCase({
         court,
         status,
         description,
+        // userID: lawyer,
+        userID: lawyer?.id || "",
       }),
     };
     setUIstate("loading");
@@ -725,12 +735,13 @@ export default function ViewCase({
       setUIstate("OK");
     } else {
       console.error(
-        "ERROR: failed to update case at /dashboard/cases/[slug] - viewCase.js iAA \n > " +
+        "ERROR: failed to update case - ih6\n" +
           JSON.stringify(_res) +
           "\n.............."
       );
       toast.error(_res?.error ?? "No Response, check internet connection");
     }
+    setUIstate("OK");
   }
   //func to Delete Case
   async function handleDeleteCase() {
@@ -768,7 +779,7 @@ export default function ViewCase({
       router.replace("/dashboard/cases");
     } else {
       console.error(
-        "ERROR: failed to delete case at /dashboard/cases/[slug] - viewCase.js iBB\n > " +
+        "ERROR: failed to delete case iBB\n > " +
           JSON.stringify(_res) +
           "\n.............."
       );

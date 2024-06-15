@@ -41,7 +41,11 @@ export async function POST(request: Request) {
     console.log("Password Reset link SAVED: \n", updatedUser);
     //reset password URL
     const resetURL = `${CONICAL_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
-    const html = emailHTML(updatedUser.name, resetURL);
+    const html = emailHTML(
+      updatedUser.name,
+      resetURL,
+      "Reset your password (Lisa)"
+    );
 
     const emailOptions = {
       subject: "Reset Password for Lisa",
@@ -54,13 +58,15 @@ export async function POST(request: Request) {
       //       <i>If you did not request a password reset, please ignore this email and do not share contents with anyone.</i>
       //       `
       text: `
-      Reset your password by clicking the below URL or copying it into your address-bar:
+      Password Reset Request
+
+      Reset your password by clicking or pasting below URL into your address-bar:
       ${resetURL}
 
       If you did not request a password reset, please ignore this email.
       `,
     };
-    const sendMail = await sendEmail(emailOptions);
+    const sendMail = await sendEmail(emailOptions, userEmail);
     if (sendMail.success)
       return Response.json({ success: "Check email for the reset link" });
     else return Response.json({ failed: "Reset failed, try again later" });
@@ -113,14 +119,13 @@ export async function PUT(request: Request) {
         resetTokenExpiry: null,
       },
     });
-    if (!updateUser)
-      return Response.json({ failed: "Failed to update Password" });
+    if (!updateUser) return Response.json({ failed: "Database error" });
 
     //user exists
     console.log("SUCCESS:\n >", updateUser);
     return Response.json({ success: "Password updated" });
   } catch (err: any) {
     console.log("ERROR in route /api/reset-password:\n >", err.message ?? err);
-    return Response.json({ error: "Error occured" });
+    return Response.json({ error: "Server error" });
   }
 }
