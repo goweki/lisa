@@ -9,6 +9,7 @@ import { MenuDropdown } from "../atoms/menus";
 export default function Navbar(props) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { user } = session;
   return (
     <nav
       className={`z-40 sticky bg-backg-surface dark:bg-backg-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
@@ -26,7 +27,9 @@ export default function Navbar(props) {
           >
             <ul className="flex flex-col p-4 ml-2 md:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
               {(pathname.includes("/dashboard")
-                ? menuItemsOptions.auth
+                ? user.role === "admin"
+                  ? menuItemsOptions.auth.admin
+                  : menuItemsOptions.auth.lawyer
                 : menuItemsOptions.unauth
               ).map((v, i) => (
                 <Link
@@ -73,7 +76,9 @@ export default function Navbar(props) {
                 menuIcon={SVGhamburger}
                 menuItems={
                   pathname.includes("/dashboard")
-                    ? menuItemsOptions.auth
+                    ? user.role === "admin"
+                      ? menuItemsOptions.auth.admin
+                      : menuItemsOptions.auth.lawyer
                     : menuItemsOptions.unauth
                 }
                 terminalButton={{
@@ -103,11 +108,22 @@ const menuItemsOptions = {
     { label: "Blog", type: "link", onClick: "/blog" },
     { label: "Contacts", type: "link", onClick: "/contacts" },
   ],
-  auth: [
-    { label: "Home", type: "link", onClick: "/dashboard" },
-    { label: "Institutions", type: "link", onClick: "/dashboard/institutions" },
-    { label: "Users", type: "link", onClick: "/dashboard/users" },
-    { label: "Cases", type: "link", onClick: "/dashboard/cases" },
-    { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
-  ],
+  auth: {
+    admin: [
+      { label: "Home", type: "link", onClick: "/dashboard" },
+      {
+        label: "Institutions",
+        type: "link",
+        onClick: "/dashboard/institutions",
+      },
+      { label: "Users", type: "link", onClick: "/dashboard/users" },
+      { label: "Cases", type: "link", onClick: "/dashboard/cases" },
+      { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
+    ],
+    lawyer: [
+      { label: "Home", type: "link", onClick: "/dashboard" },
+      { label: "Cases", type: "link", onClick: "/dashboard/cases" },
+      { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
+    ],
+  },
 };

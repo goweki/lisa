@@ -3,39 +3,35 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export function CardCase({ item, icon }) {
-  return <BaseCardLarge item={item} baseLink="/dashboard/cases" icon={icon} />;
+  return <BaseCardBrief item={item} baseLink="/dashboard/cases" icon={icon} />;
 }
+
 export function CardInstitution({ item, icon }) {
   return (
-    <BaseCardLarge item={item} baseLink="/dashboard/institutions" icon={icon} />
+    <BaseCardBrief item={item} baseLink="/dashboard/institutions" icon={icon} />
   );
 }
 
-export function CardTable({ title, data, baseLink, linkRows, showViewAll }) {
-  const { headings, series } = data;
-  const router = useRouter();
-  const [series_, setSeries] = useState("");
-  useEffect(() => {
-    const arr = series.map((item) => {
-      const values = Object.values(item).map((value) => {
-        // If the value is an object, extract its values
-        if (value && typeof value === "object") {
-          return Object.values(value);
-        } else return value;
-      });
-      // return values.flat(); // Flatten the array to remove nested arrays
-      return values;
-    });
-    setSeries(arr);
-  }, [series]);
+export function CardItemsTable({ title, data, pageLink }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="card m-0 grid place-items-center">
+        <span className="m-auto italic opacity-50">
+          No {title} data available
+        </span>
+      </div>
+    );
+  }
+  const headers = Object.keys(data[0]).filter((key) => key !== "id");
+
   return (
     <div className="card min-h-60 max-h-80 overflow-x-auto m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal p-2 md:p-4">
       <div className="flex items-center justify-start">
         {title && <h5 className="text-xl font-bold leading-none">{title}</h5>}
         <div className="ml-4">
-          {showViewAll && (
+          {pageLink && (
             <Link
-              href={baseLink}
+              href={pageLink}
               className="text-sm text-emerald-600 hover:underline dark:text-emerald-400"
             >
               View all
@@ -46,62 +42,55 @@ export function CardTable({ title, data, baseLink, linkRows, showViewAll }) {
       <table className="mt-2 w-full text-xs text-left">
         <thead className="rounded uppercase border-b border-gray-500">
           <tr>
-            {headings.map((v, i) => (
+            {headers.map((header, i) => (
               <th key={i} scope="col" className="px-1 py-3">
-                {v}
+                {header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
-          {series_?.length > 0 ? (
-            series_.map((v) => {
-              return (
-                <tr
-                  key={v[0]}
-                  className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised cursor-pointer"
-                  onClick={
-                    linkRows
-                      ? () => router.push(`${baseLink}/${v.id}`)
-                      : () => ""
-                  }
-                >
-                  <th scope="row" className="px-1 py-2 whitespace-nowrap">
-                    {v[1]}
-                  </th>
-                  <td className="px-1 py-2">
-                    {/* <span className="block">{v.type}</span> */}
-                    {/* <span className="block">{v.type}</span> */}
-                    {v[2]}
-                  </td>
-                  <td className="px-1 py-2">
-                    {typeof v[3] === "object" ? (
-                      <>
-                        <span className="block">{v[3][0]}</span>
-                        <span className="block">{v[3][1]}</span>
-                      </>
-                    ) : (
-                      <span className="block">{v[3]}</span>
-                    )}
-                  </td>
-                  <td className="px-1 py-2">{v[4]}</td>
-                </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td colSpan={4} className="text-center py-6 italic">
-                No active cases found
-              </td>
-            </tr>
-          )}
+        <tbody className="overflow-y-auto">
+          {data?.length > 0 &&
+            data.map((row, i) => (
+              <tr
+                key={row.id}
+                className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised"
+              >
+                {headers.map((header, index) =>
+                  index === 0 ? (
+                    <th
+                      key={header}
+                      scope="row"
+                      className="px-1 py-2 whitespace-nowrap"
+                    >
+                      {row[header]}
+                    </th>
+                  ) : (
+                    <td key={header} className="px-1 py-2">
+                      {Array.isArray(row[header]) ? (
+                        row[header].map((item, subIndex) => (
+                          <span
+                            key={subIndex}
+                            className={`block ${subIndex !== 0 && "italic"}`}
+                          >
+                            {item}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="block">{row[header]}</span>
+                      )}
+                    </td>
+                  )
+                )}
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-function BaseCardLarge({ item, baseLink, icon: Icon }) {
+function BaseCardBrief({ item, baseLink, icon: Icon }) {
   return (
     <Link
       href={`${baseLink}/${item.id}`}
