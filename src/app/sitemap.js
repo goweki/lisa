@@ -1,7 +1,5 @@
-const rootURL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://lisa.goweki.com";
+import { BASE_URL } from "@/helpers/getUrl";
+
 export default async function sitemap() {
   // DYNAMIC PAGES - blogposts
   //   let blog = [];
@@ -19,7 +17,7 @@ export default async function sitemap() {
   //   }
   // pages;
   const routes = ["", "blog", "contacts"].map((route) => ({
-    url: `${rootURL}/${route}`,
+    url: `${BASE_URL}/${route}`,
     lastModified: new Date().toISOString(),
   }));
 

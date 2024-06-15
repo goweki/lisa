@@ -9,7 +9,6 @@ export default async function sendEmail(
     subject: string;
     text: string;
     html: string;
-    to?: string;
     cc?: string;
   },
   sendTo?: string
