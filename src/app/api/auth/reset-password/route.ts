@@ -4,10 +4,8 @@ import sendEmail from "@/lib/emailService";
 import crypto from "crypto";
 import { hash } from "@/helpers/bcryptHandlers";
 import { emailHTML } from "@/app/api/mailer/emailTemplates";
-const CONICAL_URL =
-  process.env.ENV === "development"
-    ? process.env.CONICAL_URL_DEV
-    : process.env.CONICAL_URL_PROD;
+import getUrl from "@/helpers/getUrl";
+const CONICAL_URL = getUrl();
 
 //generates password-reset link
 export async function POST(request: Request) {
