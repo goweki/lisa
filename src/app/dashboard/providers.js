@@ -18,7 +18,7 @@ export default function Providers({ children }) {
       const fetchOptions = {
         method: "GET",
       };
-      console.log("FETCHING: ", session.user.institutionIDs[0]);
+      // console.log("FETCHING: ", session.user.institutionIDs[0]);
 
       // POST request using fetch
       const response = await fetch(

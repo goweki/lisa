@@ -38,7 +38,7 @@ export default function UserHome() {
       users: inst.userIDs.length,
       cases: inst.cases.length,
     }));
-    console.log("INSTITUTIONS", institutionsBrief);
+    // console.log("INSTITUTIONS", institutionsBrief);
     //cases
     const casesBrief = cases
       .filter((_case) => _case.status === "open")
