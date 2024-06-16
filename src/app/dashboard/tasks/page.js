@@ -64,22 +64,17 @@ export default function TasksPage() {
       <div className="max-w-screen-lg py-6 mx-auto px-4 lg:px-6 w-full">
         <div className="space-y-2 md:space-y-5 mb-4">
           <h1 className="text-center uppercase">Tasks</h1>
-          <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 card pt-3 pb-6 px-12">
-            {/* <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 card pt-3 pb-6 px-12"> */}
-            {/* <div className="md:order-last pt-2">
-              <Link href="/dashboard/cases/new">
-                <ButtonPrimary label="+new Case" onClick={() => ""} />
-              </Link>
-            </div> */}
-            <div>
-              <InputText
-                name="searchPhrase"
-                valObj={searchPhrase}
-                setValue={setSearchPhrase}
-                placeholder="Search for tasks by name, case..."
-                icon={SVGsearch}
-              />
-            </div>
+          <div className="relative max-w-lg mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 card pt-3 pb-6 px-12">
+            <InputText
+              name="searchPhrase"
+              valObj={searchPhrase}
+              setValue={setSearchPhrase}
+              placeholder="Search for cases"
+              icon={SVGsearch}
+            />
+            {/* <Link className="mt-2" href="#">
+              <ButtonPrimary label="+new Task" onClick={() => ""} />
+            </Link> */}
           </div>
         </div>
         <div className="relative overflow-x-auto">

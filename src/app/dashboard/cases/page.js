@@ -2,6 +2,7 @@
 import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { DataContext } from "../providers";
+import { useSession } from "next-auth/react";
 import { CardCase } from "@/components/mols/cards";
 import {
   SVGbriefcase,
@@ -15,6 +16,7 @@ export default function CasesPage() {
   const {
     data: { cases },
   } = useContext(DataContext);
+  const { data: session } = useSession();
   const [filtCases, setFiltCases] = useState([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   //filter cases by searchPhrase
@@ -44,9 +46,11 @@ export default function CasesPage() {
               placeholder="Search for cases"
               icon={SVGsearch}
             />
-            <Link className="mt-2" href="/dashboard/cases/new">
-              <ButtonPrimary label="+new Case" onClick={() => ""} />
-            </Link>
+            {session.user.role === "admin" && (
+              <Link className="mt-2" href="/dashboard/cases/new">
+                <ButtonPrimary label="+new Case" onClick={() => ""} />
+              </Link>
+            )}
           </div>
         </div>
         {filtCases.length > 0 ? (

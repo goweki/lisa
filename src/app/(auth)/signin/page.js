@@ -66,19 +66,18 @@ export default function SigninPage() {
     const res = await signIn("credentials", {
       email: email.value,
       password: password.value,
-      // redirect: false,
+      redirect: false,
       callbackUrl: callbackUrl || "/dashboard",
     });
-    if (!res) {
-      setUIstate("ERROR: Check internet connection then retry.");
-    } else if (res.ok && !res.error) router.replace("/dashboard");
-    else {
+    if (res.ok && !res.error) {
+      router.push("/dashboard");
+    } else {
       console.log(
         `........................\n > FAILED: user not validated\n > ${JSON.stringify(
           res
         )}\n`
       );
-      setUIstate(qParamsErrors[res.error]);
+      setUIstate(qParamsErrors[res.error] || "Unknown error");
     }
   }
   // Render

@@ -403,7 +403,7 @@ export default function ViewCase({
                 }}
                 icon={SVGuser}
                 defaultOption="lawyer"
-                readOnly={edit !== "profile"}
+                readOnly={edit !== "profile" || session.user.role !== "admin"}
                 defaultValue={lawyer?.id}
               />
             </div>
