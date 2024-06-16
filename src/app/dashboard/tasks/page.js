@@ -121,7 +121,7 @@ export default function TasksPage() {
                           </div>
                           <div className="font-light text-neutral-500">
                             {task.lawyer ? (
-                              task.lawyer
+                              task.lawyer.name
                             ) : (
                               <span className="italic text-xs">
                                 not assigned
