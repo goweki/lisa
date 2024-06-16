@@ -3,6 +3,7 @@ import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
+import { useSession } from "next-auth/react";
 import {
   SVGbuilding,
   SVGcell,
@@ -27,12 +28,12 @@ export default function InstitutionsPage({ params }) {
     email: { value: "", error: "" },
     tel: { value: "", error: "" },
   };
-
   const { instIDuser } = params;
   const {
     data: { institutions, users },
     refreshData,
   } = useContext(DataContext);
+  const { data: session } = useSession();
   const router = useRouter();
   const [selected, setSelected] = useState("");
   const [UIstate, setUIstate] = useState("");
@@ -213,9 +214,11 @@ export default function InstitutionsPage({ params }) {
             <ViewInstitution
               selected={selected}
               refreshData={refreshData}
-              instUsers={users.filter(({ institutionIDs }) =>
-                institutionIDs.includes(instIDuser[0])
-              )}
+              instUsers={users
+                .filter(({ institutionIDs }) =>
+                  institutionIDs.includes(instIDuser[0])
+                )
+                .filter(({ id }) => id !== session.user.id)}
               selectedUser={
                 instIDuser[1]
                   ? users.find(({ id }) => id === instIDuser[1]) || "new"

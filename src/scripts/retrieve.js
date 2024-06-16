@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // view seeded
-async function retrieveSeed() {
+async function retrieveDBdata() {
   const institutions = await prisma.institution.findMany();
 
   for (const institution of institutions) {
@@ -22,7 +22,7 @@ async function retrieveSeed() {
   }
 }
 
-retrieveSeed()
+retrieveDBdata()
   .then(async () => {
     await prisma.$disconnect();
   })

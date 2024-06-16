@@ -1,6 +1,12 @@
 import { Fragment } from "react";
 import Link from "next/link";
-import { Menu, Transition } from "@headlessui/react";
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from "@headlessui/react";
 
 export function MenuDropdown({
   menuIcon: MenuIcon,
@@ -10,7 +16,7 @@ export function MenuDropdown({
 }) {
   return (
     <Menu>
-      <Menu.Button className="flex items-center justify-center w-8 h-8">
+      <MenuButton className="flex items-center justify-center w-8 h-8">
         {!!MenuIcon && (
           <MenuIcon className="w-6 h-6 hover:text-emerald-700 dark:hover:text-emerald-500" />
         )}
@@ -19,7 +25,7 @@ export function MenuDropdown({
             {menuText}
           </span>
         )}
-      </Menu.Button>
+      </MenuButton>
       <Transition
         as={Fragment}
         enter="transition ease-out duration-100"
@@ -29,7 +35,7 @@ export function MenuDropdown({
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute right-0 origin-top-right divide-y divide-gray-400 rounded bg-backg-raised dark:bg-backg-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
+        <MenuItems className="absolute right-0 origin-top-right divide-y divide-gray-400 rounded bg-backg-raised dark:bg-backg-dark-raised shadow-lg border border-emerald-500  dark:border-emerald-800">
           <div className="p-1 ">
             {menuItems.map((v, i) =>
               menuItem({
@@ -43,16 +49,16 @@ export function MenuDropdown({
           </div>
           {terminalButton && (
             <div className="p-1">
-              <Menu.Item>
+              <MenuItem>
                 {menuItem({
                   label: terminalButton.label,
                   onClick: terminalButton.onClick,
                   type: terminalButton.type,
                 })}
-              </Menu.Item>
+              </MenuItem>
             </div>
           )}
-        </Menu.Items>
+        </MenuItems>
       </Transition>
     </Menu>
   );
@@ -60,13 +66,13 @@ export function MenuDropdown({
 
 function menuItem({ label, icon: Icon, onClick, type, i }) {
   return (
-    <Menu.Item key={i || Math.floor(Math.random() * 100)}>
-      {({ active }) =>
+    <MenuItem key={i || Math.floor(Math.random() * 1000)}>
+      {({ focus }) =>
         type === "button" ? (
           <button
             onClick={onClick}
             className={`${
-              active ? "bg-emerald-300 dark:bg-emerald-800" : ""
+              focus ? "bg-emerald-300 dark:bg-emerald-800" : ""
             } flex w-full items-center rounded pl-2 pr-4 py-2 text-sm`}
           >
             {!!Icon && <Icon className="mr-2 h-5 w-5" />}
@@ -76,7 +82,7 @@ function menuItem({ label, icon: Icon, onClick, type, i }) {
           <Link
             href={onClick}
             className={`${
-              active
+              focus
                 ? "bg-emerald-300 dark:bg-emerald-800 text-font dark:text-font-dark"
                 : ""
             } buttony flex w-full items-center rounded pl-2 pr-4 py-2 text-sm`}
@@ -86,6 +92,6 @@ function menuItem({ label, icon: Icon, onClick, type, i }) {
           </Link>
         )
       }
-    </Menu.Item>
+    </MenuItem>
   );
 }
