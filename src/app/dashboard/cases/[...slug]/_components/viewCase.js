@@ -388,7 +388,11 @@ export default function ViewCase({
               <InputSelect
                 name="lawyer"
                 optionItems={users
-                  .filter(({ role }) => role === "lawyer")
+                  .filter((user_) =>
+                    session.user.role === "admin"
+                      ? user_.role === "lawyer"
+                      : user_.id === session.user.id
+                  )
                   .map(({ name, id }) => ({ text: name, value: id }))}
                 onChange={(e) => {
                   setLawyer(

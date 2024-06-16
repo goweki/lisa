@@ -12,7 +12,7 @@ async function getHandler(req, user) {
   // retrieve data
   try {
     console.log(
-      `........................\nGET REQUEST /api/dashboard/data\n > institution: ${institutionId}`
+      `GET REQUEST /api/dashboard/data\n > institution: ${institutionId}`
     );
     // GET institution
     const institutions_ = await prisma.institution.findMany({
@@ -46,9 +46,9 @@ async function getHandler(req, user) {
           institutionIDs: {
             has: inst.id,
           },
-          id: {
-            not: user.id,
-          },
+          // id: {
+          //   not: user.id,
+          // },
         },
         include: {
           institutions: true,
@@ -77,11 +77,26 @@ async function getHandler(req, user) {
               tasks: true,
             },
           }
+        : user.role === "admin"
+        ? {
+            where: {
+              institutionID: {
+                in: institutions.map((inst_) => inst_.id),
+              },
+            },
+            include: {
+              caseType: true,
+              institution: true,
+              lawyer: true,
+              tasks: true,
+            },
+          }
         : {
             where: {
               institutionID: {
                 in: institutions.map((inst_) => inst_.id),
               },
+              userID: user.id,
             },
             include: {
               caseType: true,
