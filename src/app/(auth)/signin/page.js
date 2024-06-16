@@ -67,11 +67,11 @@ export default function SigninPage() {
       email: email.value,
       password: password.value,
       redirect: false,
-      callbackUrl: callbackUrl ?? "/dashboard",
+      callbackUrl: callbackUrl || "/dashboard",
     });
     if (!res) {
       setUIstate("ERROR: Check internet connection then retry.");
-    } else if (res.status === 200 && !res.error) router.replace("/dashboard");
+    } else if (res.ok && !res.error) router.replace("/dashboard");
     else {
       console.log(
         `........................\n > FAILED: user not validated\n > ${JSON.stringify(
