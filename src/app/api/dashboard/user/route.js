@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
 import { hash } from "@/helpers/bcryptHandlers";
+import { BASE_URL } from "@/helpers/getUrl";
 
 async function postHandler(request, user) {
   try {
@@ -28,7 +29,7 @@ async function postHandler(request, user) {
       console.error("FAILED: didnt save new user.\n > ", doc);
       return Response.json({ failed: "Failed creating new user" });
     }
-    // console.log("SUCCESS: user inserted.\n > ", newUser);
+    // update user's Institution to include the new userID
     await prisma.institution.update({
       where: { id: institutionId },
       data: {
@@ -37,6 +38,31 @@ async function postHandler(request, user) {
         },
       },
     });
+    // send register link
+    const fetchOptions = {
+      method: "POST",
+      body: JSON.stringify({ userEmail: newUser.email }),
+    };
+    const regLink = await fetch(
+      `${BASE_URL}/api/auth/reset-password`,
+      fetchOptions
+    ).then(async (res_) => {
+      if (res_.status === 200) {
+        return await res_.json();
+      } else {
+        console.log(`ERROR: ` + JSON.stringify(res_));
+        // setUIstate(httpCodes[res_.status]);
+        if (res_.status && res_.status in httpCodes) {
+          setUIstate(httpCodes[res_.status]);
+        } else {
+          setUIstate("Unknown Error, try again later"); // Handle unknown errors
+        }
+      }
+    });
+    if (!regLink.success) {
+      console.error("FAILED: didnt send registration mail.\n > ", newUser);
+      return Response.json({ failed: "Failed sending registration link" });
+    }
     return Response.json({ success: newUser });
   } catch (err) {
     console.error(

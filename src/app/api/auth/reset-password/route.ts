@@ -4,8 +4,7 @@ import sendEmail from "@/lib/emailService";
 import crypto from "crypto";
 import { hash } from "@/helpers/bcryptHandlers";
 import { emailHTML } from "@/app/api/mailer/emailTemplates";
-import getUrl from "@/helpers/getUrl";
-const CONICAL_URL = getUrl();
+import { BASE_URL } from "@/helpers/getUrl";
 
 //generates password-reset link
 export async function POST(request: Request) {
@@ -38,7 +37,7 @@ export async function POST(request: Request) {
     }
     console.log("Password Reset link SAVED: \n", updatedUser);
     //reset password URL
-    const resetURL = `${CONICAL_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
+    const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
     const html = emailHTML(
       updatedUser.name,
       resetURL,
