@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDate } from "@/lib/dateTime";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
-import { CardItemsTable, CardTable } from "@/components/mols/cards";
+import { CardItemsTable } from "@/components/mols/cards";
 import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "./providers";
 import { isDatePassed } from "@/helpers/dateHandlers";
 
 export default function UserHome() {
   const router = useRouter();
-  const [overdues, setOverdues] = useState("");
+  const [casesWithDues, setDueCases] = useState([]);
   const [briefs, setBriefs] = useState({});
   const { date, time, rawDate } = useDate();
   const {
@@ -19,17 +19,19 @@ export default function UserHome() {
   } = useContext(DataContext);
   //onMount or //cases
   useEffect(() => {
-    const _overdues = cases
+    const _casesWithDues = cases
       .map((case_) => {
         return {
           ...case_,
-          dueDates: case_.dueDates?.filter(
-            (obj) => !obj.task.complete && isDatePassed(new Date(obj.date))
+          dueTasks: case_.tasks?.filter(
+            (task_) =>
+              // !task_.completedByID && isDatePassed(new Date(task_.dueDate))
+              !task_.completedByID
           ),
         };
       })
-      .filter((case_) => case_.dueDates?.length > 0);
-    setOverdues(_overdues);
+      .filter((case_) => case_.tasks?.length > 0);
+    setDueCases(_casesWithDues);
     // institutions
     const institutionsBrief = institutions.map((inst) => ({
       id: inst.id,
@@ -74,7 +76,7 @@ export default function UserHome() {
   return (
     <main className="flex flex-col flex-grow items-center px-4">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
-        {profileCard(date, time, overdues)}
+        <ProfileCard date={date} time={time} data={casesWithDues} />
         {/* {scheduleBrief(cases, router)}
         {UsersBrief(cases, router)}
         {InstitutionsBrief(cases, router)} */}
@@ -114,7 +116,7 @@ export default function UserHome() {
   );
 }
 
-function profileCard(date, time, data_) {
+function ProfileCard({ date, time, data }) {
   return (
     <div className="card m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal">
       <div className="grid-cols-1 m-2">
@@ -124,49 +126,52 @@ function profileCard(date, time, data_) {
         </div>
         <p
           className={`font-bold text-xl mt-2 mb-4 text-center ${
-            !data_.length
+            !data.length
               ? "text-emerald-500"
-              : data_.length < 3
-              ? "text-red-600 dark:text-red-300"
+              : data.length < 3
+              ? "text-red-800 dark:text-red-300"
               : "text-red-500"
           }`}
         >
-          {!data_.length
+          {!data.length
             ? "Your schedule is clean"
-            : data_.length < 3
-            ? "You have overdue tasks"
+            : data.length < 3
+            ? "You have due tasks"
             : "Your schedule is piling up!"}
         </p>
         <div className="text-base text-font-faded dark:text-font-dark-faded">
           <p
             className={`text-center ${
-              data_.length < 1
+              data.length < 1
                 ? ""
-                : data_.length < 3
+                : data.length < 3
                 ? "text-red-800 dark:text-red-200"
                 : "text-red-500"
             }`}
           >
-            {data_.length} case{data_.length !== 1 && <>s</>} with pending tasks
+            {data.length} case{data.length !== 1 && <>s</>} with pending tasks
           </p>
           <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
-            {data_ &&
-              data_.map((v, i) => {
+            {data &&
+              data.map((_case) => {
                 return (
-                  <li key={i}>
-                    <span>
-                      {v.name}, has passed deadlines for{" "}
-                      <span className="font-bold">
-                        {v.dueDates?.map((dDate) => dDate.task.name + " ,")}
-                      </span>
-                    </span>
+                  <li key={_case.id}>
+                    <div>
+                      {_case.name} :{" "}
+                      {_case.dueTasks.map((_task, i) => (
+                        <span className="italic font-bold">
+                          {_task.name +
+                            (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
+                        </span>
+                      ))}
+                    </div>
                   </li>
                 );
               })}
           </ul>
         </div>
         <div className="mt-6 mb-2 mx-4 space-y-4">
-          {data_.length !== 0 && (
+          {data.length !== 0 && (
             <div>
               <Link href="/dashboard/tasks">
                 <ButtonPrimary label="View Tasks" onClick={() => ""} />
