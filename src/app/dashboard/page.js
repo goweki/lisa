@@ -153,21 +153,19 @@ function ProfileCard({ date, time, data }) {
           </p>
           <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
             {data &&
-              data.map((_case) => {
-                return (
-                  <li key={_case.id}>
-                    <div>
-                      {_case.name} :{" "}
-                      {_case.dueTasks.map((_task, i) => (
-                        <span className="italic font-bold">
-                          {_task.name +
-                            (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
-                        </span>
-                      ))}
-                    </div>
-                  </li>
-                );
-              })}
+              data.map((_case) => (
+                <li key={_case.id}>
+                  <div>
+                    {_case.name} :{" "}
+                    {_case.dueTasks.map((_task, i) => (
+                      <span key={i} className="italic font-bold">
+                        {_task.name +
+                          (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
+                      </span>
+                    ))}
+                  </div>
+                </li>
+              ))}
           </ul>
         </div>
         <div className="mt-6 mb-2 mx-4 space-y-4">
