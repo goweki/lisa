@@ -74,7 +74,7 @@ export default function UserHome() {
 
   // render
   return (
-    <main className="flex flex-col flex-grow items-center px-4">
+    <main className="flex flex-col flex-grow items-center px-4 md:my-8">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         <ProfileCard date={date} time={time} data={casesWithDues} />
         {/* {scheduleBrief(cases, router)}
