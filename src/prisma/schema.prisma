@@ -9,6 +9,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum status {
+  active
+  domant
+  inactive
+}
+
 model Institution {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String  @unique
@@ -16,11 +22,13 @@ model Institution {
   tel      String?
   location String?
   logoUrl  String?
+  status   status
 
   userIDs String[] @db.ObjectId
 
-  users User[] @relation(fields: [userIDs], references: [id])
-  cases Case[]
+  users     User[]     @relation(fields: [userIDs], references: [id])
+  cases     Case[]
+  caseTypes CaseType[]
 }
 
 model User {
@@ -42,11 +50,13 @@ model User {
 
 model CaseType {
   id             String @id @default(auto()) @map("_id") @db.ObjectId
+  institutionId  String @db.ObjectId
   name           String @unique
   primaryParty   String
   secondaryParty String
 
-  cases Case[]
+  institution Institution @relation(fields: [institutionId], references: [id])
+  cases       Case[]
 }
 
 enum caseStatus {

@@ -8,7 +8,7 @@ import { Loader1 } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 export const DataContext = createContext();
 
-export default function Providers({ children }) {
+export default function UserProviders({ children }) {
   const { data: session, status } = useSession();
   const [data, setData] = useState(null);
   // func update UI data
