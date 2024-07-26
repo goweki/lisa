@@ -67,7 +67,4 @@
   body {
     @apply bg-background text-foreground;
   }
-  body {
-    @apply h-screen max-h-[1200px] container;
-  }
 }

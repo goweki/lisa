@@ -10,7 +10,7 @@ export default function Navbar(props) {
   const pathname = usePathname();
   return (
     <nav
-      className={`z-40 sticky bg-backg-surface dark:bg-backg-dark-surface w-full top-0 left-0 border-b border-emerald-800`}
+      className={`z-40 sticky bg-muted/50 backdrop-blur-md w-full top-0 left-0 border-b border-emerald-800`}
     >
       <div className="max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">
@@ -23,7 +23,7 @@ export default function Navbar(props) {
             className="hidden md:flex w-full md:w-auto items-center justify-between"
             id="navbar-tab-items"
           >
-            <ul className="flex flex-col p-4 ml-2 md:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0 md:border-0 dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <ul className="flex flex-col p-4 ml-2 md:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0">
               {(pathname.includes("/dashboard")
                 ? props.user?.role === "admin"
                   ? menuItemsOptions.auth.admin
