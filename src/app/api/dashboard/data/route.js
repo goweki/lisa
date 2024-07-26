@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
 export const revalidate = 60; // false | 'force-cache' | 0 | number

@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 import { type NextRequest } from "next/server";
 import sendEmail from "@/lib/emailService";
 import crypto from "crypto";
@@ -6,13 +6,16 @@ import { hash } from "@/helpers/bcryptHandlers";
 import { emailHTML } from "@/app/api/mailer/emailTemplates";
 import { BASE_URL } from "@/helpers/getUrl";
 
-//generates password-reset link
+//generates password-reset link and emails user
 export async function POST(request: Request) {
   const { userEmail } = await request.json();
+  console.log("...............\nemail-", userEmail);
   try {
+    console.log("users-", await prisma.user.count());
     const userExists = await prisma.user.findUnique({
       where: { email: userEmail },
     });
+    console.log("userExists-", userExists);
     if (!userExists) return Response.json({ failed: "User NOT FOUND" });
     //user exists
     const resetToken = crypto.randomBytes(20).toString("hex");

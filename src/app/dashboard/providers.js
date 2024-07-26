@@ -58,7 +58,9 @@ export default function UserProviders({ children }) {
 
   //render
   return !session || !data || status === "loading" ? (
-    <Loader1 />
+    <div className="flex flex-col sm:h-[200px] md:h-[300px] lg:h-[400px] justify-center">
+      <Loader1 />
+    </div>
   ) : data === "failed" ? (
     <div className="mt-12">
       <p className="text-center">

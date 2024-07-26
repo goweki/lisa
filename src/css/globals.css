@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* base */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -66,5 +67,12 @@
   html,
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* components */
+@layer components {
+  .card {
+    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4 md:m-6 rounded-lg transition-all;
   }
 }
