@@ -10,9 +10,10 @@
  *
  */
 
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
 
+// create institution
 async function postHandler(request, user) {
   try {
     const doc = await request.json();
@@ -35,6 +36,7 @@ async function postHandler(request, user) {
   }
 }
 
+// update institution
 async function putHandler(request, user) {
   try {
     const doc = await request.json();
@@ -58,6 +60,7 @@ async function putHandler(request, user) {
   }
 }
 
+// delete institution
 async function deleteHandler(request, user) {
   try {
     const doc = await request.json();

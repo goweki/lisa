@@ -10,9 +10,9 @@ export default function Navbar(props) {
   const pathname = usePathname();
   return (
     <nav
-      className={`z-40 sticky bg-muted/50 backdrop-blur-md w-full top-0 left-0 border-b border-emerald-800`}
+      className={`z-40 sticky bg-muted/20 backdrop-blur-md w-full top-0 left-0 border-b border-emerald-800`}
     >
-      <div className="max-w-screen-lg flex flex-wrap items-center justify-between mx-auto p-4">
+      <div className="flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">
           <div className="flex items-center justify-center">
             <Link href="/">

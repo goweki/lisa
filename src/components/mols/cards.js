@@ -15,10 +15,8 @@ export function CardCase({ item, icon }) {
 export function CardItemsTable({ title, data, pageLink }) {
   if (!data || data.length === 0) {
     return (
-      <div className="card m-0 grid place-items-center">
-        <span className="m-auto italic opacity-50">
-          No {title} data available
-        </span>
+      <div className="m-auto card grid place-items-center max-w-lg">
+        <span className="m-auto italic opacity-50">No {title} data found</span>
       </div>
     );
   }
