@@ -92,6 +92,7 @@ export default function InstitutionsPage() {
           email: newInstitution.email.value,
           name: newInstitution.name.value,
           tel: newInstitution.tel.value,
+          logoUrl: null,
         }),
       };
       const res = await fetch("/api/dashboard/institution", fetchOptions);
@@ -99,7 +100,7 @@ export default function InstitutionsPage() {
       if (res.ok) {
         toast.success("Institution initialized successfully!");
         await refreshData();
-        router.replace(`/dashboard/entities/${resData.success.id}`);
+        router.replace(`/dashboard/institutions/${resData.success.id}`);
       } else {
         console.error("ERROR:", resData);
         setUIstate(httpCodes[res.status] || "Unknown error");

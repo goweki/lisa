@@ -1,3 +1,4 @@
+import { resizeImageFile } from "@/lib/utils";
 import Image from "next/image";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
@@ -7,13 +8,13 @@ export function InputImage({
   setPhoto,
 }: {
   _photo: string;
-  setPhoto: (photoFile: File) => void;
+  setPhoto: (_imageFile: any) => void;
 }) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
 
   return (
     <div className="flex flex-row">
-      <span className="m-4 h-full">Photo:</span>
+      <span className="mr-4 h-full">Photo:</span>
       <label
         htmlFor="profile-image"
         className="group relative flex justify-center aspect-square min-w-24 max-w-48 items-center bg-gray-200 dark:bg-slate-900 rounded-full hover:cursor-pointer"
@@ -38,16 +39,21 @@ export function InputImage({
           id="profile-image"
           className="hidden"
           type="file"
-          onChange={(e) => {
+          onChange={async (e) => {
             if (!e.target?.files || e.target.files.length === 0) return;
-            const photo_ = e.target.files[0];
+            const image_ = e.target.files[0];
+
             if (
-              photo_ &&
-              photo_.type.startsWith("image/") &&
-              photo_.size / (1024 * 1024) < 2
+              image_ &&
+              image_.type.startsWith("image/") &&
+              image_.size / (1024 * 1024) < 2
             ) {
-              setImagePreviewUrl(URL.createObjectURL(photo_));
-              setPhoto(photo_);
+              // setImagePreviewUrl(URL.createObjectURL(image_));
+              // setPhoto(image_);
+              const resizedImage = await resizeImageFile(image_);
+              // console.log("resizedImage", typeof resizedImage);
+              setImagePreviewUrl(resizedImage);
+              setPhoto(resizedImage);
             } else {
               console.error(
                 "Invalid file or file-size. Please select an image less than 2MB."

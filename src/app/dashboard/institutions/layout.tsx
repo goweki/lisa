@@ -121,7 +121,7 @@ export default function InstitutionsPage({
       </div>
       <div className="w-full items-start gap-6 flex flex-col md:flex-row">
         <nav
-          className="grid gap-4 text-sm text-muted-foreground w-full col-span-1 max-w-[320px] "
+          className="grid gap-4 text-sm text-muted-foreground w-full col-span-1 max-w-[240px] "
           x-chunk="dashboard-04-chunk-0"
         >
           <Input
@@ -138,7 +138,7 @@ export default function InstitutionsPage({
           <div className="flex flex-col">
             <Link
               className={`p-2 ${!instId ? "bg-muted/50" : ""}`}
-              href="/dashboard/entities"
+              href="/dashboard/institutions"
             >
               + create
             </Link>
@@ -148,7 +148,7 @@ export default function InstitutionsPage({
                   key={id}
                   // className="p-2 hover:bg-muted/25"
                   className={`p-2 ${instId === id ? "bg-muted/50" : ""}`}
-                  href={`/dashboard/entities/${id}`}
+                  href={`/dashboard/institutions/${id}`}
                 >
                   {name}
                 </Link>

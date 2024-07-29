@@ -19,8 +19,8 @@ model Institution {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String  @unique
   email    String
-  tel      String?
   location String?
+  tel      String?
   logoUrl  String?
   status   status  @default(DOMANT)
 

@@ -19,9 +19,14 @@ import {
 } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import toast from "react-hot-toast";
+import { useEdgeStore } from "@/lib/edgestore";
 import { Loader1 } from "@/components/atoms/loader";
 import ViewInstitution from "./_components/viewInstitut";
-import { nameValidator, telValidator } from "@/helpers/inputValidators";
+import {
+  emailValidator,
+  nameValidator,
+  telValidator,
+} from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { User, Institution } from "@/lib/prisma/types";
 import { isKeyOf } from "@/lib/utils";
@@ -45,10 +50,16 @@ export default function InstitutionView({ params }: { params: any }) {
     refreshData,
   } = useContext(DataContext);
 
-  const { data: session } = useSession();
+  const { edgestore } = useEdgeStore();
   const router = useRouter();
   const [selected, setSelected] = useState<Institution>();
-  const [instEdit, setInstEdit] = useState({ name: "", email: "", tel: "" });
+  const [instEdit, setInstEdit] = useState({
+    name: "",
+    email: "",
+    tel: "",
+    location: "",
+    imageFile: null,
+  });
   const [instIsUpdated, setInstIsUpdated] = useState(false);
   const [UIstate, setUIstate] = useState("");
 
@@ -78,8 +89,12 @@ export default function InstitutionView({ params }: { params: any }) {
 
   //check if any edits to institution
   useEffect(() => {
-    if (selected && Object.keys(instEdit).length > 0) {
+    if (selected) {
+      //&& Object.keys(instEdit).length > 0
       const userIsUpdated = ((selected_: Institution, editObj: TemplateObj) => {
+        // if no values in editObj
+        if (Object.values(instEdit).filter(Boolean).length === 0) return false;
+        if (instEdit.imageFile) return true;
         for (const key in editObj) {
           if (selected_.hasOwnProperty(key)) {
             // console.log("Updates");
@@ -89,9 +104,9 @@ export default function InstitutionView({ params }: { params: any }) {
                 selected_.hasOwnProperty(key) &&
                 selected_[key] !== editObj[key]
               ) {
-                console.log(
-                  `${key} has changed from ${selected_[key]} to ${editObj[key]}`
-                );
+                // console.log(
+                //   `${key} has changed from ${selected_[key]} to ${editObj[key]}`
+                // );
                 return true;
               }
             }
@@ -103,6 +118,173 @@ export default function InstitutionView({ params }: { params: any }) {
       setInstIsUpdated(userIsUpdated);
     }
   }, [selected, instEdit]);
+
+  //handleUpdateInstitution
+  async function handleUpdateInstitution(e: React.MouseEvent<HTMLElement>) {
+    e.preventDefault();
+
+    if (!selected) {
+      toast.error("No institution selected");
+      return;
+    }
+
+    //if input error
+
+    const inputErrors = {
+      nameError_: "",
+      emailError_: "",
+      locationError_: "",
+      telError_: "",
+    };
+
+    if (instEdit.name) {
+      inputErrors.nameError_ = nameValidator(instEdit.name);
+    }
+    if (instEdit.email) {
+      inputErrors.emailError_ = emailValidator(instEdit.email);
+    }
+    if (instEdit.tel) {
+      inputErrors.telError_ = telValidator(instEdit.tel);
+    }
+    if (instEdit.location) {
+      inputErrors.locationError_ = nameValidator(instEdit.tel);
+    }
+
+    if (Object.values(inputErrors).filter(Boolean).length === 0) {
+      const errors = Object.values(inputErrors).filter(Boolean);
+      errors.forEach((error) => {
+        toast.error(error);
+      });
+      return;
+    }
+
+    setUIstate("loading");
+    // api call
+    try {
+      console.log("editing institution: ", instEdit);
+
+      // const { email, location, name, photoFile_ } = instEdit;
+      //upload image and retain url
+      let logoUrl_: string | null = null;
+      if (instEdit.imageFile) {
+        const logoEdgeUpload = await edgestore.publicFiles.upload({
+          file: instEdit.imageFile,
+          // onProgressChange: (progress) => {
+          //   // you can use this to show a progress bar
+          //   console.log(progress);
+          // },
+        });
+        logoUrl_ = logoEdgeUpload.url;
+      }
+      // console.log("photoUrl - ", photoUrl?.url || "NO LINK");
+
+      const fetchBody = {
+        id: selected.id,
+        name: instEdit.name || selected.name,
+        email: instEdit.email || selected.email,
+        location: instEdit.location || selected.location,
+        logoUrl: logoUrl_ || selected.logoUrl,
+        tel: instEdit.tel || selected.tel,
+      };
+
+      const fetchOptions = {
+        method: "PUT",
+        body: JSON.stringify(fetchBody),
+      };
+
+      // PUT request using fetch
+      const res = await fetch("/api/dashboard/institution", fetchOptions).then(
+        async (res_) => {
+          if (res_?.ok) {
+            return await res_.json();
+          } else {
+            setUIstate("OK");
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error(httpCodes[res_?.status] ?? "Unknown error");
+            return;
+          }
+        }
+      );
+
+      if (!res) return;
+
+      if (res.success) {
+        console.log(
+          "SUCCESS: Institution updated\n > ",
+          res.success,
+          "\n.............."
+        );
+        toast.success("Institution updated");
+        await refreshData();
+      } else {
+        console.log(
+          "FAILED: Institution not updated\n > ",
+          res,
+          "\n.............."
+        );
+        toast.error(res.failed ?? res.error ?? "Unknown error");
+      }
+      setUIstate("OK");
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log("fetch failed:", error.message);
+      } else {
+        console.log("fetch failed:", error);
+      }
+      setUIstate("Error: Institution was not initialized");
+    }
+  }
+
+  //func to Delete Case
+  async function handleDeleteInstit() {
+    if (!selected?.id) {
+      toast.error("Sorry, institution not found");
+      return;
+    }
+    console.log("Deleting inst: \n > ", selected.id);
+    // fetch options
+    let fetchOptions = {
+      method: "DELETE",
+      body: JSON.stringify({
+        id: selected.id,
+      }),
+    };
+    setUIstate("loading");
+    // DELETE api-call using fetch
+    const res = await fetch("/api/dashboard/institution", fetchOptions).then(
+      async (res_) => {
+        if (res_?.ok) {
+          return await res_.json();
+        } else {
+          setUIstate("OK");
+          console.log(`ERROR: ` + JSON.stringify(res_));
+          toast.error(httpCodes[res_?.status] ?? "Unknown error");
+          return;
+        }
+      }
+    );
+
+    if (!res) return;
+
+    if (res.success) {
+      console.log(
+        "SUCCESS: Institution deleted\n > ",
+        res.success,
+        "\n.............."
+      );
+      toast.success("Institution deleted");
+      await refreshData();
+      router.replace(`/dashboard/institutions/`);
+    } else {
+      console.log(
+        "FAILED: Institution not deleted\n > ",
+        res,
+        "\n.............."
+      );
+      toast.error(res.failed ?? res.error ?? "Unknown error");
+    }
+    setUIstate("OK");
+  }
 
   //render
   return !UIstate ? null : (
@@ -151,6 +333,27 @@ export default function InstitutionView({ params }: { params: any }) {
               }
             />
           </div>
+          <div
+            id="locationWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="location" className="opacity-75">
+              Location
+            </Label>
+            <Input
+              type="text"
+              id="location"
+              placeholder="city / town"
+              className="placeholder:italic"
+              value={instEdit.location || (selected?.location as string) || ""}
+              onChange={(e) =>
+                setInstEdit((prev) => ({
+                  ...prev,
+                  location: e.target.value,
+                }))
+              }
+            />
+          </div>
           <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="institutionnName" className="opacity-75">
               Phone No.
@@ -172,8 +375,8 @@ export default function InstitutionView({ params }: { params: any }) {
           <div id="dpWrapper" className="py-4">
             <InputImage
               _photo={selected?.logoUrl ?? ""}
-              setPhoto={async (photoFile_) => {
-                setInstEdit((prev_) => ({ ...prev_, photoFile_ }));
+              setPhoto={async (_imageFile: any) => {
+                setInstEdit((prev_) => ({ ...prev_, imageFile: _imageFile }));
               }}
             />
           </div>
@@ -183,40 +386,49 @@ export default function InstitutionView({ params }: { params: any }) {
         {UIstate === "loading" ? (
           <Loader1 />
         ) : (
-          <Button
-            // onClick={handleUpdateInstitution}
-            disabled={!instIsUpdated}
+          <div
+            className="flex flex-row justify-between w-full items-center"
+            id="buttonWrapper"
           >
-            Update Institution
-          </Button>
+            <Button onClick={handleUpdateInstitution} disabled={!instIsUpdated}>
+              Update Institution
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteInstit}
+              disabled={!selected}
+            >
+              Delete Institution
+            </Button>
+          </div>
         )}
       </CardFooter>
     </Card>
   );
 }
 
-async function fetchInst(instId: string) {
-  try {
-    const res = await fetch(`/api/dashboard/institution?id=${instId}`, {
-      method: "GET",
-    });
-    if (res.ok) {
-      const resData = await res.json();
-      console.log("resJson 2:", JSON.stringify(resData.success));
-      return resData.success;
-    } else {
-      console.error("ERROR:", res.status, res.statusText);
-      return null;
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.log("fetch failed:", error.message);
-    } else {
-      console.log("fetch failed:", error);
-    }
-    return null;
-  }
-}
+// async function fetchInst(instId: string) {
+//   try {
+//     const res = await fetch(`/api/dashboard/institution?id=${instId}`, {
+//       method: "GET",
+//     });
+//     if (res.ok) {
+//       const resData = await res.json();
+//       console.log("resJson 2:", JSON.stringify(resData.success));
+//       return resData.success;
+//     } else {
+//       console.error("ERROR:", res.status, res.statusText);
+//       return null;
+//     }
+//   } catch (error) {
+//     if (error instanceof Error) {
+//       console.log("fetch failed:", error.message);
+//     } else {
+//       console.log("fetch failed:", error);
+//     }
+//     return null;
+//   }
+// }
 
 /** VERSION 0
  *
