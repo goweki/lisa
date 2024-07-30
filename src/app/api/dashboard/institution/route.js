@@ -87,7 +87,7 @@ export const DELETE = withAuthAdmin(deleteHandler);
 /**
  * This is version 0 of my code: optimized and standardized to develop the above
  */
-// import prisma from "@/lib/prisma";
+// import prisma from "@/lib/prisma/prisma";
 // // import { NextResponse } from "next/server";
 
 // async function postHandler(request, user) {

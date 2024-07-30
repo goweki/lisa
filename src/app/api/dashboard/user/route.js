@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
 import { hash } from "@/helpers/bcryptHandlers";
 import { BASE_URL } from "@/helpers/getUrl";

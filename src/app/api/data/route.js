@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 export const revalidate = 3600; // false | 0 | number
 const allowedModels = ["blog"];
 

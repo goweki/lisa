@@ -1,5 +1,5 @@
 // import { Binary } from "mongodb";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 import { strPascalcase } from "@/helpers/stringHandlers";
 
 export async function POST(request) {

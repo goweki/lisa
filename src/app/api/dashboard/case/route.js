@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma/prisma";
 // const collection = db_cluster.collection("cases");
 import { withAuthAdmin } from "@/lib/authRouteWrappers";
 import { UserType } from "@/types/models";
