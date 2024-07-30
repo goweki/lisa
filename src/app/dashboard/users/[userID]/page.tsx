@@ -70,7 +70,7 @@ export default function UserView({ params }: { params: any }) {
   const [userIsUpdated, setUserIsUpdated] = useState(false);
   const [UIstate, setUIstate] = useState("");
 
-  // get institution by instID
+  // get user by userID
   useEffect(() => {
     if (userID) {
       setSelected(users.find(({ id }: { id: string }) => id === userID));
@@ -94,7 +94,7 @@ export default function UserView({ params }: { params: any }) {
     }
   }, [UIstate]);
 
-  //check if any edits to institution
+  //check if any edits to user
   useEffect(() => {
     if (selected) {
       //&& Object.keys(instEdit).length > 0
@@ -162,7 +162,7 @@ export default function UserView({ params }: { params: any }) {
 
     // api call
     try {
-      console.log("editing institution: ", userEdit);
+      console.log("editing user: ", userEdit);
 
       // const { email, location, name, photoFile_ } = instEdit;
       //upload image and retain url
@@ -217,7 +217,7 @@ export default function UserView({ params }: { params: any }) {
       };
 
       // PUT request using fetch
-      const res = await fetch("/api/dashboard/institution", fetchOptions).then(
+      const res = await fetch("/api/dashboard/user", fetchOptions).then(
         async (res_) => {
           if (res_?.ok) {
             return await res_.json();
@@ -233,18 +233,14 @@ export default function UserView({ params }: { params: any }) {
       //res is truthy
       if (res.success) {
         console.log(
-          "SUCCESS: Institution updated\n > ",
+          "SUCCESS: User updated\n > ",
           res.success,
           "\n.............."
         );
-        toast.success("Institution updated");
+        toast.success("user updated");
         await refreshData();
       } else {
-        console.log(
-          "FAILED: Institution not updated\n > ",
-          res,
-          "\n.............."
-        );
+        console.log("FAILED: User not updated\n > ", res, "\n..............");
         toast.error(res.failed ?? res.error ?? "Unknown error");
       }
       setUIstate("OK");
@@ -254,14 +250,14 @@ export default function UserView({ params }: { params: any }) {
       } else {
         console.log("fetch failed:", error);
       }
-      setUIstate("Error: Institution NOT updated");
+      setUIstate("Error: User NOT updated");
     }
   }
 
   //func to Delete Case
   async function handleDeleteUser() {
     if (!selected?.id) {
-      toast.error("Sorry, institution not found");
+      toast.error("Sorry, user not found");
       return;
     }
     console.log("Deleting inst: \n > ", selected.id);
@@ -274,7 +270,7 @@ export default function UserView({ params }: { params: any }) {
     };
     setUIstate("loading");
     // DELETE api-call using fetch
-    const res = await fetch("/api/dashboard/institution", fetchOptions).then(
+    const res = await fetch("/api/dashboard/user", fetchOptions).then(
       async (res_) => {
         if (res_?.ok) {
           return await res_.json();
@@ -291,7 +287,7 @@ export default function UserView({ params }: { params: any }) {
 
     if (res.success) {
       console.log(
-        "SUCCESS: Institution deleted\n > ",
+        "SUCCESS: user deleted\n > ",
         res.success,
         "\n.............."
       );
@@ -302,15 +298,11 @@ export default function UserView({ params }: { params: any }) {
           url: selected.photoUrl,
         });
       }
-      toast.success("Institution deleted");
+      toast.success("user deleted");
       await refreshData();
       router.replace(`/dashboard/users/`);
     } else {
-      console.log(
-        "FAILED: Institution not deleted\n > ",
-        res,
-        "\n.............."
-      );
+      console.log("FAILED: user not deleted\n > ", res, "\n..............");
       toast.error(res.failed ?? res.error ?? "Unknown error");
     }
     setUIstate("OK");
@@ -328,13 +320,13 @@ export default function UserView({ params }: { params: any }) {
       <CardContent>
         <form className=" flex flex-col gap-4">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+            <Label htmlFor="userName" className="opacity-75">
               Name *
             </Label>
             <Input
               type="text"
-              id="institutionnName"
-              placeholder="Institution Name"
+              id="userName"
+              placeholder="user's Name"
               className="placeholder:italic"
               value={userEdit.name || selected?.name}
               onChange={(e) =>
@@ -346,7 +338,7 @@ export default function UserView({ params }: { params: any }) {
             />
           </div>
           <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+            <Label htmlFor="email" className="opacity-75">
               Email *
             </Label>
             <Input
@@ -384,14 +376,14 @@ export default function UserView({ params }: { params: any }) {
               }
             />
           </div>
-          <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+          <div id="telWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="tel" className="opacity-75">
               Phone No.
             </Label>
             <Input
-              type="phone"
-              id="phone"
-              placeholder="official Phone No."
+              type="tel"
+              id="tel"
+              placeholder="user's Phone No."
               className="placeholder:italic"
               value={userEdit.tel || (selected?.tel as string)}
               onChange={(e) =>
@@ -421,7 +413,7 @@ export default function UserView({ params }: { params: any }) {
             id="buttonWrapper"
           >
             <Button onClick={handleUpdateUser} disabled={!userIsUpdated}>
-              Update Institution
+              Update User
             </Button>
             <Button
               variant="destructive"
@@ -429,10 +421,10 @@ export default function UserView({ params }: { params: any }) {
               disabled={
                 !selected ||
                 !users.some((inst: Institution) => inst.name === "Lisa") ||
-                selected?.name === "Lisa"
+                selected?.role === "admin"
               }
             >
-              Delete Institution
+              Delete User
             </Button>
           </div>
         )}
