@@ -22,9 +22,10 @@ import toast from "react-hot-toast";
 import { DataContext } from "../providers";
 import { httpCodes } from "@/lib/configs";
 
-const _defaultInstitution = {
+const _defaultUser = {
   name: { value: "", error: "" },
   email: { value: "", error: "" },
+  role: null,
   tel: { value: "", error: "" },
 };
 
@@ -37,17 +38,17 @@ export default function InstitutionsPage() {
   const router = useRouter();
 
   const [UIstate, setUIstate] = useState("");
-  const [filtInstitutions, setFiltInstitutions] = useState([]);
+  const [filtUsers, setFiltUsers] = useState([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
-  const [newInstitution, setNewInstitution] = useState(_defaultInstitution);
+  const [newUser, setNewUser] = useState(_defaultUser);
 
   //handle inititution initialization
   async function initializeInstitution(e: React.MouseEvent<HTMLElement>) {
     e.preventDefault();
 
-    const nameError_ = nameValidator(newInstitution.name.value);
+    const nameError_ = nameValidator(newUser.name.value);
     if (nameError_) {
-      setNewInstitution((prev) => ({
+      setNewUser((prev) => ({
         ...prev,
         name: {
           ...prev.name,
@@ -57,9 +58,9 @@ export default function InstitutionsPage() {
       toast.error(nameError_);
       return;
     }
-    const emailError_ = emailValidator(newInstitution.email.value);
+    const emailError_ = emailValidator(newUser.email.value);
     if (emailError_) {
-      setNewInstitution((prev) => ({
+      setNewUser((prev) => ({
         ...prev,
         email: {
           ...prev.email,
@@ -70,11 +71,11 @@ export default function InstitutionsPage() {
       return;
     }
     let telError_ = "";
-    if (newInstitution.tel.value) {
-      telError_ = telValidator(newInstitution.tel.value);
+    if (newUser.tel.value) {
+      telError_ = telValidator(newUser.tel.value);
     }
     if (telError_) {
-      setNewInstitution((prev) => ({
+      setNewUser((prev) => ({
         ...prev,
         tel: {
           ...prev.tel,
@@ -89,18 +90,18 @@ export default function InstitutionsPage() {
       const fetchOptions = {
         method: "POST",
         body: JSON.stringify({
-          email: newInstitution.email.value,
-          name: newInstitution.name.value,
-          tel: newInstitution.tel.value,
-          logoUrl: null,
+          email: newUser.email.value,
+          name: newUser.name.value,
+          role: newUser.role,
+          tel: newUser.tel.value,
         }),
       };
-      const res = await fetch("/api/dashboard/institution", fetchOptions);
+      const res = await fetch("/api/dashboard/user", fetchOptions);
       const resData = await res.json();
       if (res.ok) {
-        toast.success("Institution initialized successfully!");
+        toast.success("User initialized successfully!");
         await refreshData();
-        router.replace(`/dashboard/institutions/${resData.success.id}`);
+        router.replace(`/dashboard/users/${resData.success.id}`);
       } else {
         console.error("ERROR:", resData);
         setUIstate(httpCodes[res.status] || "Unknown error");
@@ -111,7 +112,7 @@ export default function InstitutionsPage() {
       } else {
         console.log("fetch failed:", error);
       }
-      setUIstate("Error: Institution was not initialized");
+      setUIstate("ERROR: User NOT initialized");
     }
   }
 
@@ -120,23 +121,23 @@ export default function InstitutionsPage() {
       <CardHeader>
         {/* <CardTitle>Create New</CardTitle> */}
         <CardDescription className="text-lg text-muted-foreground font-semibold">
-          Create new institution
+          Create New User
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
-              Name *
+            <Label htmlFor="userName" className="opacity-75">
+              Names *
             </Label>
             <Input
               type="text"
-              id="institutionnName"
-              placeholder="Institution Name"
+              id="userName"
+              placeholder="user's Names"
               className="placeholder:italic"
-              value={newInstitution.name.value}
+              value={newUser.name.value}
               onChange={(e) =>
-                setNewInstitution((prev) => ({
+                setNewUser((prev) => ({
                   ...prev,
                   name: { error: "", value: e.target.value },
                 }))
@@ -150,11 +151,11 @@ export default function InstitutionsPage() {
             <Input
               type="email"
               id="email"
-              placeholder="official email"
+              placeholder="user's Email"
               className="placeholder:italic"
-              value={newInstitution.email.value}
+              value={newUser.email.value}
               onChange={(e) =>
-                setNewInstitution((prev) => ({
+                setNewUser((prev) => ({
                   ...prev,
                   email: { error: "", value: e.target.value },
                 }))
@@ -162,17 +163,17 @@ export default function InstitutionsPage() {
             />
           </div>
           <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+            <Label htmlFor="tel" className="opacity-75">
               Phone No.
             </Label>
             <Input
-              type="phone"
-              id="phone"
-              placeholder="official Phone No."
+              type="tel"
+              id="tel"
+              placeholder="user's Phone No."
               className="placeholder:italic"
-              value={newInstitution.tel.value}
+              value={newUser.tel.value}
               onChange={(e) =>
-                setNewInstitution((prev) => ({
+                setNewUser((prev) => ({
                   ...prev,
                   tel: { error: "", value: e.target.value },
                 }))
@@ -185,7 +186,7 @@ export default function InstitutionsPage() {
         {UIstate === "loading" ? (
           <Loader1 />
         ) : (
-          <Button onClick={initializeInstitution}>Create Institution</Button>
+          <Button onClick={initializeInstitution}>Create User</Button>
         )}
       </CardFooter>
     </Card>

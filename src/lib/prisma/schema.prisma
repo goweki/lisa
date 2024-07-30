@@ -33,14 +33,20 @@ model Institution {
   @@map("institutions")
 }
 
+enum userRole {
+  admin
+  lawyer
+}
+
 model User {
   id               String    @id @default(auto()) @map("_id") @db.ObjectId
   name             String    @unique
   email            String    @unique
+  tel              String?
   password         String?
   resetToken       String?
   resetTokenExpiry DateTime?
-  role             String
+  role             userRole  @default(lawyer)
   photoUrl         String?
 
   institutionIDs String[] @db.ObjectId

@@ -126,12 +126,12 @@ export default function InstitutionsPage() {
       <CardContent>
         <form className=" flex flex-col gap-4">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+            <Label htmlFor="institutionName" className="opacity-75">
               Name *
             </Label>
             <Input
               type="text"
-              id="institutionnName"
+              id="institutionName"
               placeholder="Institution Name"
               className="placeholder:italic"
               value={newInstitution.name.value}
@@ -161,13 +161,13 @@ export default function InstitutionsPage() {
               }
             />
           </div>
-          <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+          <div id="telWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="tel" className="opacity-75">
               Phone No.
             </Label>
             <Input
-              type="phone"
-              id="phone"
+              type="tel"
+              id="tel"
               placeholder="official Phone No."
               className="placeholder:italic"
               value={newInstitution.tel.value}

@@ -46,7 +46,7 @@ const _defaultInstitution = {
   tel: { value: "", error: "" },
 };
 
-export default function InstitutionsPage({
+export default function UsersPage({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -60,52 +60,48 @@ export default function InstitutionsPage({
   // }
 
   const {
-    data: { institutions, users },
+    data: { users },
     refreshData,
   } = useContext(DataContext);
 
   const [UIstate, setUIstate] = useState("");
-  const [filtInstitutions, setFiltInstitutions] = useState([]);
+  const [filtUsers, setFiltUsers] = useState([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
-  const [newInstitution, setNewInstitution] = useState(_defaultInstitution);
-  const [instId, setInstId] = useState<string | null>(null);
+  const [newUser, setNewUser] = useState(_defaultInstitution);
+  const [userId, setUserId] = useState<string | null>(null);
 
   //onMount pathname change
   useEffect(() => {
     if (pathname) {
       const pathSegments = pathname.split("/").filter(Boolean); // Filter to remove empty segments
-      setInstId(pathSegments[2] || null);
+      setUserId(pathSegments[2] || null);
     }
     setUIstate("OK");
   }, [pathname]);
 
   //on input error
   useEffect(() => {
-    if (newInstitution.email.error) toast.error(newInstitution.email.error);
-    if (newInstitution.name.error) toast.error(newInstitution.name.error);
-    if (newInstitution.tel.error) toast.error(newInstitution.tel.error);
-    setNewInstitution((prev) => ({
+    if (newUser.email.error) toast.error(newUser.email.error);
+    if (newUser.name.error) toast.error(newUser.name.error);
+    if (newUser.tel.error) toast.error(newUser.tel.error);
+    setNewUser((prev) => ({
       ...prev,
       email: { ...prev.email, error: "" },
       name: { ...prev.name, error: "" },
       tel: { ...prev.tel, error: "" },
     }));
-  }, [
-    newInstitution.email.error,
-    newInstitution.name.error,
-    newInstitution.tel.error,
-  ]);
+  }, [newUser.email.error, newUser.name.error, newUser.tel.error]);
 
-  //filter institutions by searchPhrase
+  //filter users by searchPhrase
   useEffect(() => {
-    setFiltInstitutions(
-      institutions?.filter(
-        ({ name, location }: { name: string; location: string }) =>
+    setFiltUsers(
+      users?.filter(
+        ({ name, email }: { name: string; email: string }) =>
           name.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
-          location?.toLowerCase().includes(searchPhrase.value?.toLowerCase())
+          email?.toLowerCase().includes(searchPhrase.value?.toLowerCase())
       )
     );
-  }, [searchPhrase, institutions]);
+  }, [searchPhrase, users]);
 
   //if not admin, re-route to dashboard
   if (userSession?.user?.role !== "admin") {
@@ -137,17 +133,17 @@ export default function InstitutionsPage({
 
           <div className="flex flex-col">
             <Link
-              className={`p-2 ${!instId ? "bg-muted/50" : ""}`}
-              href="/dashboard/institutions"
+              className={`p-2 ${!userId ? "bg-muted/50" : ""}`}
+              href="/dashboard/users"
             >
               + create
             </Link>
-            {filtInstitutions.length > 0 &&
-              filtInstitutions.map(({ id, name }) => (
+            {filtUsers.length > 0 &&
+              filtUsers.map(({ id, name }) => (
                 <Link
                   key={id}
                   // className="p-2 hover:bg-muted/25"
-                  className={`p-2 ${instId === id ? "bg-muted/50" : ""}`}
+                  className={`p-2 ${userId === id ? "bg-muted/50" : ""}`}
                   href={`/dashboard/users/${id}`}
                 >
                   {name}
