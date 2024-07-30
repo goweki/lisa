@@ -20,7 +20,7 @@ export function InputImage({
         className="group relative flex justify-center w-32 aspect-square items-center bg-emerald-100 rounded-full hover:cursor-pointer border-4 border-emerald-800/25"
       >
         {!imagePreviewUrl && !_photo ? (
-          <span className="group-hover:opacity-0 material-icons text-2xl transition-opacity duration-300">
+          <span className="text-black/75 group-hover:opacity-0 material-icons text-2xl transition-opacity duration-300">
             image
           </span>
         ) : (
@@ -44,11 +44,12 @@ export function InputImage({
           id="profile-image"
           className="hidden"
           type="file"
+          value={imagePreviewUrl || _photo}
           onChange={async (e) => {
             if (!e.target?.files || e.target.files.length === 0) {
               toast.error("Please select an image file.");
               setImagePreviewUrl("");
-              setPhoto(null);
+              // setPhoto(null);
               return;
             }
             const image_ = e.target.files[0];

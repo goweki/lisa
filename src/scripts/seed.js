@@ -11,13 +11,13 @@ async function seed() {
     update: {
       email: "lisa@goweki.com",
       tel: "+254721334944",
-      location: "Nairobi,Kenya",
+      location: "Nairobi, Kenya",
     },
     create: {
       name: "Lisa",
       email: "lisa@goweki.com",
       tel: "+254721334944",
-      location: "Nairobi,Kenya",
+      location: "Nairobi, Kenya",
     },
   });
 

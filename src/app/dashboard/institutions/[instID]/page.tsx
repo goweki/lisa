@@ -303,6 +303,13 @@ export default function InstitutionView({ params }: { params: any }) {
         res.success,
         "\n.............."
       );
+
+      //if had a logo
+      if (selected.logoUrl) {
+        await edgestore.publicFiles.delete({
+          url: selected.logoUrl,
+        });
+      }
       toast.success("Institution deleted");
       await refreshData();
       router.replace(`/dashboard/institutions/`);
