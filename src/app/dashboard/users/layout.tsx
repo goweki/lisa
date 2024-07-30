@@ -1,15 +1,3 @@
-// import { redirect } from "next/navigation";
-// import { getServerSession } from "next-auth/next";
-// import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-
-// export default async function InstitutionsLayout({ children }) {
-//   const session = await getServerSession(authOptions);
-//   if (session?.user?.role === "admin") {
-//     // user is admin
-//     return children;
-//   } else redirect(`/dashboard`);
-// }
-
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -40,7 +28,7 @@ import {
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
 
-const _defaultInstitution = {
+const _defaultUser = {
   name: { value: "", error: "" },
   email: { value: "", error: "" },
   tel: { value: "", error: "" },
@@ -67,7 +55,7 @@ export default function UsersPage({
   const [UIstate, setUIstate] = useState("");
   const [filtUsers, setFiltUsers] = useState([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
-  const [newUser, setNewUser] = useState(_defaultInstitution);
+  const [newUser, setNewUser] = useState(_defaultUser);
   const [userId, setUserId] = useState<string | null>(null);
 
   //onMount pathname change
