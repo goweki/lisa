@@ -44,7 +44,7 @@ export function InputImage({
           id="profile-image"
           className="hidden"
           type="file"
-          value={imagePreviewUrl || _photo}
+          // value={imagePreviewUrl || _photo}
           onChange={async (e) => {
             if (!e.target?.files || e.target.files.length === 0) {
               toast.error("Please select an image file.");
