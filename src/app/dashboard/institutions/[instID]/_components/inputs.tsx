@@ -33,11 +33,11 @@ export function InputImage({
               priority={false}
               sizes="132px"
               src={imagePreviewUrl || _photo}
-              className="object-cover group-hover:opacity-50 transition-opacity duration-300 rounded-full !bg-transparent"
+              className="object-cover group-hover:opacity-25 transition-opacity duration-300 rounded-full !bg-transparent"
             />
           </div>
         )}
-        <span className="material-icons text-2xl absolute inset-0 flex justify-center items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <span className="material-icons text-2xl absolute inset-0 flex justify-center items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100 text-black">
           upload
         </span>
         <input
