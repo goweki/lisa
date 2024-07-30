@@ -21,7 +21,6 @@ import { InputText } from "@/components/atoms/inputs";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
 import { Loader1 } from "@/components/atoms/loader";
-import ViewInstitution from "./_components/viewInstitut";
 import {
   emailValidator,
   nameValidator,
@@ -43,6 +42,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InputImage } from "./_components/inputs";
 
+interface InstitutionEdit {
+  name: string;
+  email: string;
+  tel: string;
+  location: string;
+  imageFile: File | null;
+}
+
 export default function InstitutionView({ params }: { params: any }) {
   const { instID } = params;
   const {
@@ -53,7 +60,7 @@ export default function InstitutionView({ params }: { params: any }) {
   const { edgestore } = useEdgeStore();
   const router = useRouter();
   const [selected, setSelected] = useState<Institution>();
-  const [instEdit, setInstEdit] = useState({
+  const [instEdit, setInstEdit] = useState<InstitutionEdit>({
     name: "",
     email: "",
     tel: "",
@@ -147,10 +154,10 @@ export default function InstitutionView({ params }: { params: any }) {
       inputErrors.telError_ = telValidator(instEdit.tel);
     }
     if (instEdit.location) {
-      inputErrors.locationError_ = nameValidator(instEdit.tel);
+      inputErrors.locationError_ = nameValidator(instEdit.location);
     }
 
-    if (Object.values(inputErrors).filter(Boolean).length === 0) {
+    if (Object.values(inputErrors).filter(Boolean).length !== 0) {
       const errors = Object.values(inputErrors).filter(Boolean);
       errors.forEach((error) => {
         toast.error(error);
@@ -159,6 +166,7 @@ export default function InstitutionView({ params }: { params: any }) {
     }
 
     setUIstate("loading");
+
     // api call
     try {
       console.log("editing institution: ", instEdit);
@@ -167,16 +175,37 @@ export default function InstitutionView({ params }: { params: any }) {
       //upload image and retain url
       let logoUrl_: string | null = null;
       if (instEdit.imageFile) {
+        console.log("New logo to be uploaded");
+
+        // upload file using edgestore- edgestore returns:
+        // const res: {
+        //   url: string;
+        //   size: number;
+        //   uploadedAt: Date;
+        //   metadata: Record<string, never>;
+        //   path: Record<string, never>;
+        //   pathOrder: string[];
+        // }
+        const uploadOptions: { replaceTargetUrl: string } | undefined =
+          !selected.logoUrl
+            ? undefined
+            : {
+                replaceTargetUrl: selected.logoUrl,
+              };
+
         const logoEdgeUpload = await edgestore.publicFiles.upload({
           file: instEdit.imageFile,
+          options: uploadOptions,
           // onProgressChange: (progress) => {
           //   // you can use this to show a progress bar
           //   console.log(progress);
           // },
         });
+
+        // console.log("edge File - ", logoEdgeUpload);
         logoUrl_ = logoEdgeUpload.url;
+        if (!logoUrl_) console.error("image upload failed");
       }
-      // console.log("photoUrl - ", photoUrl?.url || "NO LINK");
 
       const fetchBody = {
         id: selected.id,
@@ -205,9 +234,8 @@ export default function InstitutionView({ params }: { params: any }) {
           }
         }
       );
-
       if (!res) return;
-
+      //res is truthy
       if (res.success) {
         console.log(
           "SUCCESS: Institution updated\n > ",
@@ -231,7 +259,7 @@ export default function InstitutionView({ params }: { params: any }) {
       } else {
         console.log("fetch failed:", error);
       }
-      setUIstate("Error: Institution was not initialized");
+      setUIstate("Error: Institution NOT updated");
     }
   }
 
@@ -292,7 +320,7 @@ export default function InstitutionView({ params }: { params: any }) {
       <CardHeader>
         {/* <CardTitle>Create New</CardTitle> */}
         <CardDescription className="text-lg text-muted-foreground font-semibold">
-          Institution: {selected?.name}
+          {selected?.name}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -375,14 +403,14 @@ export default function InstitutionView({ params }: { params: any }) {
           <div id="dpWrapper" className="py-4">
             <InputImage
               _photo={selected?.logoUrl ?? ""}
-              setPhoto={async (_imageFile: any) => {
+              setPhoto={async (_imageFile: File | null) => {
                 setInstEdit((prev_) => ({ ...prev_, imageFile: _imageFile }));
               }}
             />
           </div>
         </form>
       </CardContent>
-      <CardFooter className="border-t px-6 py-4">
+      <CardFooter className="border-t px-6 py-4 min-h-20">
         {UIstate === "loading" ? (
           <Loader1 />
         ) : (
@@ -396,7 +424,13 @@ export default function InstitutionView({ params }: { params: any }) {
             <Button
               variant="destructive"
               onClick={handleDeleteInstit}
-              disabled={!selected}
+              disabled={
+                !selected ||
+                !institutions.some(
+                  (inst: Institution) => inst.name === "Lisa"
+                ) ||
+                selected?.name === "Lisa"
+              }
             >
               Delete Institution
             </Button>

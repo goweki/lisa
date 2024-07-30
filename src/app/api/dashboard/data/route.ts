@@ -32,11 +32,11 @@ async function getHandler(req: Request, user: Partial<User>) {
             },
           }
         : {},
-      // include: {
-      //   cases: true,
-      //   caseTypes: true,
-      //   users: true,
-      // },
+      include: {
+        cases: true,
+        users: true,
+        //   caseTypes: true,
+      },
     });
 
     // GET users

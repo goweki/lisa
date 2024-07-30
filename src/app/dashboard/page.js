@@ -38,7 +38,7 @@ export default function UserHome() {
       institution: inst.name,
       location: inst.location,
       users: inst.userIDs.length,
-      cases: inst.cases.length,
+      cases: inst.cases?.length,
     }));
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
