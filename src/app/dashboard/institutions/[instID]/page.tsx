@@ -175,7 +175,7 @@ export default function InstitutionView({ params }: { params: any }) {
       //upload image and retain url
       let logoUrl_: string | null = null;
       if (instEdit.imageFile) {
-        console.log("New logo to be uploaded");
+        // console.log("New logo to be uploaded");
 
         // upload file using edgestore- edgestore returns:
         // const res: {
@@ -204,6 +204,9 @@ export default function InstitutionView({ params }: { params: any }) {
 
         // console.log("edge File - ", logoEdgeUpload);
         logoUrl_ = logoEdgeUpload.url;
+        setInstEdit((prev) => {
+          return { ...prev, imageFile: null };
+        });
         if (!logoUrl_) console.error("image upload failed");
       }
 
