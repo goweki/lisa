@@ -171,7 +171,7 @@ const menuItemsOptions = {
 // Nav Menu
 const components: { title: string; href: string; description: string }[] = [
   {
-    title: "Institutions",
+    title: "My Institutions",
     href: "/dashboard/institutions",
     description: "Legal firms and entities ",
   },
@@ -261,18 +261,17 @@ function NavigationMenuComponent() {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link href="/dashboard/settings" legacyBehavior passHref>
-            <NavigationMenuLink
-              // className={navigationMenuTriggerStyle() + " bg-transparent"}
-              className={`${
-                pathname === "/dashboard/settings"
-                  ? "bg-muted"
-                  : "bg-transparent"
-              } ${navigationMenuTriggerStyle()} `}
-            >
-              Settings
-            </NavigationMenuLink>
-          </Link>
+          {/* <Link href="/dashboard/settings" legacyBehavior passHref> */}
+          <NavigationMenuLink
+            // className={navigationMenuTriggerStyle() + " bg-transparent"}
+            className={`${
+              pathname === "/dashboard/settings" ? "bg-muted" : "bg-transparent"
+            } ${navigationMenuTriggerStyle()} `}
+            href="/dashboard/settings"
+          >
+            Settings
+          </NavigationMenuLink>
+          {/* </Link> */}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

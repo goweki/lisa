@@ -36,7 +36,7 @@ interface SettingsPageProps {
 
 export default function SettingsLayout({ children }: SettingsPageProps) {
   return (
-    <main className="block space-y-6 px-8 py-4 pb-16">
+    <main className="space-y-6 px-8 py-4 pb-16 flex flex-col flex-1">
       <div className="space-y-0.5">
         {/* <h2 className="text-2xl font-bold tracking-tight">Settings</h2> */}
         <BreadCrumb
