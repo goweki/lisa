@@ -15,7 +15,7 @@ export default function LandingPage() {
   const [showDemoReqModal, setToggleDemoReqModal] = useState(false);
   // Render
   return (
-    <main className="flex flex-col flex-grow justify-center items-center md:my-16 md:min-h-[400px]">
+    <main className="flex flex-col flex-grow justify-start items-center md:my-16">
       <div className="flex flex-wrap items-center">
         <div className="w-full px-4">
           <div className="z-10 p-16 mx-auto max-w-md min-w-sm">

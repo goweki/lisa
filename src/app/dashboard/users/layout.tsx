@@ -127,14 +127,26 @@ export default function UsersPage({
               + create
             </Link>
             {filtUsers.length > 0 &&
-              filtUsers.map(({ id, name }) => (
+              filtUsers.map(({ id, name, role }) => (
+                // <Link
+                //   key={id}
+                //   // className="p-2 hover:bg-muted/25"
+                //   className={`p-2 ${userId === id ? "bg-muted/50" : ""}`}
+                //   href={`/dashboard/users/${id}`}
+                // >
+                //   {name}
+                // </Link>
                 <Link
                   key={id}
-                  // className="p-2 hover:bg-muted/25"
-                  className={`p-2 ${userId === id ? "bg-muted/50" : ""}`}
+                  className={`p-2 hover:bg-muted/25 ${
+                    userId === id ? "bg-muted/50" : ""
+                  }`}
                   href={`/dashboard/users/${id}`}
                 >
-                  {name}
+                  <div className="font-medium">{name}</div>
+                  <div className="hidden text-sm text-muted-foreground/75 md:inline-block italic">
+                    {role}
+                  </div>
                 </Link>
               ))}
           </div>

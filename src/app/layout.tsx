@@ -36,8 +36,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
-      <body className={inter.className + " container"}>
+    <html
+      lang="en"
+      suppressHydrationWarning={true}
+      className="flex items-center justify-center"
+    >
+      <body className={inter.className + " container flex flex-col"}>
         <Providers>{children}</Providers>
       </body>
     </html>

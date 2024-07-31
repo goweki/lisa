@@ -13,6 +13,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   emailValidator,
   nameValidator,
   telValidator,
@@ -21,15 +30,16 @@ import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
 import { httpCodes } from "@/lib/configs";
+import { MultiSelect } from "@/components/atoms/multiSelect";
 
 const _defaultUser = {
   name: { value: "", error: "" },
   email: { value: "", error: "" },
-  role: null,
+  role: "lawyer",
   tel: { value: "", error: "" },
 };
 
-export default function InstitutionsPage() {
+export default function UsersPage() {
   const {
     data: { institutions, users },
     refreshData,
@@ -38,81 +48,70 @@ export default function InstitutionsPage() {
   const router = useRouter();
 
   const [UIstate, setUIstate] = useState("");
-  const [filtUsers, setFiltUsers] = useState([]);
-  const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [newUser, setNewUser] = useState(_defaultUser);
 
-  //handle inititution initialization
-  async function initializeInstitution(e: React.MouseEvent<HTMLElement>) {
-    e.preventDefault();
+  //handle user initialization
+  async function initializeUser(e: React.MouseEvent<HTMLElement>) {
+    // validate
+    // if (session.user.role !== "admin") {
+    //   toast.error("User validation failed");
+    //   return;
+    // }
 
-    const nameError_ = nameValidator(newUser.name.value);
-    if (nameError_) {
-      setNewUser((prev) => ({
-        ...prev,
-        name: {
-          ...prev.name,
-          error: nameError_,
-        },
-      }));
-      toast.error(nameError_);
-      return;
-    }
-    const emailError_ = emailValidator(newUser.email.value);
-    if (emailError_) {
-      setNewUser((prev) => ({
-        ...prev,
-        email: {
-          ...prev.email,
-          error: emailError_,
-        },
-      }));
-      toast.error(emailError_);
-      return;
-    }
-    let telError_ = "";
-    if (newUser.tel.value) {
-      telError_ = telValidator(newUser.tel.value);
-    }
-    if (telError_) {
-      setNewUser((prev) => ({
-        ...prev,
-        tel: {
-          ...prev.tel,
-          error: telError_,
-        },
-      }));
-      toast.error(telError_);
-      return;
-    }
+    const fetchOptions = {
+      method: "POST",
+      body: JSON.stringify({
+        name: newUser.name.value,
+        email: newUser.email.value,
+        role: newUser.role || null,
+        tel: newUser.tel.value || null,
+      }),
+    };
+
     setUIstate("loading");
+
     try {
-      const fetchOptions = {
-        method: "POST",
-        body: JSON.stringify({
-          email: newUser.email.value,
-          name: newUser.name.value,
-          role: newUser.role,
-          tel: newUser.tel.value,
-        }),
-      };
-      const res = await fetch("/api/dashboard/user", fetchOptions);
-      const resData = await res.json();
-      if (res.ok) {
-        toast.success("User initialized successfully!");
+      // API call, using fetch
+      const response = await fetch("/api/dashboard/user", fetchOptions).then(
+        async (res_) => {
+          if (res_?.status === 200) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error(httpCodes[res_?.status] ?? "Unknown error");
+            setUIstate("OK");
+            return;
+          }
+        }
+      );
+      if (!response) return;
+      // response is truthy
+      if (response.success) {
+        console.log(
+          "SUCCESS: user created\n > ",
+          response.success.email,
+          "\n.............."
+        );
+        toast.success("User created!");
         await refreshData();
-        router.replace(`/dashboard/users/${resData.success.id}`);
+        return router.push(`/dashboard/users/${response.success.id}`);
       } else {
-        console.error("ERROR:", resData);
-        setUIstate(httpCodes[res.status] || "Unknown error");
+        console.log(
+          "FAILED: User not created\n > ",
+          response,
+          "\n.............."
+        );
+        toast.error(response.failed ?? response.error ?? "Unknown error");
+        setUIstate("OK");
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.log("fetch failed:", error.message);
+        console.error("User initialization failed:", error.message);
       } else {
-        console.log("fetch failed:", error);
+        console.error("User initialization failed:", error);
       }
-      setUIstate("ERROR: User NOT initialized");
+      // setUIstate("Error: Institution was not initialized");
+      toast.error("User NOT initialized");
     }
   }
 
@@ -125,14 +124,14 @@ export default function InstitutionsPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className=" flex flex-col gap-4">
+        <form className=" flex flex-col gap-4 w-full">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="userName" className="opacity-75">
+            <Label htmlFor="name" className="opacity-75">
               Names *
             </Label>
             <Input
               type="text"
-              id="userName"
+              id="name"
               placeholder="user's Names"
               className="placeholder:italic"
               value={newUser.name.value}
@@ -145,7 +144,7 @@ export default function InstitutionsPage() {
             />
           </div>
           <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
+            <Label htmlFor="email" className="opacity-75">
               Email *
             </Label>
             <Input
@@ -161,6 +160,29 @@ export default function InstitutionsPage() {
                 }))
               }
             />
+          </div>
+          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="role" className="opacity-75">
+              Role *
+            </Label>
+            <Select
+              name="role"
+              value={newUser.role}
+              onValueChange={(value) => {
+                setNewUser((prev) => ({
+                  ...prev,
+                  role: value,
+                }));
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select user's role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="lawyer">Lawyer</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="tel" className="opacity-75">
@@ -180,15 +202,42 @@ export default function InstitutionsPage() {
               }
             />
           </div>
+          <div id="instWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="roleWrapper" className="opacity-75">
+              Institutions *
+            </Label>
+            <MultiSelect selections={selections} />
+          </div>
         </form>
       </CardContent>
       <CardFooter className="border-t px-6 py-4">
         {UIstate === "loading" ? (
           <Loader1 />
         ) : (
-          <Button onClick={initializeInstitution}>Create User</Button>
+          <Button onClick={initializeUser}>Create User</Button>
         )}
       </CardFooter>
     </Card>
   );
 }
+
+const selections = [
+  {
+    value: "N1",
+    label: "Next.js",
+  },
+  {
+    value: "S2",
+    label: "SvelteKit",
+  },
+  {
+    value: "U3",
+    label: "Nuxt.js",
+  },
+  {
+    value: "R4",
+    label: "Remix",
+  },
+];
+
+// atisfies Framework[];

@@ -37,8 +37,6 @@ export default function InstitutionsPage() {
   const router = useRouter();
 
   const [UIstate, setUIstate] = useState("");
-  const [filtInstitutions, setFiltInstitutions] = useState([]);
-  const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [newInstitution, setNewInstitution] = useState(_defaultInstitution);
 
   //handle inititution initialization
@@ -84,37 +82,60 @@ export default function InstitutionsPage() {
       toast.error(telError_);
       return;
     }
+
+    const fetchOptions = {
+      method: "POST",
+      body: JSON.stringify({
+        email: newInstitution.email.value,
+        name: newInstitution.name.value,
+        tel: newInstitution.tel.value,
+        logoUrl: null,
+      }),
+    };
+
     setUIstate("loading");
+
     try {
-      const fetchOptions = {
-        method: "POST",
-        body: JSON.stringify({
-          email: newInstitution.email.value,
-          name: newInstitution.name.value,
-          tel: newInstitution.tel.value,
-          logoUrl: null,
-        }),
-      };
-      const res = await fetch("/api/dashboard/institution", fetchOptions);
-      const resData = await res.json();
-      if (res.ok) {
-        toast.success("Institution initialized successfully!");
+      // API call, using fetch
+      const res = await fetch("/api/dashboard/institution", fetchOptions).then(
+        async (res_) => {
+          if (res_?.ok) {
+            return await res_.json();
+          } else {
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error(httpCodes[res_?.status] ?? "Unknown error");
+            setUIstate("OK");
+            return;
+          }
+        }
+      );
+      if (!res) return;
+      // res is truthy
+      if (res.success) {
+        console.log(
+          "SUCCESS: institution created\n > ",
+          res.success.name,
+          "\n.............."
+        );
+        toast.success("Institution initialized");
         await refreshData();
-        router.replace(`/dashboard/institutions/${resData.success.id}`);
+        return router.push(`/dashboard/institutions/${res.success.id}`);
       } else {
-        console.error("ERROR:", resData);
-        setUIstate(httpCodes[res.status] || "Unknown error");
+        console.error("Institution NOT created\n > ", res, "\n..............");
+        toast.error(res.failed ?? res.error ?? "Unknown error");
+        setUIstate("OK");
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.log("fetch failed:", error.message);
+        console.error("fetch failed:", error.message);
       } else {
-        console.log("fetch failed:", error);
+        console.error("fetch failed:", error);
       }
-      setUIstate("Error: Institution was not initialized");
+      toast.error("Institution NOT initialized");
+      setUIstate("OK");
     }
   }
-
+  //render
   return (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>

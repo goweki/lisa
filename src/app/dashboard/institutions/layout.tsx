@@ -146,8 +146,9 @@ export default function InstitutionsPage({
               filtInstitutions.map(({ id, name }) => (
                 <Link
                   key={id}
-                  // className="p-2 hover:bg-muted/25"
-                  className={`p-2 ${instId === id ? "bg-muted/50" : ""}`}
+                  className={`p-2 hover:bg-muted/25 ${
+                    instId === id ? "bg-muted/50" : ""
+                  }`}
                   href={`/dashboard/institutions/${id}`}
                 >
                   {name}
