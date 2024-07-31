@@ -209,7 +209,7 @@ function NavigationMenuComponent() {
   const pathname = usePathname();
 
   //render
-  return (
+  return pathname.includes("/dashboard") ? (
     <NavigationMenu>
       <NavigationMenuList className="gap-4">
         <NavigationMenuItem>
@@ -247,7 +247,11 @@ function NavigationMenuComponent() {
                   key={component.title}
                   title={component.title}
                   href={component.href}
-                  className="my-auto hover:bg-muted/25 border-2 border-transparent hover:border-border hover:border-2 hover:shadow-sm"
+                  className={`${
+                    pathname.includes(component.title.toLowerCase())
+                      ? "bg-muted/25"
+                      : ""
+                  }} my-auto hover:bg-muted/25 border-2 border-transparent hover:border-border hover:border-2 hover:shadow-sm`}
                 >
                   {component.description}
                 </ListItem>
@@ -269,6 +273,56 @@ function NavigationMenuComponent() {
               Settings
             </NavigationMenuLink>
           </Link>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  ) : (
+    <NavigationMenu>
+      <NavigationMenuList className="gap-4">
+        <NavigationMenuItem>
+          {/* <Link href="/dashboard"> */}
+          <NavigationMenuLink
+            className={`text-foreground hover:text-foreground ${
+              pathname === "/"
+                ? "bg-muted/50 hover:bg-muted/50"
+                : "bg-transparent"
+            } ${navigationMenuTriggerStyle()} `}
+            href="/"
+          >
+            Home
+          </NavigationMenuLink>
+          {/* </Link> */}
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          {/* <Link href="/blog" legacyBehavior passHref> */}
+          <NavigationMenuLink
+            className={`text-foreground hover:text-foreground ${
+              pathname === "/blog"
+                ? "bg-muted/50 hover:bg-muted/50"
+                : "bg-transparent"
+            } ${navigationMenuTriggerStyle()} `}
+            href="/blog"
+          >
+            Blog
+          </NavigationMenuLink>
+          {/* </Link> */}
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          {/* <Link href="/contacts" legacyBehavior passHref> */}
+          <NavigationMenuLink
+            // className={navigationMenuTriggerStyle() + " bg-transparent"}
+            className={`text-foreground hover:text-foreground ${
+              pathname === "/contacts"
+                ? "bg-muted/50 hover:bg-muted/50"
+                : "bg-transparent"
+            } ${navigationMenuTriggerStyle()} `}
+            href="/contacts"
+          >
+            Contacts
+          </NavigationMenuLink>
+          {/* </Link> */}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
