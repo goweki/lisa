@@ -259,7 +259,7 @@ export default function UserView({ params }: { params: any }) {
       toast.error("Sorry, user not found");
       return;
     }
-    console.log("Deleting inst: \n > ", selected.id);
+    // console.log("Deleting user: \n > ", selected.id);
     // fetch options
     let fetchOptions = {
       method: "DELETE",
