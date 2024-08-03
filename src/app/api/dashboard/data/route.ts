@@ -41,32 +41,52 @@ async function getHandler(req: Request, user: Partial<User>) {
 
     // GET users
     let users: User[] = [];
-    if (user.institutionIDs && user.institutionIDs.length > 0) {
-      for (const instID_ of user.institutionIDs) {
-        const instUsers = await prisma.user.findMany({
-          where: {
-            institutionIDs: {
-              has: instID_,
-            },
-            // id: {
-            //   not: user.id,
-            // },
-          },
-          include: {
-            institutions: true,
-            cases: true,
-            completedTasks: true,
-          },
-        });
 
-        users = [
-          ...users,
-          ...excludeFields(instUsers, [
-            "password",
-            "resetToken",
-            "resetTokenExpiry",
-          ]),
-        ];
+    if (user.email === "antonio@goweki.com") {
+      const instUsers = await prisma.user.findMany({
+        include: {
+          institutions: true,
+          cases: true,
+          completedTasks: true,
+        },
+      });
+
+      users = [
+        ...excludeFields(instUsers, [
+          "password",
+          "resetToken",
+          "resetTokenExpiry",
+        ]),
+      ];
+    } else {
+      // not suser
+      if (user.institutionIDs && user.institutionIDs.length > 0) {
+        for (const instID_ of user.institutionIDs) {
+          const instUsers = await prisma.user.findMany({
+            where: {
+              institutionIDs: {
+                has: instID_,
+              },
+              // id: {
+              //   not: user.id,
+              // },
+            },
+            include: {
+              institutions: true,
+              cases: true,
+              completedTasks: true,
+            },
+          });
+
+          users = [
+            ...users,
+            ...excludeFields(instUsers, [
+              "password",
+              "resetToken",
+              "resetTokenExpiry",
+            ]),
+          ];
+        }
       }
     }
 

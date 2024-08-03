@@ -213,65 +213,38 @@ function NavigationMenuComponent() {
     <NavigationMenu>
       <NavigationMenuList className="gap-4">
         <NavigationMenuItem>
-          {/* <Link href="/dashboard"> */}
-          <NavigationMenuLink
-            className={`text-foreground hover:text-foreground ${
-              pathname === "/dashboard"
-                ? "bg-muted/50 hover:bg-muted/50"
-                : "bg-transparent"
-            } ${navigationMenuTriggerStyle()} `}
+          <Link
             href="/dashboard"
-          >
-            Dashboard
-          </NavigationMenuLink>
-          {/* </Link> */}
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <NavigationMenuTrigger
-            className={`bg-transparent focus:bg-transparent ${
-              pathname.includes("/institutions") ||
-              pathname.includes("/users") ||
-              pathname.includes("/cases") ||
-              pathname.includes("/tasks")
-                ? "bg-muted/50 hover:bg-muted/50"
-                : ""
+            className={`text-foreground hover:text-primary ${
+              pathname === "/dashboard" ? "font-bold" : "font-normal"
             }`}
           >
-            Manager
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {components.map((component) => (
-                <ListItem
-                  key={component.title}
-                  title={component.title}
-                  href={component.href}
-                  className={`${
-                    pathname.includes(component.title.toLowerCase())
-                      ? "bg-muted/25"
-                      : ""
-                  }} my-auto hover:bg-muted/25 border-2 border-transparent hover:border-border hover:border-2 hover:shadow-sm`}
-                >
-                  {component.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
+            Dashboard
+          </Link>
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          {/* <Link href="/dashboard/settings" legacyBehavior passHref> */}
-          <NavigationMenuLink
-            // className={navigationMenuTriggerStyle() + " bg-transparent"}
-            className={`${
-              pathname === "/dashboard/settings" ? "bg-muted" : "bg-transparent"
-            } ${navigationMenuTriggerStyle()} `}
-            href="/dashboard/settings"
+          <Link
+            href="/dashboard/institutions"
+            className={`text-foreground hover:text-primary ${
+              pathname === "/dashboard/institutions"
+                ? "font-bold"
+                : "font-normal"
+            }`}
           >
-            Settings
-          </NavigationMenuLink>
-          {/* </Link> */}
+            Institutions
+          </Link>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <Link
+            href="/dashboard/users"
+            className={`text-foreground hover:text-primary ${
+              pathname === "/dashboard/users" ? "font-bold" : "font-normal"
+            }`}
+          >
+            Users
+          </Link>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

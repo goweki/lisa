@@ -26,17 +26,30 @@ import {
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
 import { httpCodes } from "@/lib/configs";
-import { MultiSelect } from "@/components/atoms/multiSelect";
+import MultiSelect, {
+  Option as MultiSelectOption,
+} from "@/components/atoms/multiSelect";
+import { TemplateObj } from "@/lib/types";
+import { Institution as InstitutionType } from "@/lib/prisma/types";
 
-const _defaultUser = {
+type newUserType = {
+  name: TemplateObj;
+  email: TemplateObj;
+  role: string;
+  tel: TemplateObj;
+  institutionIds: string[];
+};
+
+const _defaultUser: newUserType = {
   name: { value: "", error: "" },
   email: { value: "", error: "" },
   role: "lawyer",
   tel: { value: "", error: "" },
+  institutionIds: [],
 };
 
 export default function UsersPage() {
@@ -50,6 +63,17 @@ export default function UsersPage() {
   const [UIstate, setUIstate] = useState("");
   const [newUser, setNewUser] = useState(_defaultUser);
 
+  //
+  function updateNewUserInstits(selections: MultiSelectOption[]) {
+    // console.log("Changed D1: ", selections);
+    setNewUser((prev) => {
+      return {
+        ...prev,
+        institutionIds: selections.map(({ value }) => value),
+      };
+    });
+  }
+
   //handle user initialization
   async function initializeUser(e: React.MouseEvent<HTMLElement>) {
     // validate
@@ -57,15 +81,33 @@ export default function UsersPage() {
     //   toast.error("User validation failed");
     //   return;
     // }
+    const inputErrors_ = {
+      tel: telValidator(newUser.tel.value),
+      email: emailValidator(newUser.email.value),
+      name: nameValidator(newUser.name.value),
+    };
+    //
+    const errors_ = Object.values(inputErrors_).filter(Boolean);
+    if (errors_.length > 0) {
+      errors_.forEach((error) => {
+        toast.error(error);
+      });
+      return;
+    }
+
+    //new user obj
+    const body_ = {
+      name: newUser.name.value,
+      email: newUser.email.value,
+      role: newUser.role || null,
+      tel: newUser.tel.value || null,
+      institutionIds: newUser.institutionIds,
+    };
+    console.log("body_", body_);
 
     const fetchOptions = {
       method: "POST",
-      body: JSON.stringify({
-        name: newUser.name.value,
-        email: newUser.email.value,
-        role: newUser.role || null,
-        tel: newUser.tel.value || null,
-      }),
+      body: JSON.stringify(body_),
     };
 
     setUIstate("loading");
@@ -206,7 +248,25 @@ export default function UsersPage() {
             <Label htmlFor="roleWrapper" className="opacity-75">
               Institutions *
             </Label>
-            <MultiSelect selections={selections} />
+            <MultiSelect
+              // value={instOptions}
+
+              onChange={updateNewUserInstits}
+              //
+              defaultOptions={institutions.map(
+                ({ id, name }: { id: string; name: string }) => ({
+                  value: id,
+                  label: name,
+                })
+              )}
+              //
+              placeholder="Select Institutions..."
+              emptyIndicator={
+                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                  no results found.
+                </p>
+              }
+            />
           </div>
         </form>
       </CardContent>
@@ -220,24 +280,3 @@ export default function UsersPage() {
     </Card>
   );
 }
-
-const selections = [
-  {
-    value: "N1",
-    label: "Next.js",
-  },
-  {
-    value: "S2",
-    label: "SvelteKit",
-  },
-  {
-    value: "U3",
-    label: "Nuxt.js",
-  },
-  {
-    value: "R4",
-    label: "Remix",
-  },
-];
-
-// atisfies Framework[];

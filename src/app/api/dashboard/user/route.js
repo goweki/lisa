@@ -7,36 +7,47 @@ async function postHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
-    const { institutionId, ...doc_ } = doc;
+    const { institutionIds, ...doc_ } = doc;
     // validation checks
-    if (
-      !user.institutionIDs.includes(institutionId) ||
-      !user.email !== "antonio@goweki.com"
-    )
-      Response.json("Forbidden", { status: 403 });
-    console.log("POST REQUEST: create new user: ", doc_);
+    let validCheck = true;
+    institutionIds.forEach((instId) => {
+      if (!user.institutionIDs.includes(instId)) {
+        validCheck = false;
+      }
+    });
+    // suser
+    if (user.email === "antonio@goweki.com") validCheck = true;
+
+    if (validCheck === false) Response.json("Forbidden", { status: 403 });
+    // console.log("POST REQUEST: create new user: ", doc_);
     // console.log("by USER - ", user);
-    // return;
+
+    // new user object
+    const newUser_ = {
+      password: await hash(doc.email),
+      institutionIDs: institutionIds,
+      ...doc_,
+    };
+    console.log("newUser_:", newUser_);
+
     // insert doc
     const newUser = await prisma.user.create({
-      data: {
-        password: await hash(doc.email),
-        institutionIDs: [institutionId],
-        ...doc_,
-      },
+      data: newUser_,
     });
     if (!newUser) {
       console.error("FAILED: didnt save new user.\n > ", doc);
       return Response.json({ failed: "Failed creating new user" });
     }
     // update user's Institution to include the new userID
-    await prisma.institution.update({
-      where: { id: institutionId },
-      data: {
-        userIDs: {
-          push: newUser.id,
+    newUser.institutionIDs.forEach((instId) => {
+      prisma.institution.update({
+        where: { id: instId },
+        data: {
+          userIDs: {
+            push: newUser.id,
+          },
         },
-      },
+      });
     });
     // send register link
     const fetchOptions = {
@@ -77,7 +88,7 @@ async function putHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
-    const { userID, ...doc_ } = doc;
+    const { id: userID, ...doc_ } = doc;
 
     // ***test
     // return Response.json({ success: doc });
@@ -104,7 +115,7 @@ async function deleteHandler(request, user) {
   try {
     // request body
     const doc = await request.json();
-    const { userID } = doc;
+    const { id: userID } = doc;
     console.log("DELETE REQUEST: deleting user: ", userID);
     // delete doc
     const res = await prisma.user.delete({ where: { id: userID } });

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
+import { User as UserType } from "@/lib/prisma/types";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import toast from "react-hot-toast";
@@ -34,7 +35,7 @@ const _defaultUser = {
   tel: { value: "", error: "" },
 };
 
-export default function UsersPage({
+export default function UsersLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -53,7 +54,7 @@ export default function UsersPage({
   } = useContext(DataContext);
 
   const [UIstate, setUIstate] = useState("");
-  const [filtUsers, setFiltUsers] = useState([]);
+  const [filtUsers, setFiltUsers] = useState<UserType[]>([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [newUser, setNewUser] = useState(_defaultUser);
   const [userId, setUserId] = useState<string | null>(null);
@@ -127,7 +128,7 @@ export default function UsersPage({
               + create
             </Link>
             {filtUsers.length > 0 &&
-              filtUsers.map(({ id, name, role }) => (
+              filtUsers.map(({ id, name, role, institutions }) => (
                 // <Link
                 //   key={id}
                 //   // className="p-2 hover:bg-muted/25"
@@ -145,7 +146,7 @@ export default function UsersPage({
                 >
                   <div className="font-medium">{name}</div>
                   <div className="hidden text-sm text-muted-foreground/75 md:inline-block italic">
-                    {role}
+                    {role}:{institutions?.map(({ name }) => name).join(", ")}
                   </div>
                 </Link>
               ))}

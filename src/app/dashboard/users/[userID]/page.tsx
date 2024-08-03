@@ -74,17 +74,16 @@ export default function UserView({ params }: { params: any }) {
   useEffect(() => {
     if (userID) {
       setSelected(users.find(({ id }: { id: string }) => id === userID));
-    } else {
-      setUIstate("OK");
     }
+    setUIstate("OK");
   }, [users, userID]);
 
-  // UIstate OK after updating selected
-  useEffect(() => {
-    if (selected) {
-      setUIstate("OK");
-    }
-  }, [selected]);
+  // // UIstate OK after updating selected
+  // useEffect(() => {
+  //   if (selected) {
+  //     setUIstate("OK");
+  //   }
+  // }, [selected]);
 
   // UIstate OK on UI error
   useEffect(() => {
@@ -130,7 +129,7 @@ export default function UserView({ params }: { params: any }) {
   async function handleUpdateUser(e: React.MouseEvent<HTMLElement>) {
     e.preventDefault();
 
-    if (!selected) {
+    if (!selected?.id) {
       toast.error("No user selected");
       return;
     }
@@ -166,7 +165,7 @@ export default function UserView({ params }: { params: any }) {
 
       // const { email, location, name, photoFile_ } = instEdit;
       //upload image and retain url
-      let logoUrl_: string | null = null;
+      let photoUrl_: string | null = null;
       if (userEdit.photoFile) {
         // console.log("New logo to be uploaded");
 
@@ -186,7 +185,7 @@ export default function UserView({ params }: { params: any }) {
                 replaceTargetUrl: selected.photoUrl,
               };
 
-        const logoEdgeUpload = await edgestore.publicFiles.upload({
+        const photoEdgeUpload = await edgestore.publicFiles.upload({
           file: userEdit.photoFile,
           options: uploadOptions,
           // onProgressChange: (progress) => {
@@ -196,18 +195,18 @@ export default function UserView({ params }: { params: any }) {
         });
 
         // console.log("edge File - ", logoEdgeUpload);
-        logoUrl_ = logoEdgeUpload.url;
+        photoUrl_ = photoEdgeUpload.url;
         setUserEdit((prev) => {
           return { ...prev, imageFile: null };
         });
-        if (!logoUrl_) console.error("image upload failed");
+        if (!photoUrl_) console.error("image upload failed");
       }
 
       const fetchBody = {
         id: selected.id,
         name: userEdit.name || selected.name,
         email: userEdit.email || selected.email,
-        logoUrl: logoUrl_ || selected.photoUrl,
+        photoUrl: photoUrl_ || selected.photoUrl,
         tel: userEdit.tel || selected.tel,
       };
 
@@ -398,7 +397,7 @@ export default function UserView({ params }: { params: any }) {
             <InputImage
               _photo={selected?.photoUrl ?? ""}
               setPhoto={async (_imageFile: File | null) => {
-                setUserEdit((prev_) => ({ ...prev_, imageFile: _imageFile }));
+                setUserEdit((prev_) => ({ ...prev_, photoFile: _imageFile }));
               }}
             />
           </div>
@@ -418,11 +417,7 @@ export default function UserView({ params }: { params: any }) {
             <Button
               variant="destructive"
               onClick={handleDeleteUser}
-              disabled={
-                !selected ||
-                !users.some((inst: Institution) => inst.name === "Lisa") ||
-                selected?.role === "admin"
-              }
+              disabled={!selected?.id || selected?.role === "admin"}
             >
               Delete User
             </Button>

@@ -27,7 +27,7 @@ export function BreadCrumb({
   return (
     <Breadcrumb className="m-4 ml-0">
       <BreadcrumbList>
-        <BreadcrumbItem>
+        {/* <BreadcrumbItem>
           <BreadcrumbLink
             href={prev.href}
             className="text-xl font-semibold text-foreground hover:underline h-fit"
@@ -35,7 +35,7 @@ export function BreadCrumb({
             {prev.label}
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator />
+        <BreadcrumbSeparator /> */}
 
         <BreadcrumbItem>
           <BreadcrumbPage className="text-4xl font-semibold text-muted-foreground">
