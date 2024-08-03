@@ -3,6 +3,15 @@ import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useSession } from "next-auth/react";
 import {
   SVGbuilding,
@@ -12,12 +21,6 @@ import {
   SVGpenscilSquare,
   SVGuser,
 } from "@/components/atoms/svgs";
-import {
-  ButtonPrimary,
-  ButtonSecondary,
-  ButtonDestructive,
-} from "@/components/atoms/buttons";
-import { InputText } from "@/components/atoms/inputs";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
 import { Loader1 } from "@/components/atoms/loader";
@@ -161,7 +164,7 @@ export default function UserView({ params }: { params: any }) {
 
     // api call
     try {
-      console.log("editing user: ", userEdit);
+      console.log("EDITS: ", userEdit);
 
       // const { email, location, name, photoFile_ } = instEdit;
       //upload image and retain url
@@ -197,18 +200,21 @@ export default function UserView({ params }: { params: any }) {
         // console.log("edge File - ", logoEdgeUpload);
         photoUrl_ = photoEdgeUpload.url;
         setUserEdit((prev) => {
-          return { ...prev, imageFile: null };
+          return { ...prev, photoFile: null };
         });
         if (!photoUrl_) console.error("image upload failed");
       }
 
+      //Updated User
       const fetchBody = {
         id: selected.id,
         name: userEdit.name || selected.name,
         email: userEdit.email || selected.email,
         photoUrl: photoUrl_ || selected.photoUrl,
         tel: userEdit.tel || selected.tel,
+        role: userEdit.role || selected.role,
       };
+      // console.log("Updated User: ", fetchBody);
 
       const fetchOptions = {
         method: "PUT",
@@ -354,26 +360,28 @@ export default function UserView({ params }: { params: any }) {
               }
             />
           </div>
-          <div
-            id="locationWrapper"
-            className="grid w-full items-center gap-1.5"
-          >
+          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="role" className="opacity-75">
-              Role
+              Role *
             </Label>
-            <Input
-              type="text"
-              id="role"
-              placeholder="role"
-              className="placeholder:italic"
-              value={userEdit.role || selected?.role || ""}
-              onChange={(e) =>
+            <Select
+              name="role"
+              value={userEdit.role || selected?.role}
+              onValueChange={(value) => {
                 setUserEdit((prev) => ({
                   ...prev,
-                  location: e.target.value,
-                }))
-              }
-            />
+                  role: value,
+                }));
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select user's role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="lawyer">Lawyer</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div id="telWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="tel" className="opacity-75">

@@ -68,7 +68,7 @@ export default function Navbar(props: { user?: Partial<User> }) {
             className="hidden md:flex w-full md:w-auto items-center justify-between"
             id="navbar-tab-items"
           >
-            <NavigationMenuComponent />
+            <NavigationMenuComponent user={props.user} />
           </div>
         </div>
         <div className="flex items-center space-x-2 px-2 md:px-6">
@@ -205,7 +205,7 @@ const components: { title: string; href: string; description: string }[] = [
 ];
 
 // Nav Menu
-function NavigationMenuComponent() {
+function NavigationMenuComponent(props: { user?: Partial<User> }) {
   const pathname = usePathname();
 
   //render
@@ -222,30 +222,48 @@ function NavigationMenuComponent() {
             Dashboard
           </Link>
         </NavigationMenuItem>
+        {props.user?.role === "admin" && (
+          <>
+            <NavigationMenuItem>
+              <Link
+                href="/dashboard/institutions"
+                className={`text-foreground hover:text-primary ${
+                  pathname.includes("/dashboard/institutions")
+                    ? "font-bold"
+                    : "font-normal"
+                }`}
+              >
+                Institutions
+              </Link>
+            </NavigationMenuItem>
 
-        <NavigationMenuItem>
-          <Link
-            href="/dashboard/institutions"
-            className={`text-foreground hover:text-primary ${
-              pathname === "/dashboard/institutions"
-                ? "font-bold"
-                : "font-normal"
-            }`}
-          >
-            Institutions
-          </Link>
-        </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link
+                href="/dashboard/users"
+                className={`text-foreground hover:text-primary ${
+                  pathname.includes("/dashboard/users")
+                    ? "font-bold"
+                    : "font-normal"
+                }`}
+              >
+                Users
+              </Link>
+            </NavigationMenuItem>
 
-        <NavigationMenuItem>
-          <Link
-            href="/dashboard/users"
-            className={`text-foreground hover:text-primary ${
-              pathname === "/dashboard/users" ? "font-bold" : "font-normal"
-            }`}
-          >
-            Users
-          </Link>
-        </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link
+                href="/dashboard/cases"
+                className={`text-foreground hover:text-primary ${
+                  pathname.includes("/dashboard/cases")
+                    ? "font-bold"
+                    : "font-normal"
+                }`}
+              >
+                Cases
+              </Link>
+            </NavigationMenuItem>
+          </>
+        )}
       </NavigationMenuList>
     </NavigationMenu>
   ) : (

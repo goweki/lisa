@@ -94,7 +94,11 @@ export default function UsersPage() {
       });
       return;
     }
-
+    //
+    if (newUser.institutionIds.length === 0) {
+      toast.error("No institution assigned!");
+      return;
+    }
     //new user obj
     const body_ = {
       name: newUser.name.value,
