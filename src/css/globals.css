@@ -1,42 +1,89 @@
-/* material-icons */
-/* @import "material-icons/iconfont/material-icons.css"; */
-@import "material-icons/iconfont/filled.css";
-/* base layer */
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* base */
+/* base */
 @layer base {
-  html,
-  body {
-    @apply text-font dark:text-font-dark bg-backg dark:bg-backg-dark min-h-screen w-full min-w-[400px];
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 157 89% 18%; /* #065f46 (emerald-800) */
+    --primary-foreground: 0 0% 100%; /* White for contrast */
+    --secondary: 157 70% 44%; /* A lighter shade of emerald */
+    --secondary-foreground: 157 89% 18%; /* #065f46 (emerald-800) */
+    --muted: 157 70% 44%; /* A lighter shade of emerald */
+    --muted-foreground: 157 43% 27%; /* A darker shade for readability */
+    --accent: 157 70% 44%; /* A lighter shade of emerald */
+    --accent-foreground: 157 89% 18%; /* #065f46 (emerald-800) */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 157 30% 90%; /* A very light shade of emerald */
+    --input: 157 30% 90%; /* A very light shade of emerald */
+    --ring: 157 89% 18%; /* #065f46 (emerald-800) */
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
-  h1 {
-    @apply font-bold text-xl md:text-2xl lg:text-4xl;
-  }
-  h2 {
-    @apply font-bold text-lg md:text-xl lg:text-2xl;
-  }
-  body {
-    @apply flex flex-col;
-  }
-  a:not(.buttony) {
-    @apply hover:text-emerald-500;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 157 89% 18%; /* #065f46 (emerald-800) */
+    --primary-foreground: 210 40% 98%; /* Light color for contrast */
+    --secondary: 157 43% 27%; /* A darker shade of emerald */
+    --secondary-foreground: 210 40% 98%; /* Light color for contrast */
+    --muted: 157 43% 27%; /* A darker shade of emerald */
+    --muted-foreground: 157 70% 44%; /* A lighter shade for readability */
+    --accent: 157 43% 27%; /* A darker shade of emerald */
+    --accent-foreground: 210 40% 98%; /* Light color for contrast */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 157 43% 27%; /* A darker shade of emerald */
+    --input: 157 43% 27%; /* A darker shade of emerald */
+    --ring: 157 89% 18%; /* #065f46 (emerald-800) */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
-/* components layer */
-@tailwind components;
+@layer base {
+  * {
+    @apply border-border/50;
+  }
+  html,
+  body {
+    /* @apply bg-background text-foreground min-h-screen; */
+    @apply bg-background text-foreground h-full !p-0;
+    /* @apply bg-background text-foreground min-h-screen w-full container min-w-fit flex; */
+  }
+  h1 {
+    @apply text-3xl lg:text-4xl font-bold;
+  }
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+  h3 {
+    @apply text-xl font-bold;
+  }
+}
+
+/* components */
 @layer components {
   .card {
     @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4 md:m-6 rounded-lg transition-all;
-  }
-}
-
-/* utilities */
-@tailwind utilities;
-@layer utilities {
-  .animation-delay-200 {
-    animation-delay: 0.2s;
-  }
-  .animation-delay-400 {
-    animation-delay: 0.4s;
   }
 }

@@ -1,11 +1,11 @@
 import Link from "next/link";
 export default function Footer() {
   return (
-    <footer className="bg-backg-surface dark:bg-backg-dark-surface">
-      <div className="mx-auto w-full max-w-screen-lg">
+    <footer className="bg-muted/10">
+      <div className="w-full mx-auto">
         <div className="flex flex-col w-full">
           <hr className="w-full mt-3 border-font-inactive lg:mt-6" />
-          <div className="px-4 py-6  md:flex md:items-center md:justify-between">
+          <div className="px-4 md:px-8 py-6  md:flex md:items-center md:justify-between">
             <span className="text-sm sm:text-center">
               © 2024 <a href="https://lisa.goweki.com/">LISA</a>. All Rights
               Reserved.

@@ -38,7 +38,7 @@ export default function UserHome() {
       institution: inst.name,
       location: inst.location,
       users: inst.userIDs.length,
-      cases: inst.cases.length,
+      cases: inst.cases?.length,
     }));
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
@@ -74,7 +74,7 @@ export default function UserHome() {
 
   // render
   return (
-    <main className="flex flex-col flex-grow items-center px-4">
+    <main className="bg-muted/10 flex flex-col flex-grow items-center px-4 md:py-8">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
         <ProfileCard date={date} time={time} data={casesWithDues} />
         {/* {scheduleBrief(cases, router)}

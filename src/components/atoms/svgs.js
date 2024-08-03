@@ -72,12 +72,10 @@ export function SVGlogoAnimation1({ className }) {
       <g id="logo">
         <g
           id="symbol"
-          fill="currentColor"
           fillOpacity={0}
-          stroke="#065f46"
           strokeDasharray={3000}
           strokeDashoffset={3000}
-          className="text-[#AB8044] animate-[doodle_5s_linear_1] fill-mode-forwards"
+          className="text-[#AB8044] fill-current stroke-[#065f46] animate-[doodle_5s_linear_1] fill-mode-forwards"
         >
           <path
             className="animation-delay-500"

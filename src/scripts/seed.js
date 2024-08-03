@@ -11,13 +11,13 @@ async function seed() {
     update: {
       email: "lisa@goweki.com",
       tel: "+254721334944",
-      location: "Nairobi,Kenya",
+      location: "Nairobi, Kenya",
     },
     create: {
       name: "Lisa",
       email: "lisa@goweki.com",
       tel: "+254721334944",
-      location: "Nairobi,Kenya",
+      location: "Nairobi, Kenya",
     },
   });
 
@@ -26,14 +26,12 @@ async function seed() {
     where: { email: "antonio@goweki.com" },
     update: {
       name: "Antonio",
-      password: "$2a$10$8aYZYMNUMZsm77MbkGmyROKDIGu5DczxAAT8UDDx8LFhPe4RPHHD6",
       role: "admin",
       institutionIDs: [institution.id],
     },
     create: {
       email: "antonio@goweki.com",
       name: "Antonio",
-      password: "$2a$10$8aYZYMNUMZsm77MbkGmyROKDIGu5DczxAAT8UDDx8LFhPe4RPHHD6",
       role: "admin",
       institutionIDs: [institution.id],
     },
@@ -78,12 +76,9 @@ async function seed() {
       },
     });
   }
-  console.log(
-    "Institution(s) initialized:",
-    await prisma.institution.findMany()
-  );
-  console.log("User(s) initialized:", await prisma.user.findMany());
-  console.log("caseTypes initialized:", await prisma.caseType.findMany());
+  console.log("Institution(s) initialized:", await prisma.institution.count());
+  console.log("User(s) initialized:", await prisma.user.count());
+  console.log("caseTypes initialized:", await prisma.caseType.count());
 }
 
 seed()

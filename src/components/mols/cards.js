@@ -2,23 +2,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export function CardCase({ item, icon }) {
-  return <BaseCardBrief item={item} baseLink="/dashboard/cases" icon={icon} />;
-}
-
 export function CardInstitution({ item, icon }) {
   return (
     <BaseCardBrief item={item} baseLink="/dashboard/institutions" icon={icon} />
   );
 }
 
+export function CardCase({ item, icon }) {
+  return <BaseCardBrief item={item} baseLink="/dashboard/cases" icon={icon} />;
+}
+
 export function CardItemsTable({ title, data, pageLink }) {
   if (!data || data.length === 0) {
     return (
-      <div className="card m-0 grid place-items-center">
-        <span className="m-auto italic opacity-50">
-          No {title} data available
-        </span>
+      <div className="m-auto card grid place-items-center max-w-lg">
+        <span className="m-auto italic opacity-50">No {title} data found</span>
       </div>
     );
   }

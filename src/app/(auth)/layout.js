@@ -7,5 +7,10 @@ export default async function AuthLayout({ children }) {
   if (session) {
     // user is signed in
     redirect(`/dashboard`);
-  } else return children;
+  } else
+    return (
+      <main className="flex flex-col flex-grow items-center justify-center md:min-h-[600px]">
+        {children}
+      </main>
+    );
 }

@@ -9,28 +9,44 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum status {
+  ACTIVE
+  DOMANT
+  INACTIVE
+}
+
 model Institution {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String  @unique
   email    String
-  tel      String?
   location String?
+  tel      String?
   logoUrl  String?
+  status   status  @default(DOMANT)
 
   userIDs String[] @db.ObjectId
 
-  users User[] @relation(fields: [userIDs], references: [id])
-  cases Case[]
+  users     User[]     @relation(fields: [userIDs], references: [id])
+  cases     Case[]
+  caseTypes CaseType[]
+
+  @@map("institutions")
+}
+
+enum userRole {
+  admin
+  lawyer
 }
 
 model User {
   id               String    @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
+  name             String    @unique
   email            String    @unique
+  tel              String?
   password         String?
   resetToken       String?
   resetTokenExpiry DateTime?
-  role             String
+  role             userRole  @default(lawyer)
   photoUrl         String?
 
   institutionIDs String[] @db.ObjectId
@@ -38,15 +54,21 @@ model User {
   cases          Case[]
   completedTasks Task[]
   institutions   Institution[] @relation(fields: [institutionIDs], references: [id])
+
+  @@map("users")
 }
 
 model CaseType {
-  id             String @id @default(auto()) @map("_id") @db.ObjectId
-  name           String @unique
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  institutionID  String? @db.ObjectId
+  name           String  @unique
   primaryParty   String
   secondaryParty String
 
-  cases Case[]
+  institution Institution? @relation(fields: [institutionID], references: [id])
+  cases       Case[]
+
+  @@map("caseTypes")
 }
 
 enum caseStatus {
@@ -78,6 +100,8 @@ model Case {
   caseType    CaseType    @relation(fields: [caseTypeID], references: [id])
   institution Institution @relation(fields: [institutionID], references: [id])
   lawyer      User?       @relation(fields: [userID], references: [id])
+
+  @@map("cases")
 }
 
 enum reminderChannels {
@@ -109,6 +133,8 @@ model Task {
   reminders   Reminder[]
   case        Case       @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
   completedBy User?      @relation(fields: [completedByID], references: [id])
+
+  @@map("tasks")
 }
 
 model Document {
@@ -118,4 +144,6 @@ model Document {
   taskID String @db.ObjectId
 
   task Task @relation(fields: [taskID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("documents")
 }

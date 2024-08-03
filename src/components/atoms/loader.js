@@ -3,9 +3,9 @@ export function Loader1() {
   return (
     <div className="m-auto flex flex-1 py-2 md:py-6 items-center justify-center space-x-2 pt-1 loader [&>*:nth-child(even)]:bg-emerald-600 [&>*:nth-child(odd)]:bg-gray-500">
       <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] "></div>
-      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-200"></div>
-      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-400"></div>
-      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] animation-delay-600"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] delay-100"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] delay-300"></div>
+      <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] delay-600"></div>
     </div>
   );
 }
