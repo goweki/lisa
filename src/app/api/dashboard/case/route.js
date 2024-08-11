@@ -21,7 +21,12 @@ async function postHandler(request, user) {
     const doc = await request.json();
     console.log("POST REQUEST: new case: ", doc);
     // insert doc
-    const res_ = await prisma.case.create({ data: doc });
+    const res_ = await prisma.case.create({
+      data: doc,
+      include: {
+        institution: true,
+      },
+    });
     console.log(
       `SUCCESS: case inserted, for institution ${doc.institution}.\n >${res_.name}`
     );

@@ -74,18 +74,8 @@ export default function Navbar(props: { user?: Partial<User> }) {
         <div className="flex items-center space-x-2 px-2 md:px-6">
           <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4">
             {pathname.includes("/dashboard") ? (
-              // <Link
-              //   href="/"
-              //   className={`block py-2 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
-              //   onClick={async (e) => {
-              //     e.preventDefault();
-              //     await signOut();
-              //   }}
-              // >
-              //   Sign Out
-              // </Link>
               <MenuDropdown
-                menuText={props.user?.name as string}
+                menuText={props.user?.name?.split(" ")[0] as string}
                 // menuIcon={User}
                 menuItems={menuItemsOptions.user}
                 terminalButton={{

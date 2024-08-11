@@ -112,7 +112,7 @@ export function AppearanceForm() {
                         className="sr-only"
                       />
                     </FormControl>
-                    <div className="items-center rounded-md border-2 border-muted bg-popover p-1 hover:bg-accent">
+                    <div className="items-center rounded-md border-0 bg-popover p-1 hover:bg-accent">
                       <div className="space-y-2 rounded-sm bg-[#ecedef] p-2">
                         <div className="space-y-2 rounded-md bg-white p-2 shadow-sm">
                           <div className="h-2 w-[80px] rounded-lg bg-[#ecedef]" />

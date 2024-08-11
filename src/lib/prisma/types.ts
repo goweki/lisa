@@ -53,3 +53,29 @@ export function isInstitution(obj: any): obj is Institution {
     obj.hasOwnProperty("cases")
   );
 }
+
+// extends the Case type to include the relations
+export type Case = _Case & {
+  caseType?: _CaseType;
+  institution?: _Institution;
+  lawyer?: _User;
+};
+
+export function isCase(obj: any): obj is Case {
+  return (
+    // typeof obj === 'object' &&
+    // obj !== null &&
+    // typeof obj.id === 'number' &&
+    // typeof obj.name === 'string' &&
+    // typeof obj.constituencyId === 'string' &&
+    // typeof obj.party === 'string'
+    // Add other property checks as needed
+
+    obj !== null &&
+    typeof obj === "object" &&
+    obj.hasOwnProperty("name") &&
+    obj.hasOwnProperty("status") &&
+    obj.hasOwnProperty("clientParty") &&
+    obj.hasOwnProperty("clientName")
+  );
+}

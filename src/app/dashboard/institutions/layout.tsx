@@ -117,11 +117,11 @@ export default function InstitutionsPage({
     <main className="flex bg-muted/10 flex-col flex-1 gap-4 p-4 md:gap-8 md:p-10">
       {/* <div className="mx-auto grid w-full items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]"> */}
       <div className="w-full gap-2">
-        <h1 className="uppercase text-muted-foreground">Institutions</h1>
+        <h1 className="uppercase">Institutions</h1>
       </div>
       <div className="w-full items-start gap-6 flex flex-col md:flex-row">
         <nav
-          className="grid gap-4 text-sm text-muted-foreground w-full col-span-1 max-w-[240px] "
+          className="grid gap-4 text-sm w-full col-span-1 max-w-[240px] "
           x-chunk="dashboard-04-chunk-0"
         >
           <Input
@@ -135,9 +135,11 @@ export default function InstitutionsPage({
             }
           />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col space-y-1">
             <Link
-              className={`p-2 ${!instId ? "bg-muted/50" : ""}`}
+              className={`p-2 rounded ${
+                !instId ? "bg-primary/20" : "hover:bg-primary/10"
+              }`}
               href="/dashboard/institutions"
             >
               + create
@@ -146,8 +148,13 @@ export default function InstitutionsPage({
               filtInstitutions.map(({ id, name }) => (
                 <Link
                   key={id}
-                  className={`p-2 hover:bg-muted/25 ${
-                    instId === id ? "bg-muted/50" : ""
+                  // className={`p-2 ${
+                  //   instId === id
+                  //     ? "bg-primary text-primary-foreground"
+                  //     : "hover:bg-primary/75 hover:text-primary-foreground/75"
+                  // }`}
+                  className={`p-2 rounded ${
+                    instId === id ? "bg-primary/20" : "hover:bg-primary/10"
                   }`}
                   href={`/dashboard/institutions/${id}`}
                 >

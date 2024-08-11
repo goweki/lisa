@@ -38,7 +38,7 @@ export function BreadCrumb({
         <BreadcrumbSeparator /> */}
 
         <BreadcrumbItem>
-          <BreadcrumbPage className="text-4xl font-semibold text-muted-foreground">
+          <BreadcrumbPage className="text-4xl font-semibold">
             {current}
           </BreadcrumbPage>
         </BreadcrumbItem>

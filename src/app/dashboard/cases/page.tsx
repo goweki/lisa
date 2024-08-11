@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -36,55 +37,131 @@ import MultiSelect, {
 import { TemplateObj } from "@/lib/types";
 import { Institution as InstitutionType } from "@/lib/prisma/types";
 
-type newUserType = {
+type newCaseType = {
   name: TemplateObj;
-  email: TemplateObj;
-  role: string;
-  tel: TemplateObj;
-  institutionIds: string[];
+  description: string;
+  caseTypeID: string;
+  institutionID: string;
+  clientParty: string;
+  clientName: TemplateObj;
+  clientTel: TemplateObj;
 };
 
-const _defaultUser: newUserType = {
+const _defaultCase: newCaseType = {
   name: { value: "", error: "" },
-  email: { value: "", error: "" },
-  role: "lawyer",
-  tel: { value: "", error: "" },
-  institutionIds: [],
+  description: "",
+  caseTypeID: "",
+  institutionID: "",
+  clientParty: "",
+  clientName: { value: "", error: "" },
+  clientTel: { value: "", error: "" },
 };
 
-export default function UsersPage() {
+export default function CasesPage() {
   const {
-    data: { institutions, users },
+    data: { institutions, users, cases, caseTypes },
     refreshData,
   } = useContext(DataContext);
 
   const router = useRouter();
 
   const [UIstate, setUIstate] = useState("");
-  const [newUser, setNewUser] = useState(_defaultUser);
+  const [newCase, setNewCase] = useState({
+    ..._defaultCase,
+    institutionID: institutions[0].id,
+  });
+  const [options, setOptions] = useState<{
+    caseTypes: TemplateObj[];
+    institutions: TemplateObj[];
+    clientParties: string[];
+  }>({
+    caseTypes: [],
+    institutions: [],
+    clientParties: [],
+  });
 
-  //
-  function updateNewUserInstits(selections: MultiSelectOption[]) {
-    // console.log("Changed D1: ", selections);
-    setNewUser((prev) => {
-      return {
+  // update caseTypes options
+  useEffect(() => {
+    setOptions((prev) => ({
+      ...prev,
+      caseTypes: caseTypes.map(
+        ({ id, name }: { id: string; name: string }) => ({
+          value: id,
+          label: name,
+        })
+      ),
+    }));
+  }, [caseTypes]);
+
+  // update Institutions options
+  useEffect(() => {
+    setOptions((prev) => ({
+      ...prev,
+      institutions: institutions.map(
+        ({ id, name }: { id: string; name: string }) => ({
+          value: id,
+          label: name,
+        })
+      ),
+    }));
+  }, [institutions]);
+
+  // update clientParty options
+  useEffect(() => {
+    if (!newCase.caseTypeID) return;
+
+    const { primaryParty, secondaryParty } = caseTypes.find(
+      ({ id }: { id: string }) => id === newCase.caseTypeID
+    );
+    setOptions((prev) => ({
+      ...prev,
+      clientParties: [primaryParty, secondaryParty],
+    }));
+  }, [newCase.caseTypeID, caseTypes]);
+
+  //handle case initialization
+  async function initializeCase(e: React.MouseEvent<HTMLElement>) {
+    e.preventDefault();
+
+    //validate case name
+    const nameError_ = nameValidator(newCase.name.value);
+    if (nameError_) {
+      setNewCase((prev) => ({
         ...prev,
-        institutionIds: selections.map(({ value }) => value),
-      };
-    });
-  }
+        name: { ...prev.name, error: nameError_ },
+      }));
+      toast.error(nameError_);
+      return;
+    }
 
-  //handle user initialization
-  async function initializeUser(e: React.MouseEvent<HTMLElement>) {
-    // validate
-    // if (session.user.role !== "admin") {
-    //   toast.error("User validation failed");
-    //   return;
-    // }
+    //validate client name
+    const clientNameError_ = nameValidator(newCase.clientName.value);
+    if (clientNameError_) {
+      setNewCase((prev) => ({
+        ...prev,
+        clientName: { ...prev.clientName, error: nameError_ },
+      }));
+      toast.error(clientNameError_);
+      return;
+    }
+
+    //validate tel
+    const clientTelError_ = telValidator(newCase.clientTel.value);
+    if (clientTelError_) {
+      setNewCase((prev) => ({
+        ...prev,
+        clientTel: { ...prev.clientTel, error: clientTelError_ },
+      }));
+      toast.error(clientTelError_);
+      return;
+    }
+
     const inputErrors_ = {
-      tel: telValidator(newUser.tel.value),
-      email: emailValidator(newUser.email.value),
-      name: nameValidator(newUser.name.value),
+      name: nameValidator(newCase.name.value),
+      // description: "",
+      caseTypeID: !newCase.caseTypeID ? "No Case Type provided" : "",
+      institutionID: !newCase.institutionID ? "No Institution provided" : "",
+      clientParty: !newCase.clientParty ? "No Client Party provided" : "",
     };
     //
     const errors_ = Object.values(inputErrors_).filter(Boolean);
@@ -94,70 +171,67 @@ export default function UsersPage() {
       });
       return;
     }
-    //
-    if (newUser.institutionIds.length === 0) {
-      toast.error("No institution assigned!");
-      return;
-    }
-    //new user obj
-    const body_ = {
-      name: newUser.name.value,
-      email: newUser.email.value,
-      role: newUser.role || null,
-      tel: newUser.tel.value || null,
-      institutionIds: newUser.institutionIds,
-    };
-    console.log("body_", body_);
 
-    const fetchOptions = {
-      method: "POST",
-      body: JSON.stringify(body_),
+    const newCaseObj = {
+      name: newCase.name.value,
+      description: newCase.description,
+      caseTypeID: newCase.caseTypeID,
+      institutionID: newCase.institutionID,
+      clientParty: newCase.clientParty,
+      clientName: newCase.clientName.value,
+      clientTel: newCase.clientTel.value,
     };
+    console.log("Initializing case", newCaseObj);
 
     setUIstate("loading");
 
     try {
-      // API call, using fetch
-      const response = await fetch("/api/dashboard/user", fetchOptions).then(
+      // fetch options
+      let fetchOptions = {
+        method: "POST",
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   'Content-Type': 'application/x-www-form-urlencoded',
+        // },
+        body: JSON.stringify(newCaseObj),
+      };
+
+      // POST request using fetch
+      const _res = await fetch("/api/dashboard/case", fetchOptions).then(
         async (res_) => {
-          if (res_?.status === 200) {
+          if (res_.ok) {
             return await res_.json();
           } else {
             console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_?.status] ?? "Unknown error");
-            setUIstate("OK");
-            return;
+            setUIstate(httpCodes[res_.status]);
           }
         }
       );
-      if (!response) return;
-      // response is truthy
-      if (response.success) {
+      if (_res?.success) {
         console.log(
-          "SUCCESS: user created\n > ",
-          response.success.email,
-          "\n.............."
+          "SUCCESS: case initialized successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
         );
-        toast.success("User created!");
+        toast.success("Case initialized successfully!");
         await refreshData();
-        return router.push(`/dashboard/users/${response.success.id}`);
+        router.replace(`/dashboard/cases/${_res.success.id}`);
       } else {
-        console.log(
-          "FAILED: User not created\n > ",
-          response,
-          "\n.............."
+        console.error(
+          "ERROR: failed to initialize case at /dashboard/cases/new /page\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
         );
-        toast.error(response.failed ?? response.error ?? "Unknown error");
-        setUIstate("OK");
+        setUIstate(_res?.error ?? "No Response, check internet connection");
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error("User initialization failed:", error.message);
+        console.error("Case initialization failed:", error.message);
       } else {
-        console.error("User initialization failed:", error);
+        console.error("Case initialization failed:", error);
       }
       // setUIstate("Error: Institution was not initialized");
-      toast.error("User NOT initialized");
+      toast.error("Case NOT initialized");
     }
   }
 
@@ -166,110 +240,192 @@ export default function UsersPage() {
       <CardHeader>
         {/* <CardTitle>Create New</CardTitle> */}
         <CardDescription className="text-lg text-muted-foreground font-semibold">
-          Create New User
+          Create New Case
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4 w-full">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="name" className="opacity-75">
-              Names *
+              Case Name *
             </Label>
             <Input
               type="text"
               id="name"
-              placeholder="user's Names"
+              placeholder="case Name"
               className="placeholder:italic"
-              value={newUser.name.value}
+              value={newCase.name.value}
               onChange={(e) =>
-                setNewUser((prev) => ({
+                setNewCase((prev) => ({
                   ...prev,
                   name: { error: "", value: e.target.value },
                 }))
               }
             />
           </div>
-          <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="email" className="opacity-75">
-              Email *
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="user's Email"
-              className="placeholder:italic"
-              value={newUser.email.value}
-              onChange={(e) =>
-                setNewUser((prev) => ({
-                  ...prev,
-                  email: { error: "", value: e.target.value },
-                }))
-              }
-            />
-          </div>
-          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="role" className="opacity-75">
-              Role *
+          <div id="typeWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="type" className="opacity-75">
+              Type *
             </Label>
             <Select
-              name="role"
-              value={newUser.role}
+              name="type"
+              value={newCase.caseTypeID}
               onValueChange={(value) => {
-                setNewUser((prev) => ({
+                setNewCase((prev) => ({
                   ...prev,
-                  role: value,
+                  caseTypeID: value,
                 }));
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select user's role" />
+                <SelectValue placeholder="Select case type" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="lawyer">Lawyer</SelectItem>
+              <SelectContent className="bg-muted">
+                {options.caseTypes.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="tel" className="opacity-75">
-              Phone No.
+          <div
+            id="institutionWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="role" className="opacity-75">
+              Institution *
+            </Label>
+            <Select
+              name="institution"
+              value={newCase.institutionID}
+              onValueChange={(value) => {
+                setNewCase((prev) => ({
+                  ...prev,
+                  institutionID: value,
+                }));
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select an institution" />
+              </SelectTrigger>
+              <SelectContent className="bg-muted">
+                {options.institutions.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div
+            id="clientPartyWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="clientParty" className="opacity-75">
+              client Party *
+            </Label>
+            <Select
+              name="clientParty"
+              value={newCase.clientParty}
+              disabled={!newCase.caseTypeID}
+              onValueChange={(value) => {
+                setNewCase((prev) => ({
+                  ...prev,
+                  clientParty: value,
+                }));
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={
+                    !newCase.caseTypeID
+                      ? "Fill case type to activate"
+                      : "Select a party"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent className="bg-muted">
+                {options.clientParties.map((party) => (
+                  <SelectItem key={party} value={party}>
+                    {party}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div
+            id="clientNameWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="clientName" className="opacity-75">
+              client Name *
             </Label>
             <Input
-              type="tel"
-              id="tel"
-              placeholder="user's Phone No."
+              type="text"
+              id="clientName"
+              placeholder="Client Name"
               className="placeholder:italic"
-              value={newUser.tel.value}
+              value={newCase.clientName.value}
               onChange={(e) =>
-                setNewUser((prev) => ({
+                setNewCase((prev) => ({
                   ...prev,
-                  tel: { error: "", value: e.target.value },
+                  clientName: { error: "", value: e.target.value },
                 }))
               }
             />
           </div>
-          <div id="instWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="roleWrapper" className="opacity-75">
-              Institutions *
+          <div
+            id="clientTelWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="clientTel" className="opacity-75">
+              client Phone No.
             </Label>
-            <MultiSelect
-              // value={instOptions}
-
-              onChange={updateNewUserInstits}
-              //
-              defaultOptions={institutions.map(
-                ({ id, name }: { id: string; name: string }) => ({
-                  value: id,
-                  label: name,
-                })
-              )}
-              //
-              placeholder="Select Institutions..."
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  no results found.
-                </p>
+            <Input
+              type="tel"
+              id="clientTel"
+              placeholder="client's Phone No."
+              className="placeholder:italic"
+              value={newCase.clientTel.value}
+              onChange={(e) =>
+                setNewCase((prev) => ({
+                  ...prev,
+                  clientTel: { error: "", value: e.target.value },
+                }))
               }
+            />
+          </div>
+          <div
+            id="descriptionWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="description" className="opacity-75">
+              Case Description
+            </Label>
+            {/* <Input
+              type="text"
+              id="clientName"
+              placeholder="Client Name"
+              className="placeholder:italic"
+              value={newCase.clientName.value}
+              onChange={(e) =>
+                setNewCase((prev) => ({
+                  ...prev,
+                  clientName: { error: "", value: e.target.value },
+                }))
+              }
+            /> */}
+            <Textarea
+              value={newCase.description}
+              className="placeholder:italic"
+              onChange={(e) =>
+                setNewCase((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              placeholder="Type more information about case"
             />
           </div>
         </form>
@@ -278,7 +434,7 @@ export default function UsersPage() {
         {UIstate === "loading" ? (
           <Loader1 />
         ) : (
-          <Button onClick={initializeUser}>Create User</Button>
+          <Button onClick={initializeCase}>Create Case</Button>
         )}
       </CardFooter>
     </Card>

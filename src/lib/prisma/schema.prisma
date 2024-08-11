@@ -35,6 +35,7 @@ model Institution {
 
 enum userRole {
   admin
+  advocate
   lawyer
 }
 
@@ -78,7 +79,6 @@ enum caseStatus {
 
 model Case {
   id              String     @id @default(auto()) @map("_id") @db.ObjectId
-  type            String
   name            String
   description     String?
   status          caseStatus @default(open)
@@ -91,15 +91,16 @@ model Case {
   otherPartyEmail String?
   court           String?
 
-  caseTypeID    String  @db.ObjectId
-  institutionID String  @db.ObjectId
-  userID        String? @db.ObjectId
+  caseTypeID String   @db.ObjectId
+  caseType   CaseType @relation(fields: [caseTypeID], references: [id])
+
+  institutionID String      @db.ObjectId
+  institution   Institution @relation(fields: [institutionID], references: [id])
+
+  userID String? @db.ObjectId
+  lawyer User?   @relation(fields: [userID], references: [id])
 
   tasks Task[]
-
-  caseType    CaseType    @relation(fields: [caseTypeID], references: [id])
-  institution Institution @relation(fields: [institutionID], references: [id])
-  lawyer      User?       @relation(fields: [userID], references: [id])
 
   @@map("cases")
 }
