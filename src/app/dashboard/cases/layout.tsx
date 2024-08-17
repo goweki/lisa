@@ -105,7 +105,7 @@ export default function CasesLayout({
       </div>
       <div className="w-full items-start gap-6 flex flex-col md:flex-row">
         <nav
-          className="grid gap-4 text-sm text-muted-foreground w-full col-span-1 max-w-[240px] "
+          className="grid gap-4 w-full col-span-1 max-w-[240px] "
           x-chunk="dashboard-04-chunk-0"
         >
           <Input
@@ -119,9 +119,11 @@ export default function CasesLayout({
             }
           />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col space-y-1">
             <Link
-              className={`p-2 ${!caseId ? "bg-muted/50" : ""}`}
+              className={`p-2 rounded ${
+                !caseId ? "bg-primary/20" : "hover:bg-primary/10"
+              }`}
               href="/dashboard/cases"
             >
               + create
@@ -138,13 +140,13 @@ export default function CasesLayout({
                 // </Link>
                 <Link
                   key={id}
-                  className={`p-2 hover:bg-muted/25 ${
-                    caseId === id ? "bg-muted/50" : ""
+                  className={`p-2 rounded ${
+                    caseId === id ? "bg-primary/20" : "hover:bg-primary/10"
                   }`}
                   href={`/dashboard/cases/${id}`}
                 >
                   <div className="font-medium">{name}</div>
-                  <div className="hidden text-sm text-muted-foreground/75 md:inline-block">
+                  <div className="hidden text-sm md:inline-block">
                     {caseType?.name}
                     <div className="italic">{clientParty}</div>
                   </div>

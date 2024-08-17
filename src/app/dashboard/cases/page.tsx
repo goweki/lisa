@@ -380,7 +380,7 @@ export default function CasesPage() {
             className="grid w-full items-center gap-1.5"
           >
             <Label htmlFor="clientTel" className="opacity-75">
-              client Phone No.
+              client Phone No. *
             </Label>
             <Input
               type="tel"
@@ -403,19 +403,7 @@ export default function CasesPage() {
             <Label htmlFor="description" className="opacity-75">
               Case Description
             </Label>
-            {/* <Input
-              type="text"
-              id="clientName"
-              placeholder="Client Name"
-              className="placeholder:italic"
-              value={newCase.clientName.value}
-              onChange={(e) =>
-                setNewCase((prev) => ({
-                  ...prev,
-                  clientName: { error: "", value: e.target.value },
-                }))
-              }
-            /> */}
+
             <Textarea
               value={newCase.description}
               className="placeholder:italic"

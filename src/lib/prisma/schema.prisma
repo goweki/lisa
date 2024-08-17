@@ -78,18 +78,21 @@ enum caseStatus {
 }
 
 model Case {
-  id              String     @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  description     String?
-  status          caseStatus @default(open)
-  clientParty     String
-  clientName      String
-  clientTel       String
-  clientEmail     String?
-  otherPartyName  String?
-  otherPartyTel   String?
-  otherPartyEmail String?
-  court           String?
+  id                    String     @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String
+  description           String?
+  status                caseStatus @default(open)
+  caseNumber            String?
+  clientParty           String
+  clientName            String
+  clientTel             String
+  clientID              String?
+  clientEmail           String?
+  otherPartyName        String?
+  otherPartyTel         String?
+  otherPartyEmail       String?
+  otherPartyDescription String?
+  court                 String?
 
   caseTypeID String   @db.ObjectId
   caseType   CaseType @relation(fields: [caseTypeID], references: [id])

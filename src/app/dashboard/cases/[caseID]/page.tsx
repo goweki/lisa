@@ -3,6 +3,7 @@ import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -252,6 +253,7 @@ export default function CaseView({ params }: { params: any }) {
       otherPartyEmail: caseEdit.otherPartyEmail || selected.otherPartyEmail,
       court: caseEdit.court || selected.court,
       userID: caseEdit.userID || selected.userID,
+      caseNumber: caseEdit.caseNumber || selected.caseNumber,
     };
     console.log("Initializing case", updatedCaseObj);
 
@@ -410,6 +412,24 @@ export default function CaseView({ params }: { params: any }) {
               </SelectContent>
             </Select>
           </div>
+          <div id="caseNoWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="caseNo" className="opacity-75">
+              Case No.
+            </Label>
+            <Input
+              type="text"
+              id="caseNo"
+              placeholder="case Number (court filed)"
+              className="placeholder:italic"
+              value={caseEdit.caseNumber || (selected.caseNumber as string)}
+              onChange={(e) =>
+                setCaseEdit((prev) => ({
+                  ...prev,
+                  caseNumber: e.target.value,
+                }))
+              }
+            />
+          </div>
           <div id="lawyerWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="lawyer" className="opacity-75">
               Assignee
@@ -535,6 +555,26 @@ export default function CaseView({ params }: { params: any }) {
                     }
                   />
                 </div>
+                <div id="clientID" className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="clientEmail" className="opacity-75">
+                    client ID/Passport
+                  </Label>
+                  <Input
+                    type="numeric"
+                    id="id-passport"
+                    placeholder="client ID / passport No."
+                    className="placeholder:italic"
+                    value={
+                      caseEdit.clientEmail || (selected.clientEmail as string)
+                    }
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        clientEmail: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="otherPartyDetails">
@@ -643,6 +683,29 @@ export default function CaseView({ params }: { params: any }) {
                         otherPartyEmail: e.target.value,
                       }))
                     }
+                  />
+                </div>
+                <div
+                  id="otherPartyDescriptionWrapper"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="otherPartyDescription" className="opacity-75">
+                    Advocate&apos;s details details
+                  </Label>
+
+                  <Textarea
+                    value={
+                      caseEdit.otherPartyDescription ||
+                      (selected.otherPartyDescription as string)
+                    }
+                    className="placeholder:italic"
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        otherPartyDescription: e.target.value,
+                      }))
+                    }
+                    placeholder="opposing-party's representation"
                   />
                 </div>
               </AccordionContent>
