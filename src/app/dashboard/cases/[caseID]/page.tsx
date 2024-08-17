@@ -69,7 +69,7 @@ export default function CaseView({ params }: { params: any }) {
   });
   const [UIstate, setUIstate] = useState("");
 
-  // setSelected, get user by userID and update selected
+  // setSelected, get case by caseID and update selected
   useEffect(() => {
     if (caseID) {
       const _selected = cases.find(({ id }: { id: string }) => id === caseID);
@@ -107,11 +107,12 @@ export default function CaseView({ params }: { params: any }) {
   // update clientParty options
   useEffect(() => {
     if (!(caseEdit.caseTypeID || selected?.caseTypeID)) return;
-
+    // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
     const { primaryParty, secondaryParty } = caseTypes.find(
       ({ id }: { id: string }) =>
-        id === caseEdit.caseTypeID || selected?.caseTypeID
+        id === (caseEdit.caseTypeID || selected?.caseTypeID)
     );
+
     setOptions((prev) => ({
       ...prev,
       clientParties: [primaryParty, secondaryParty],
@@ -207,7 +208,7 @@ export default function CaseView({ params }: { params: any }) {
     }
     if (caseEdit.otherPartyEmail) {
       inputErrors.otherPartyEmailError_ = emailValidator(
-        caseEdit.otherPartyTel
+        caseEdit.otherPartyEmail
       );
     }
     if (caseEdit.court) {
@@ -306,7 +307,7 @@ export default function CaseView({ params }: { params: any }) {
     };
     setUIstate("loading");
     // DELETE api-call using fetch
-    const res = await fetch("/api/dashboard/user", fetchOptions).then(
+    const res = await fetch("/api/dashboard/case", fetchOptions).then(
       async (res_) => {
         if (res_?.ok) {
           return await res_.json();
@@ -323,16 +324,16 @@ export default function CaseView({ params }: { params: any }) {
 
     if (res.success) {
       console.log(
-        "SUCCESS: user deleted\n > ",
+        "SUCCESS: case deleted\n > ",
         res.success,
         "\n.............."
       );
 
-      toast.success("user deleted");
+      toast.success("case deleted");
       await refreshData();
       router.replace(`/dashboard/cases/`);
     } else {
-      console.log("FAILED: user not deleted\n > ", res, "\n..............");
+      console.log("FAILED: case not deleted\n > ", res, "\n..............");
       toast.error(res.failed ?? res.error ?? "Unknown error");
     }
     setUIstate("OK");
@@ -495,17 +496,113 @@ export default function CaseView({ params }: { params: any }) {
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="otherPartyDetails">
-              <AccordionTrigger>Other Party</AccordionTrigger>
-              <AccordionContent>
-                Yes. It comes with default styles that matches the other
-                components&apos; aesthetic.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>Is it animated?</AccordionTrigger>
-              <AccordionContent>
-                Yes. It&apos;s animated by default, but you can disable it if
-                you prefer.
+              <AccordionTrigger>Opposing Party</AccordionTrigger>
+              <AccordionContent className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4 gap-x-8">
+                <div
+                  id="otherPartyWrapper"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="otherParty" className="opacity-75">
+                    opposing Party *
+                  </Label>
+                  <Select
+                    name="otherParty"
+                    value={
+                      !(caseEdit.clientParty || selected.clientParty)
+                        ? ""
+                        : options.clientParties.find(
+                            (party) =>
+                              party !==
+                              (caseEdit.clientParty || selected.clientParty)
+                          )
+                    }
+                    // disabled={!newCase.caseTypeID}
+                    disabled={true}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={"Not found"} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-muted">
+                      {options.clientParties.map((party) => (
+                        <SelectItem key={party} value={party}>
+                          {party}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div
+                  id="otherPartyNameWrapper"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="otherPartyName" className="opacity-75">
+                    opposing-party Name
+                  </Label>
+                  <Input
+                    type="text"
+                    id="otherPartyName"
+                    placeholder="opposing-party Name"
+                    className="placeholder:italic"
+                    value={
+                      caseEdit.otherPartyName ||
+                      (selected.otherPartyName as string)
+                    }
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        otherPartyName: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div
+                  id="otherPartyTelWrapper"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="otherPartyTel" className="opacity-75">
+                    opposing-party Phone No.
+                  </Label>
+                  <Input
+                    type="tel"
+                    id="otherPartyTel"
+                    placeholder="opposing-party Pnone Number"
+                    className="placeholder:italic"
+                    value={
+                      caseEdit.otherPartyTel ||
+                      (selected.otherPartyTel as string)
+                    }
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        otherPartyTel: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div
+                  id="otherPartyEmailWrapper"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="otherPartyEmail" className="opacity-75">
+                    opposing-party Email
+                  </Label>
+                  <Input
+                    type="email"
+                    id="otherPartyEmail"
+                    placeholder="opposing-party Email"
+                    className="placeholder:italic"
+                    value={
+                      caseEdit.otherPartyEmail ||
+                      (selected.otherPartyEmail as string)
+                    }
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        otherPartyEmail: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>

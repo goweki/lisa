@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
-import { User as UserType } from "@/lib/prisma/types";
+import { Case as CaseType } from "@/lib/prisma/types";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import toast from "react-hot-toast";
@@ -49,7 +49,7 @@ export default function CasesLayout({
   } = useContext(DataContext);
 
   const [UIstate, setUIstate] = useState("");
-  const [filtCases, setFiltCases] = useState<UserType[]>([]);
+  const [filtCases, setFiltCases] = useState<CaseType[]>([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [caseId, setCaseId] = useState<string | null>(null);
 
@@ -62,7 +62,7 @@ export default function CasesLayout({
     setUIstate("OK");
   }, [pathname]);
 
-  //filter users by searchPhrase
+  //filter cases by searchPhrase
   useEffect(() => {
     setFiltCases(
       cases?.filter(
@@ -122,17 +122,17 @@ export default function CasesLayout({
           <div className="flex flex-col">
             <Link
               className={`p-2 ${!caseId ? "bg-muted/50" : ""}`}
-              href="/dashboard/users"
+              href="/dashboard/cases"
             >
               + create
             </Link>
             {filtCases.length > 0 &&
-              filtCases.map(({ id, name, role, institutions }) => (
+              filtCases.map(({ id, name, caseType, clientParty }) => (
                 // <Link
                 //   key={id}
                 //   // className="p-2 hover:bg-muted/25"
                 //   className={`p-2 ${userId === id ? "bg-muted/50" : ""}`}
-                //   href={`/dashboard/users/${id}`}
+                //   href={`/dashboard/cases/${id}`}
                 // >
                 //   {name}
                 // </Link>
@@ -141,11 +141,12 @@ export default function CasesLayout({
                   className={`p-2 hover:bg-muted/25 ${
                     caseId === id ? "bg-muted/50" : ""
                   }`}
-                  href={`/dashboard/users/${id}`}
+                  href={`/dashboard/cases/${id}`}
                 >
                   <div className="font-medium">{name}</div>
-                  <div className="hidden text-sm text-muted-foreground/75 md:inline-block italic">
-                    {role}:{institutions?.map(({ name }) => name).join(", ")}
+                  <div className="hidden text-sm text-muted-foreground/75 md:inline-block">
+                    {caseType?.name}
+                    <div className="italic">{clientParty}</div>
                   </div>
                 </Link>
               ))}
