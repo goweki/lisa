@@ -26,15 +26,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
 
 const profileFormSchema = z.object({
-  username: z
+  name: z
     .string()
-    .min(2, {
-      message: "Username must be at least 2 characters.",
+    .min(5, {
+      message: "Name must be at least 5 characters.",
     })
     .max(30, {
-      message: "Username must not be longer than 30 characters.",
+      message: "Name must not be longer than 30 characters.",
     }),
   email: z
     .string({
@@ -53,16 +54,19 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-// This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {
-  bio: "I own a computer.",
-  urls: [
-    { value: "https://shadcn.com" },
-    { value: "http://twitter.com/shadcn" },
-  ],
-};
-
 export function ProfileForm() {
+  const { data: authSession, status: authStatus } = useSession();
+
+  // This can come from your database or API.
+  const defaultValues: Partial<ProfileFormValues> = {
+    name: authSession?.user?.name || "",
+    bio: "I own a computer.",
+    urls: [
+      { value: "https://shadcn.com" },
+      { value: "http://twitter.com/shadcn" },
+    ],
+  };
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
@@ -85,21 +89,21 @@ export function ProfileForm() {
     });
   }
 
-  return (
+  return authStatus === "authenticated" && authSession.user ? (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="username"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="full names" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name. It can be your real name or a
-                pseudonym. You can only change this once every 30 days.
+                This is your public display name.
+                {/* You can only change this once every 30 days. */}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -145,47 +149,14 @@ export function ProfileForm() {
                 />
               </FormControl>
               <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
+                A short statement about yourself
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && "sr-only")}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && "sr-only")}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => append({ value: "" })}
-          >
-            Add URL
-          </Button>
-        </div>
         <Button type="submit">Update profile</Button>
       </form>
     </Form>
-  );
+  ) : null;
 }

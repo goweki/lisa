@@ -33,6 +33,7 @@ import { TemplateObj } from "@/lib/types";
 import {
   Card,
   CardContent,
+  CardTitle,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -325,13 +326,13 @@ export default function InstitutionView({ params }: { params: any }) {
   }
 
   //render
-  return !UIstate ? null : (
+  return UIstate && selected ? (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle className="font-light">{selected?.name}</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected?.name}
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4">
@@ -448,7 +449,7 @@ export default function InstitutionView({ params }: { params: any }) {
         )}
       </CardFooter>
     </Card>
-  );
+  ) : null;
 }
 
 // async function fetchInst(instId: string) {

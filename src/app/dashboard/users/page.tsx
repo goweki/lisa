@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardTitle,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -165,10 +166,10 @@ export default function UsersPage() {
   return (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle className="font-light">Create New User</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           Create New User
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4 w-full">
@@ -228,7 +229,11 @@ export default function UsersPage() {
               <SelectContent>
                 {/* <SelectItem value="admin">Administrator</SelectItem>
                 <SelectItem value="lawyer">Lawyer</SelectItem> */}
-                {Object.entries(userRoles).map(([key,value])=><SelectItem key={key} value={key}>{roleLabels[key]}</SelectItem>)}
+                {Object.entries(userRoles).map(([key, value]) => (
+                  <SelectItem key={key} value={key}>
+                    {roleLabels[key]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

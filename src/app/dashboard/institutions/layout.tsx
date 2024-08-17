@@ -121,7 +121,7 @@ export default function InstitutionsPage({
       </div>
       <div className="w-full items-start gap-6 flex flex-col md:flex-row">
         <nav
-          className="grid gap-4 text-sm w-full col-span-1 max-w-[240px] "
+          className="grid gap-4 w-full col-span-1 max-w-[240px] "
           x-chunk="dashboard-04-chunk-0"
         >
           <Input

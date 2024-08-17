@@ -27,7 +27,7 @@ export default function Navbar(props: { user?: Partial<User> }) {
   const pathname = usePathname();
   return (
     <nav
-      className={`z-40 sticky bg-muted/20 backdrop-blur-md w-full top-0 left-0 border-b border-emerald-800`}
+      className={`z-40 sticky bg-card/50 backdrop-blur-md w-full top-0 left-0 border-b border-border`}
     >
       <div className="flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="flex flex-row items-center">

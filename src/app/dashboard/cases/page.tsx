@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardTitle,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -238,10 +239,10 @@ export default function CasesPage() {
   return (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle className="font-light">Create New Case</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           Create New Case
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4 w-full">
@@ -278,7 +279,10 @@ export default function CasesPage() {
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select case type" />
+                <SelectValue
+                  className="placeholder:italic"
+                  placeholder="Select case type..."
+                />
               </SelectTrigger>
               <SelectContent className="bg-muted">
                 {options.caseTypes.map(({ value, label }) => (
@@ -341,7 +345,7 @@ export default function CasesPage() {
                   placeholder={
                     !newCase.caseTypeID
                       ? "Fill case type to activate"
-                      : "Select a party"
+                      : "Select a party..."
                   }
                 />
               </SelectTrigger>

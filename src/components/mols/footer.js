@@ -1,7 +1,7 @@
 import Link from "next/link";
 export default function Footer() {
   return (
-    <footer className="bg-muted/10">
+    <footer className="bg-card/50">
       <div className="w-full mx-auto">
         <div className="flex flex-col w-full">
           <hr className="w-full mt-3 border-font-inactive lg:mt-6" />

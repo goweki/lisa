@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardTitle,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -139,10 +140,10 @@ export default function InstitutionsPage() {
   return (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle className="font-light">Create New Institution</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           Create new institution
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4">

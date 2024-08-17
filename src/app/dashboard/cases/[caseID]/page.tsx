@@ -34,6 +34,7 @@ import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/lib/types";
 import {
   Card,
+  CardTitle,
   CardContent,
   CardDescription,
   CardFooter,
@@ -364,13 +365,13 @@ export default function CaseView({ params }: { params: any }) {
   return !UIstate || !selected ? null : (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle>{selected.name}</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected.name}
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
-        <form className=" flex flex-col gap-4">
+        <form className="flex flex-col gap-4">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="name" className="opacity-75">
               Case Name *
@@ -482,7 +483,7 @@ export default function CaseView({ params }: { params: any }) {
                     }}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={"Select a party"} />
+                      <SelectValue placeholder={"Select a party..."} />
                     </SelectTrigger>
                     <SelectContent className="bg-muted">
                       {options.clientParties.map((party) => (
