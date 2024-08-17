@@ -29,11 +29,12 @@ import {
 import { useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
-import { httpCodes } from "@/lib/configs";
+import { httpCodes, roleLabels } from "@/lib/configs";
 import MultiSelect, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
 import { TemplateObj } from "@/lib/types";
+import { userRole as userRoles } from "@prisma/client";
 import { Institution as InstitutionType } from "@/lib/prisma/types";
 
 type newUserType = {
@@ -225,8 +226,9 @@ export default function UsersPage() {
                 <SelectValue placeholder="Select user's role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="lawyer">Lawyer</SelectItem>
+                {/* <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="lawyer">Lawyer</SelectItem> */}
+                {Object.entries(userRoles).map(([key,value])=><SelectItem key={key} value={key}>{roleLabels[key]}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

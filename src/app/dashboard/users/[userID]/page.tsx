@@ -29,7 +29,8 @@ import {
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
-import { httpCodes } from "@/lib/configs";
+import { httpCodes, roleLabels } from "@/lib/configs";
+import { userRole as userRoles } from "@prisma/client";
 import { User, Institution } from "@/lib/prisma/types";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/lib/types";
@@ -408,8 +409,13 @@ export default function UserView({ params }: { params: any }) {
                 <SelectValue placeholder="Select user's role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="lawyer">Lawyer</SelectItem>
+                {/* <SelectItem value="admin">Administrator</SelectItem> */}
+                {/* <SelectItem value="lawyer">Lawyer</SelectItem> */}
+                {Object.keys(userRoles).map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {roleLabels[key]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -436,7 +442,7 @@ export default function UserView({ params }: { params: any }) {
               Institutions *
             </Label>
             <MultipleSelector
-              value={userEdit.institutionIDs.map((_id) => ({
+              value={userEdit.institutionIDs.map((_id: string) => ({
                 value: _id,
                 label: institutions.find(({ id }: { id: string }) => id === _id)
                   ?.name,

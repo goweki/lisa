@@ -243,7 +243,10 @@ export default function CaseView({ params }: { params: any }) {
       id: selected.id,
       name: caseEdit.name || selected.name,
       description: caseEdit.description || selected.description,
-      status: caseEdit.status || selected.status,
+      // status: caseEdit.status || selected.status,
+      court: caseEdit.court || selected.court,
+      userID: caseEdit.userID || selected.userID,
+      caseNumber: caseEdit.caseNumber || selected.caseNumber,
       clientParty: caseEdit.clientParty || selected.clientParty,
       clientTel: caseEdit.clientTel || selected.clientTel,
       clientEmail: caseEdit.clientEmail || selected.clientEmail,
@@ -251,9 +254,9 @@ export default function CaseView({ params }: { params: any }) {
       otherPartyName: caseEdit.otherPartyName || selected.otherPartyName,
       otherPartyTel: caseEdit.otherPartyTel || selected.otherPartyTel,
       otherPartyEmail: caseEdit.otherPartyEmail || selected.otherPartyEmail,
-      court: caseEdit.court || selected.court,
-      userID: caseEdit.userID || selected.userID,
-      caseNumber: caseEdit.caseNumber || selected.caseNumber,
+
+      otherPartyDescription:
+        caseEdit.otherPartyDescription || selected.otherPartyDescription,
     };
     console.log("Initializing case", updatedCaseObj);
 
@@ -690,7 +693,7 @@ export default function CaseView({ params }: { params: any }) {
                   className="grid w-full items-center gap-1.5"
                 >
                   <Label htmlFor="otherPartyDescription" className="opacity-75">
-                    Advocate&apos;s details details
+                    Advocate&apos;s Information
                   </Label>
 
                   <Textarea
@@ -698,14 +701,14 @@ export default function CaseView({ params }: { params: any }) {
                       caseEdit.otherPartyDescription ||
                       (selected.otherPartyDescription as string)
                     }
-                    className="placeholder:italic"
+                    className="placeholder:italic "
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
                         otherPartyDescription: e.target.value,
                       }))
                     }
-                    placeholder="opposing-party's representation"
+                    placeholder="opposing-party's representation details"
                   />
                 </div>
               </AccordionContent>
