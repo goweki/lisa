@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// check of value is a key, given an object
+// check if value is a key, given an object
 export function isKeyOf<T extends object>(
   key: string | number | symbol,
   obj: T
@@ -35,4 +35,17 @@ export function resizeImageFile(file: File): Promise<any> {
       "file" // Encoding type: base64 | blob | file.
     );
   });
+}
+
+// check two arrays for equality
+export function arraysEqual(arr1: string[], arr2: string[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false;
+    }
+  }
+  return true;
 }

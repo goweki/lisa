@@ -31,7 +31,7 @@ import {
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { User, Institution } from "@/lib/prisma/types";
-import { isKeyOf } from "@/lib/utils";
+import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/lib/types";
 import {
   Card,
@@ -44,39 +44,51 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InputImage } from "./_components/inputs";
+import MultipleSelector, {
+  Option as MultiSelectOption,
+} from "@/components/atoms/multiSelect";
 
 interface UserEdit {
   name: string;
   email: string;
   tel: string;
   role: string;
+  institutionIDs: string[];
   photoFile: File | null;
 }
+
+const def_UserEdit = {
+  name: "",
+  email: "",
+  tel: "",
+  role: "",
+  institutionIDs: [],
+  photoFile: null,
+};
 
 export default function UserView({ params }: { params: any }) {
   const { userID } = params;
   const {
-    data: { users },
+    data: { users, institutions },
     refreshData,
   } = useContext(DataContext);
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
   const [selected, setSelected] = useState<User>();
-  const [userEdit, setUserEdit] = useState<UserEdit>({
-    name: "",
-    email: "",
-    tel: "",
-    role: "",
-    photoFile: null,
-  });
+  const [userEdit, setUserEdit] = useState<UserEdit>(def_UserEdit);
   const [userIsUpdated, setUserIsUpdated] = useState(false);
   const [UIstate, setUIstate] = useState("");
 
-  // get user by userID
+  // setSelected, get user by userID and update selected
   useEffect(() => {
     if (userID) {
-      setSelected(users.find(({ id }: { id: string }) => id === userID));
+      const _selected = users.find(({ id }: { id: string }) => id === userID);
+      setSelected(_selected);
+      setUserEdit((prev) => ({
+        ...prev,
+        institutionIDs: _selected?.institutionIDs,
+      }));
     }
     setUIstate("OK");
   }, [users, userID]);
@@ -104,14 +116,20 @@ export default function UserView({ params }: { params: any }) {
         // if no values in editObj
         if (Object.values(userEdit).filter(Boolean).length === 0) return false;
         if (userEdit.photoFile) return true;
+        // if (userEdit.photoFile) return true;
         for (const key in editObj) {
           if (selected_.hasOwnProperty(key)) {
             // console.log("Updates");
+            //
             if (isKeyOf<User>(key, selected_ as User)) {
               if (
-                editObj[key] &&
-                selected_.hasOwnProperty(key) &&
-                selected_[key] !== editObj[key]
+                (Array.isArray(editObj[key])
+                  ? editObj[key].length > 0
+                  : editObj[key]) &&
+                (Array.isArray(editObj[key])
+                  ? !arraysEqual(editObj[key], selected_[key] as string[])
+                  : selected_[key] !== editObj[key]) &&
+                selected_.hasOwnProperty(key)
               ) {
                 // console.log(
                 //   `${key} has changed from ${selected_[key]} to ${editObj[key]}`
@@ -138,7 +156,6 @@ export default function UserView({ params }: { params: any }) {
     }
 
     //if input error
-
     const inputErrors = {
       nameError_: "",
       emailError_: "",
@@ -206,19 +223,20 @@ export default function UserView({ params }: { params: any }) {
       }
 
       //Updated User
-      const fetchBody = {
+      const updatedUserObj = {
         id: selected.id,
         name: userEdit.name || selected.name,
         email: userEdit.email || selected.email,
         photoUrl: photoUrl_ || selected.photoUrl,
         tel: userEdit.tel || selected.tel,
         role: userEdit.role || selected.role,
+        institutionIDs: userEdit.institutionIDs,
       };
       // console.log("Updated User: ", fetchBody);
 
       const fetchOptions = {
         method: "PUT",
-        body: JSON.stringify(fetchBody),
+        body: JSON.stringify(updatedUserObj),
       };
 
       // PUT request using fetch
@@ -243,6 +261,7 @@ export default function UserView({ params }: { params: any }) {
           "\n.............."
         );
         toast.success("user updated");
+        setUserEdit(def_UserEdit);
         await refreshData();
       } else {
         console.log("FAILED: User not updated\n > ", res, "\n..............");
@@ -257,6 +276,17 @@ export default function UserView({ params }: { params: any }) {
       }
       setUIstate("Error: User NOT updated");
     }
+  }
+
+  // handle onSelect Institutions
+  function updateNewUserInstits(selections: MultiSelectOption[]) {
+    // console.log("Changed D1: ", selections);
+    setUserEdit((prev) => {
+      return {
+        ...prev,
+        institutionIDs: selections.map(({ value }) => value),
+      };
+    });
   }
 
   //func to Delete Case
@@ -398,6 +428,33 @@ export default function UserView({ params }: { params: any }) {
                   ...prev,
                   tel: e.target.value,
                 }))
+              }
+            />
+          </div>
+          <div id="instWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="roleWrapper" className="opacity-75">
+              Institutions *
+            </Label>
+            <MultipleSelector
+              value={userEdit.institutionIDs.map((_id) => ({
+                value: _id,
+                label: institutions.find(({ id }: { id: string }) => id === _id)
+                  ?.name,
+              }))}
+              onChange={(newVals) => updateNewUserInstits(newVals)}
+              //
+              defaultOptions={institutions.map(
+                ({ id, name }: { id: string; name: string }) => ({
+                  value: id,
+                  label: name,
+                })
+              )}
+              //
+              placeholder="Select Institutions..."
+              emptyIndicator={
+                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                  no results found.
+                </p>
               }
             />
           </div>

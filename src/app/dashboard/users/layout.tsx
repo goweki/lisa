@@ -29,12 +29,6 @@ import {
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
 
-const _defaultUser = {
-  name: { value: "", error: "" },
-  email: { value: "", error: "" },
-  tel: { value: "", error: "" },
-};
-
 export default function UsersLayout({
   children,
 }: Readonly<{
@@ -56,7 +50,6 @@ export default function UsersLayout({
   const [UIstate, setUIstate] = useState("");
   const [filtUsers, setFiltUsers] = useState<UserType[]>([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
-  const [newUser, setNewUser] = useState(_defaultUser);
   const [userId, setUserId] = useState<string | null>(null);
 
   //onMount pathname change
@@ -67,19 +60,6 @@ export default function UsersLayout({
     }
     setUIstate("OK");
   }, [pathname]);
-
-  //on input error
-  useEffect(() => {
-    if (newUser.email.error) toast.error(newUser.email.error);
-    if (newUser.name.error) toast.error(newUser.name.error);
-    if (newUser.tel.error) toast.error(newUser.tel.error);
-    setNewUser((prev) => ({
-      ...prev,
-      email: { ...prev.email, error: "" },
-      name: { ...prev.name, error: "" },
-      tel: { ...prev.tel, error: "" },
-    }));
-  }, [newUser.email.error, newUser.name.error, newUser.tel.error]);
 
   //filter users by searchPhrase
   useEffect(() => {
@@ -102,11 +82,11 @@ export default function UsersLayout({
     <main className="flex bg-muted/10 flex-col flex-1 gap-4 p-4 md:gap-8 md:p-10">
       {/* <div className="mx-auto grid w-full items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]"> */}
       <div className="w-full gap-2">
-        <h1 className="uppercase text-muted-foreground">Users</h1>
+        <h1 className="uppercase">Users</h1>
       </div>
       <div className="w-full items-start gap-6 flex flex-col md:flex-row">
         <nav
-          className="grid gap-4 text-sm text-muted-foreground w-full col-span-1 max-w-[240px] "
+          className="grid gap-4 w-full col-span-1 max-w-[240px] "
           x-chunk="dashboard-04-chunk-0"
         >
           <Input
@@ -120,9 +100,11 @@ export default function UsersLayout({
             }
           />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col space-y-1">
             <Link
-              className={`p-2 ${!userId ? "bg-muted/50" : ""}`}
+              className={`p-2 rounded ${
+                !userId ? "bg-primary/20" : "hover:bg-primary/10"
+              }`}
               href="/dashboard/users"
             >
               + create
@@ -139,14 +121,20 @@ export default function UsersLayout({
                 // </Link>
                 <Link
                   key={id}
-                  className={`p-2 hover:bg-muted/25 ${
-                    userId === id ? "bg-muted/50" : ""
+                  // className={`p-2 hover:bg-primary ${
+                  //   userId === id ? "bg-primary" : ""
+                  // }`}
+                  className={`p-2 rounded ${
+                    userId === id ? "bg-primary/20" : "hover:bg-primary/10"
                   }`}
                   href={`/dashboard/users/${id}`}
                 >
-                  <div className="font-medium">{name}</div>
-                  <div className="hidden text-sm text-muted-foreground/75 md:inline-block italic">
-                    {role}:{institutions?.map(({ name }) => name).join(", ")}
+                  <div>{name}</div>
+                  <div className={`hidden text-sm md:inline-block`}>
+                    {role} -
+                    <span className="ml-2 italic">
+                      {institutions?.map(({ name }) => name).join(", ")}
+                    </span>
                   </div>
                 </Link>
               ))}
