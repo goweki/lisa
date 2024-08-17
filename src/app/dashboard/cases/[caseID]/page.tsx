@@ -3,6 +3,7 @@ import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -62,10 +63,12 @@ export default function CaseView({ params }: { params: any }) {
     caseTypes: TemplateObj[];
     institutions: TemplateObj[];
     clientParties: string[];
+    assignees: TemplateObj[];
   }>({
     caseTypes: [],
     institutions: [],
     clientParties: [],
+    assignees: [],
   });
   const [UIstate, setUIstate] = useState("");
 
@@ -118,6 +121,19 @@ export default function CaseView({ params }: { params: any }) {
       clientParties: [primaryParty, secondaryParty],
     }));
   }, [caseEdit.caseTypeID, selected?.caseTypeID, caseTypes]);
+
+  // update assignees options
+  useEffect(() => {
+    setOptions((prev) => ({
+      ...prev,
+      assignees: users.map(
+        ({ id, name, role }: { id: string; name: string; role: string }) => ({
+          value: id,
+          label: `${role}: ${name}`,
+        })
+      ),
+    }));
+  }, [users]);
 
   // // UIstate OK after updating selected
   // useEffect(() => {
@@ -236,6 +252,8 @@ export default function CaseView({ params }: { params: any }) {
       otherPartyTel: caseEdit.otherPartyTel || selected.otherPartyTel,
       otherPartyEmail: caseEdit.otherPartyEmail || selected.otherPartyEmail,
       court: caseEdit.court || selected.court,
+      userID: caseEdit.userID || selected.userID,
+      caseNumber: caseEdit.caseNumber || selected.caseNumber,
     };
     console.log("Initializing case", updatedCaseObj);
 
@@ -394,6 +412,50 @@ export default function CaseView({ params }: { params: any }) {
               </SelectContent>
             </Select>
           </div>
+          <div id="caseNoWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="caseNo" className="opacity-75">
+              Case No.
+            </Label>
+            <Input
+              type="text"
+              id="caseNo"
+              placeholder="case Number (court filed)"
+              className="placeholder:italic"
+              value={caseEdit.caseNumber || (selected.caseNumber as string)}
+              onChange={(e) =>
+                setCaseEdit((prev) => ({
+                  ...prev,
+                  caseNumber: e.target.value,
+                }))
+              }
+            />
+          </div>
+          <div id="lawyerWrapper" className="grid w-full items-center gap-1.5">
+            <Label htmlFor="lawyer" className="opacity-75">
+              Assignee
+            </Label>
+            <Select
+              name="lawyer"
+              value={caseEdit.userID || (selected.userID as string) || ""}
+              onValueChange={(value) => {
+                setCaseEdit((prev) => ({
+                  ...prev,
+                  userID: value,
+                }));
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select an assignee" />
+              </SelectTrigger>
+              <SelectContent className="bg-muted">
+                {options.assignees.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="clientDetails">
               <AccordionTrigger>Client</AccordionTrigger>
@@ -407,7 +469,7 @@ export default function CaseView({ params }: { params: any }) {
                   </Label>
                   <Select
                     name="clientParty"
-                    value={caseEdit.clientParty || selected.clientParty}
+                    value={caseEdit.clientParty || selected.clientParty || ""}
                     // disabled={!newCase.caseTypeID}
                     onValueChange={(value) => {
                       setCaseEdit((prev) => ({
@@ -481,6 +543,26 @@ export default function CaseView({ params }: { params: any }) {
                     type="email"
                     id="clientEmail"
                     placeholder="client Email"
+                    className="placeholder:italic"
+                    value={
+                      caseEdit.clientEmail || (selected.clientEmail as string)
+                    }
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        clientEmail: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div id="clientID" className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="clientEmail" className="opacity-75">
+                    client ID/Passport
+                  </Label>
+                  <Input
+                    type="numeric"
+                    id="id-passport"
+                    placeholder="client ID / passport No."
                     className="placeholder:italic"
                     value={
                       caseEdit.clientEmail || (selected.clientEmail as string)
@@ -601,6 +683,29 @@ export default function CaseView({ params }: { params: any }) {
                         otherPartyEmail: e.target.value,
                       }))
                     }
+                  />
+                </div>
+                <div
+                  id="otherPartyDescriptionWrapper"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="otherPartyDescription" className="opacity-75">
+                    Advocate&apos;s details details
+                  </Label>
+
+                  <Textarea
+                    value={
+                      caseEdit.otherPartyDescription ||
+                      (selected.otherPartyDescription as string)
+                    }
+                    className="placeholder:italic"
+                    onChange={(e) =>
+                      setCaseEdit((prev) => ({
+                        ...prev,
+                        otherPartyDescription: e.target.value,
+                      }))
+                    }
+                    placeholder="opposing-party's representation"
                   />
                 </div>
               </AccordionContent>
