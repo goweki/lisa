@@ -362,10 +362,10 @@ export default function CaseView({ params }: { params: any }) {
   }
 
   //render
-  return !UIstate || !selected ? null : (
+  return UIstate && selected ? (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        <CardTitle>{selected.name}</CardTitle>
+        <CardTitle className="font-light">{selected.name}</CardTitle>
         {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected.name}
         </CardDescription> */}
@@ -825,5 +825,5 @@ export default function CaseView({ params }: { params: any }) {
         )}
       </CardFooter>
     </Card>
-  );
+  ) : null;
 }

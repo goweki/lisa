@@ -133,6 +133,21 @@ async function getHandler(req: Request, user: Partial<User>) {
         };
     const cases = await prisma.case.findMany(caseQuery);
 
+    //Get tasks
+    const caseIDs_ = cases.map(({ id }) => id);
+    const tasks = await prisma.task.findMany({
+      where: {
+        id: {
+          in: caseIDs_,
+        },
+      },
+      include: {
+        documents: true,
+        case: true,
+        completedBy: true,
+      },
+    });
+
     //Get case-types
     const caseTypes = await prisma.caseType.findMany({
       where: {
@@ -156,10 +171,10 @@ async function getHandler(req: Request, user: Partial<User>) {
         institution: true,
       },
     });
-    // institutions.forEach((inst) => delete inst.userIDs);
+
     // HTTP response
     return Response.json({
-      success: { institutions, users, cases, caseTypes },
+      success: { institutions, users, caseTypes, cases, tasks },
     });
   } catch (error) {
     // handle ERROR if caught

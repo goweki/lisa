@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
+
 import { SVGhamburger, SVGlogo } from "../atoms/svgs";
 import ThemeToggler from "../atoms/themeToggle";
 import {
@@ -36,34 +37,7 @@ export default function Navbar(props: { user?: Partial<User> }) {
               <SVGlogo className="h-8 mr-3" />
             </Link>
           </div>
-          {/* {!pathname.includes("/settings") && (
-            <div
-              className="hidden md:flex w-full md:w-auto items-center justify-between"
-              id="navbar-tab-items"
-            >
-              <ul className="flex flex-col p-4 ml-2 md:p-0 mt-4 md:flex-row md:space-x-8 md:mt-0">
-                {(pathname.includes("/dashboard")
-                  ? props.user?.role === "admin"
-                    ? menuItemsOptions.auth.admin
-                    : menuItemsOptions.auth.lawyer
-                  : menuItemsOptions.unauth
-                ).map((v, i) => (
-                  <Link
-                    key={i}
-                    href={v.onClick}
-                    className={`${
-                      pathname === v.onClick ||
-                      pathname.includes(v.label.toLowerCase())
-                        ? "underline font-bold"
-                        : ""
-                    } block py-2 px-4 rounded  md:hover:bg-transparent md:hover:text-emerald-700 md:p-0 md:dark:hover:text-emerald-500  dark:hover:bg-gray-700  md:dark:hover:bg-transparent dark:border-gray-700`}
-                  >
-                    {v.label}
-                  </Link>
-                ))}
-              </ul>
-            </div>
-          )} */}
+
           <div
             className="hidden md:flex w-full md:w-auto items-center justify-between"
             id="navbar-tab-items"
@@ -73,10 +47,10 @@ export default function Navbar(props: { user?: Partial<User> }) {
         </div>
         <div className="flex items-center space-x-2 px-2 md:px-6">
           <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4">
+            <ThemeToggler />
             {pathname.includes("/dashboard") ? (
               <MenuDropdown
                 menuText={props.user?.name?.split(" ")[0] as string}
-                // menuIcon={User}
                 menuItems={menuItemsOptions.user}
                 terminalButton={{
                   label: props.user ? "Sign Out" : "Sign In",
@@ -87,7 +61,6 @@ export default function Navbar(props: { user?: Partial<User> }) {
                     : async () => {
                         await signIn();
                       },
-                  type: "button",
                 }}
               />
             ) : (
@@ -99,6 +72,7 @@ export default function Navbar(props: { user?: Partial<User> }) {
               </Link>
             )}
           </ul>
+
           <div className="flex items-center justify-center mx-4 space-x-4">
             <div className="md:hidden">
               <HamburgerDropdown
@@ -119,11 +93,9 @@ export default function Navbar(props: { user?: Partial<User> }) {
                     : async () => {
                         await signIn();
                       },
-                  type: "button",
                 }}
               />
             </div>
-            {/* <ThemeToggler /> */}
           </div>
         </div>
       </div>
@@ -131,182 +103,84 @@ export default function Navbar(props: { user?: Partial<User> }) {
   );
 }
 
-const menuItemsOptions = {
+const menuItemsOptions: { [key: string]: any } = {
   unauth: [
-    { label: "Home", type: "link", onClick: "/" },
-    { label: "Blog", type: "link", onClick: "/blog" },
-    { label: "Contacts", type: "link", onClick: "/contacts" },
+    { label: "Home", link: "/" },
+    { label: "Blog", link: "/blog" },
+    { label: "Contacts", link: "/contacts" },
   ],
   auth: {
     admin: [
-      { label: "Home", type: "link", onClick: "/dashboard" },
+      { label: "Dashboard", link: "/dashboard" },
       {
         label: "Institutions",
-        type: "link",
-        onClick: "/dashboard/institutions",
+        link: "/dashboard/institutions",
       },
-      { label: "Users", type: "link", onClick: "/dashboard/users" },
-      { label: "Cases", type: "link", onClick: "/dashboard/cases" },
-      { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
+      { label: "Users", link: "/dashboard/users" },
+      { label: "Cases", link: "/dashboard/cases" },
+      { label: "Tasks", link: "/dashboard/tasks" },
+    ],
+    advocate: [
+      { label: "Dashboard", link: "/dashboard" },
+      { label: "Cases", link: "/dashboard/cases" },
+      { label: "Tasks", link: "/dashboard/tasks" },
     ],
     lawyer: [
-      { label: "Home", type: "link", onClick: "/dashboard" },
-      { label: "Cases", type: "link", onClick: "/dashboard/cases" },
-      { label: "Tasks", type: "link", onClick: "/dashboard/tasks" },
+      { label: "Dashboard", link: "/dashboard" },
+      { label: "Cases", link: "/dashboard/cases" },
+      { label: "Tasks", link: "/dashboard/tasks" },
     ],
   },
-  user: [{ label: "Settings", type: "link", onClick: "/dashboard/settings" }],
+  user: [{ label: "Settings", link: "/dashboard/settings" }],
 };
 
 // Nav Menu
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "My Institutions",
-    href: "/dashboard/institutions",
-    description: "Legal firms and entities ",
-  },
-  {
-    title: "Users",
-    href: "/dashboard/users",
-    description: "Administrators and Lawyers",
-  },
-  {
-    title: "Cases",
-    href: "/dashboard/cases",
-    description: "View all your legal issues",
-  },
-  {
-    title: "Tasks",
-    href: "/dashboard/tasks",
-    description: "View activities requisite to cases.",
-  },
-  // {
-  //   title: "Tabs",
-  //   href: "/docs/primitives/tabs",
-  //   description:
-  //     "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  // },
-  // {
-  //   title: "Tooltip",
-  //   href: "/docs/primitives/tooltip",
-  //   description:
-  //     "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  // },
-];
-
-// Nav Menu
 function NavigationMenuComponent(props: { user?: Partial<User> }) {
+  //
   const pathname = usePathname();
+  const { data: authSession, status: authStatus } = useSession();
 
   //render
-  return pathname.includes("/dashboard") ? (
-    <NavigationMenu>
-      <NavigationMenuList className="gap-4">
-        <NavigationMenuItem>
-          <Link
-            href="/dashboard"
-            className={`text-foreground hover:text-primary ${
-              pathname === "/dashboard" ? "font-bold" : "font-normal"
-            }`}
-          >
-            Dashboard
-          </Link>
-        </NavigationMenuItem>
-        {props.user?.role === "admin" && (
-          <>
-            <NavigationMenuItem>
-              <Link
-                href="/dashboard/institutions"
-                className={`text-foreground hover:text-primary ${
-                  pathname.includes("/dashboard/institutions")
-                    ? "font-bold"
-                    : "font-normal"
-                }`}
-              >
-                Institutions
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link
-                href="/dashboard/users"
-                className={`text-foreground hover:text-primary ${
-                  pathname.includes("/dashboard/users")
-                    ? "font-bold"
-                    : "font-normal"
-                }`}
-              >
-                Users
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link
-                href="/dashboard/cases"
-                className={`text-foreground hover:text-primary ${
-                  pathname.includes("/dashboard/cases")
-                    ? "font-bold"
-                    : "font-normal"
-                }`}
-              >
-                Cases
-              </Link>
-            </NavigationMenuItem>
-          </>
-        )}
-      </NavigationMenuList>
-    </NavigationMenu>
-  ) : (
-    <NavigationMenu>
-      <NavigationMenuList className="gap-4">
-        <NavigationMenuItem>
-          {/* <Link href="/dashboard"> */}
-          <NavigationMenuLink
-            className={`text-foreground hover:text-foreground ${
-              pathname === "/"
-                ? "bg-muted/50 hover:bg-muted/50"
-                : "bg-transparent"
-            } ${navigationMenuTriggerStyle()} `}
-            href="/"
-          >
-            Home
-          </NavigationMenuLink>
-          {/* </Link> */}
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          {/* <Link href="/blog" legacyBehavior passHref> */}
-          <NavigationMenuLink
-            className={`text-foreground hover:text-foreground ${
-              pathname === "/blog"
-                ? "bg-muted/50 hover:bg-muted/50"
-                : "bg-transparent"
-            } ${navigationMenuTriggerStyle()} `}
-            href="/blog"
-          >
-            Blog
-          </NavigationMenuLink>
-          {/* </Link> */}
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          {/* <Link href="/contacts" legacyBehavior passHref> */}
-          <NavigationMenuLink
-            // className={navigationMenuTriggerStyle() + " bg-transparent"}
-            className={`text-foreground hover:text-foreground ${
-              pathname === "/contacts"
-                ? "bg-muted/50 hover:bg-muted/50"
-                : "bg-transparent"
-            } ${navigationMenuTriggerStyle()} `}
-            href="/contacts"
-          >
-            Contacts
-          </NavigationMenuLink>
-          {/* </Link> */}
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
-  );
+  if (authSession?.user)
+    return pathname.includes("/dashboard") ? (
+      <NavigationMenu>
+        <NavigationMenuList className="gap-4">
+          {menuItemsOptions.auth[authSession.user.role].map(
+            ({ label, link }: { label: string; link: string }) => (
+              <NavigationMenuItem key={label}>
+                <Link
+                  href={link}
+                  className={`text-foreground hover:text-primary ${
+                    pathname === link ? "font-bold" : "font-normal"
+                  }`}
+                >
+                  {label}
+                </Link>
+              </NavigationMenuItem>
+            )
+          )}
+        </NavigationMenuList>
+      </NavigationMenu>
+    ) : (
+      <NavigationMenu>
+        <NavigationMenuList className="gap-4">
+          {menuItemsOptions.unauth.map(
+            ({ label, link }: { label: string; link: string }) => (
+              <NavigationMenuItem key={label}>
+                <Link
+                  href={link}
+                  className={`text-foreground hover:text-primary ${
+                    pathname === link ? "font-bold" : "font-normal"
+                  }`}
+                >
+                  {label}
+                </Link>
+              </NavigationMenuItem>
+            )
+          )}
+        </NavigationMenuList>
+      </NavigationMenu>
+    );
 }
 
 const ListItem = React.forwardRef<

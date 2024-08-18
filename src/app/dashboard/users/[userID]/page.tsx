@@ -37,6 +37,7 @@ import { TemplateObj } from "@/lib/types";
 import {
   Card,
   CardContent,
+  CardTitle,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -348,10 +349,10 @@ export default function UserView({ params }: { params: any }) {
   return !UIstate ? null : (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle className="font-light">{selected?.name}</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected?.name}
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4">
