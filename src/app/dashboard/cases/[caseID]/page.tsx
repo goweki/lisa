@@ -34,6 +34,7 @@ import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/lib/types";
 import {
   Card,
+  CardTitle,
   CardContent,
   CardDescription,
   CardFooter,
@@ -243,7 +244,10 @@ export default function CaseView({ params }: { params: any }) {
       id: selected.id,
       name: caseEdit.name || selected.name,
       description: caseEdit.description || selected.description,
-      status: caseEdit.status || selected.status,
+      // status: caseEdit.status || selected.status,
+      court: caseEdit.court || selected.court,
+      userID: caseEdit.userID || selected.userID,
+      caseNumber: caseEdit.caseNumber || selected.caseNumber,
       clientParty: caseEdit.clientParty || selected.clientParty,
       clientTel: caseEdit.clientTel || selected.clientTel,
       clientEmail: caseEdit.clientEmail || selected.clientEmail,
@@ -251,9 +255,9 @@ export default function CaseView({ params }: { params: any }) {
       otherPartyName: caseEdit.otherPartyName || selected.otherPartyName,
       otherPartyTel: caseEdit.otherPartyTel || selected.otherPartyTel,
       otherPartyEmail: caseEdit.otherPartyEmail || selected.otherPartyEmail,
-      court: caseEdit.court || selected.court,
-      userID: caseEdit.userID || selected.userID,
-      caseNumber: caseEdit.caseNumber || selected.caseNumber,
+
+      otherPartyDescription:
+        caseEdit.otherPartyDescription || selected.otherPartyDescription,
     };
     console.log("Initializing case", updatedCaseObj);
 
@@ -358,16 +362,16 @@ export default function CaseView({ params }: { params: any }) {
   }
 
   //render
-  return !UIstate || !selected ? null : (
+  return UIstate && selected ? (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        {/* <CardTitle>Create New</CardTitle> */}
-        <CardDescription className="text-lg text-muted-foreground font-semibold">
+        <CardTitle className="font-light">{selected.name}</CardTitle>
+        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected.name}
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent>
-        <form className=" flex flex-col gap-4">
+        <form className="flex flex-col gap-4">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="name" className="opacity-75">
               Case Name *
@@ -479,7 +483,7 @@ export default function CaseView({ params }: { params: any }) {
                     }}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={"Select a party"} />
+                      <SelectValue placeholder={"Select a party..."} />
                     </SelectTrigger>
                     <SelectContent className="bg-muted">
                       {options.clientParties.map((party) => (
@@ -690,7 +694,7 @@ export default function CaseView({ params }: { params: any }) {
                   className="grid w-full items-center gap-1.5"
                 >
                   <Label htmlFor="otherPartyDescription" className="opacity-75">
-                    Advocate&apos;s details details
+                    Advocate&apos;s Information
                   </Label>
 
                   <Textarea
@@ -698,14 +702,14 @@ export default function CaseView({ params }: { params: any }) {
                       caseEdit.otherPartyDescription ||
                       (selected.otherPartyDescription as string)
                     }
-                    className="placeholder:italic"
+                    className="placeholder:italic "
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
                         otherPartyDescription: e.target.value,
                       }))
                     }
-                    placeholder="opposing-party's representation"
+                    placeholder="opposing-party's representation details"
                   />
                 </div>
               </AccordionContent>
@@ -821,5 +825,5 @@ export default function CaseView({ params }: { params: any }) {
         )}
       </CardFooter>
     </Card>
-  );
+  ) : null;
 }

@@ -113,8 +113,14 @@ enum reminderChannels {
   sms
 }
 
+enum timeRegimes {
+  minutes
+  hours
+  days
+}
+
 type Reminder {
-  regime  String //hours,days
+  regime  timeRegimes //minutes,hours,days
   count   Int
   channel reminderChannels
 }
@@ -125,18 +131,20 @@ enum taskType {
 }
 
 model Task {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  type          taskType
-  name          String
-  dueDate       DateTime
-  description   String
-  documents     Document[]
-  caseID        String     @db.ObjectId
-  completedByID String?    @db.ObjectId
-
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  type        taskType
+  dueDate     DateTime
+  description String
   reminders   Reminder[]
-  case        Case       @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  completedBy User?      @relation(fields: [completedByID], references: [id])
+
+  documents Document[]
+
+  completedByID String? @db.ObjectId
+  completedBy   User?   @relation(fields: [completedByID], references: [id])
+
+  caseID String @db.ObjectId
+  case   Case   @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("tasks")
 }

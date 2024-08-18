@@ -13,20 +13,12 @@ const sidebarNavItems = [
     href: _rootPath,
   },
   {
-    title: "Account",
-    href: _rootPath + "/account",
-  },
-  {
     title: "Appearance",
     href: _rootPath + "/appearance",
   },
   {
     title: "Notifications",
     href: _rootPath + "/notifications",
-  },
-  {
-    title: "Display",
-    href: _rootPath + "/display",
   },
 ];
 

@@ -3,6 +3,8 @@ import {
   Institution as _Institution,
   Case as _Case,
   CaseType as _CaseType,
+  Task as _Task,
+  Document as _Document,
 } from "@prisma/client";
 
 // extends the User type to include the Institutions relation
@@ -77,5 +79,31 @@ export function isCase(obj: any): obj is Case {
     obj.hasOwnProperty("status") &&
     obj.hasOwnProperty("clientParty") &&
     obj.hasOwnProperty("clientName")
+  );
+}
+
+// extends the Case type to include the relations
+export type Task = _Task & {
+  completedBy?: _User;
+  documents?: _Document[];
+  case?: _Case;
+};
+
+export function isTask(obj: any): obj is Task {
+  return (
+    // typeof obj === 'object' &&
+    // obj !== null &&
+    // typeof obj.id === 'number' &&
+    // typeof obj.name === 'string' &&
+    // typeof obj.constituencyId === 'string' &&
+    // typeof obj.party === 'string'
+    // Add other property checks as needed
+
+    obj !== null &&
+    typeof obj === "object" &&
+    obj.hasOwnProperty("name") &&
+    obj.hasOwnProperty("type") &&
+    obj.hasOwnProperty("dueDate") &&
+    obj.hasOwnProperty("caseID")
   );
 }

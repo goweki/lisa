@@ -114,14 +114,14 @@ export default function InstitutionsPage({
 
   //render
   return UIstate && authStatus === "authenticated" ? (
-    <main className="flex bg-muted/10 flex-col flex-1 gap-4 p-4 md:gap-8 md:p-10">
+    <main className="flex flex-col flex-1 gap-4 p-4 md:gap-8 md:p-10">
       {/* <div className="mx-auto grid w-full items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]"> */}
       <div className="w-full gap-2">
         <h1 className="uppercase">Institutions</h1>
       </div>
       <div className="w-full items-start gap-6 flex flex-col md:flex-row">
         <nav
-          className="grid gap-4 text-sm w-full col-span-1 max-w-[240px] "
+          className="grid gap-4 w-full col-span-1 max-w-[240px] "
           x-chunk="dashboard-04-chunk-0"
         >
           <Input

@@ -5,75 +5,79 @@
 /* base */
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Pure White */
-    --foreground: 222.2 84% 4.9%; /* Nearly Black */
-    --card: 0 0% 98%; /* Very Light Gray */
-    --card-foreground: 222.2 84% 4.9%; /* Nearly Black */
-    --popover: 0 0% 98%; /* Very Light Gray */
-    --popover-foreground: 222.2 84% 4.9%; /* Nearly Black */
+    --background: 210 40% 98%; /* slate-50 */
+    --foreground: 222 47% 11%; /* slate-900 */
 
-    --primary: 163 88% 20%; /* Emerald-800 	hsl(163, 88%, 20%) */
-    --primary-foreground: 210 40% 98%; /* Light Gray */
+    --card: 210 40% 96%; /* slate-100 */
+    --card-foreground: 229 84% 5%; /* slate-950 */
 
-    --secondary: 210 15% 75%; /* Cool Gray-400 */
-    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark Gray */
+    --popover: 214 32% 91%; /* slate-200 */
+    --popover-foreground: 229 84% 5%; /* slate-950 */
 
-    --muted: 210 20% 86%; /* Light Gray-300 */
-    --muted-foreground: 215.4 16.3% 46.9%; /* Medium Gray */
+    --primary: 163 88% 20%; /* Emerald-800 */
+    --primary-foreground: 210 40% 98%; /* slate-50 */
 
-    --accent: 220 65% 60%; /* Blue-500 */
-    --accent-foreground: 210 40% 98%; /* Light Gray */
+    --secondary: 215 20% 65%; /* slate-400 */
+    --secondary-foreground: 222 47% 11%; /* slate-900 */
 
-    --destructive: 0 78% 50%; /* Red-600 */
-    --destructive-foreground: 210 40% 98%; /* Light Gray */
+    --muted: 213 27% 84%; /* slate-300 */
+    --muted-foreground: 215 19% 35%; /* slate-600 */
 
-    --border: 152 76% 80%; /* Emerald-200 	hsl(152, 76%, 80%) */
-    --input: 210 16% 93%; /* Gray-200 */
-    --ring: 158 45% 60%; /* Emerald-500 */
+    --accent: 220 65% 60%; /* blue-500 */
+    --accent-foreground: 210 40% 98%; /* slate-50 */
+
+    --destructive: 0 78% 50%; /* red-600 */
+    --destructive-foreground: 210 40% 98%; /* slate-50 */
+
+    --border: 152 76% 80%; /* emerald-200 */
+    --input: 214 32% 91%; /* slate-200 */
+    --ring: 160, 84%, 39%; /* emerald-500 */
 
     --radius: 0.5rem; /* 8px border radius */
 
-    --chart-1: 12 76% 61%; /* Orange-500 */
-    --chart-2: 173 58% 39%; /* Teal-500 */
-    --chart-3: 197 37% 24%; /* Blue-500 */
-    --chart-4: 43 74% 66%; /* Yellow-500 */
-    --chart-5: 27 87% 67%; /* Amber-500 */
+    --chart-1: 12 76% 61%; /* orange-500 */
+    --chart-2: 173 58% 39%; /* teal-500 */
+    --chart-3: 197 37% 24%; /* blue-500 */
+    --chart-4: 43 74% 66%; /* yellow-500 */
+    --chart-5: 27 87% 67%; /* amber-500 */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%; /* Nearly Black */
-    --foreground: 210 40% 98%; /* Light Gray */
-    --card: 222.2 84% 6%; /* Very Dark Gray */
-    --card-foreground: 210 40% 98%; /* Light Gray */
-    --popover: 222.2 84% 6%; /* Very Dark Gray */
-    --popover-foreground: 210 40% 98%; /* Light Gray */
+    --background: 229 84% 5%; /* slate-950 */
+    --foreground: 214 32% 91%; /* slate-200 */
 
-    --primary: 158 45% 35%; /* Emerald-800 */
-    --primary-foreground: 210 40% 98%; /* Light Gray */
+    --card: 222 47% 11%; /* slate-900 */
+    --card-foreground: 210 40% 98%; /* slate-50 */
 
-    --secondary: 210 15% 35%; /* Cool Gray-600 */
-    --secondary-foreground: 210 40% 98%; /* Light Gray */
+    --popover: 229 84% 5%; /* slate-950 */
+    --card-foreground: 214 32% 91%; /* slate-200 */
 
-    --muted: 210 10% 20%; /* Dark Gray-700 */
-    --muted-foreground: 210 40% 98%; /* Light Gray */
+    --primary: 163 88% 20%; /* emerald-800  */
+    --primary-foreground: 210 40% 98%; /* slate-50 */
 
-    --accent: 226 71% 40%; /* Blue-800 hsl(226, 71%, 40%) */
-    --accent-foreground: 210 40% 98%; /* Light Gray */
+    --secondary: 222 47% 11%; /* slate-900 */
+    --secondary-foreground: 215 20% 65%; /* slate-400 */
 
-    --destructive: 0 62% 37%; /* Red-800 */
-    --destructive-foreground: 210 40% 98%; /* Light Gray */
+    --muted: 215 19% 35%; /* slate-600 */
+    --muted-foreground: 213 27% 84%; /* slate-300 */
 
-    --border: 164 86% 16%; /* Emerald-900 	hsl(164, 86%, 16%) */
-    --input: 210 10% 25%; /* Gray-700 */
-    --ring: 158 45% 40%; /* Emerald-700 */
+    --accent: 226 71% 40%; /* blue-800 */
+    --accent-foreground: 214 32% 91%; /* slate-200 */
+
+    --destructive: 0 62% 37%; /* red-800 */
+    --destructive-foreground: 214 32% 91%; /* slate-200 */
+
+    --border: 164 86% 16%; /* emerald-900 */
+    --input: 215 25% 27%; /* slate-700 */
+    --ring: 158 45% 40%; /* emerald-700 */
 
     --radius: 0.5rem; /* 8px border radius */
 
-    --chart-1: 220 70% 50%; /* Blue-500 */
-    --chart-2: 160 60% 45%; /* Green-500 */
-    --chart-3: 30 80% 55%; /* Orange-500 */
-    --chart-4: 280 65% 60%; /* Purple-500 */
-    --chart-5: 340 75% 55%; /* Pink-500 */
+    --chart-1: 220 70% 50%; /* blue-500 */
+    --chart-2: 160 60% 45%; /* green-500 */
+    --chart-3: 30 80% 55%; /* orange-500 */
+    --chart-4: 280 65% 60%; /* purple-500 */
+    --chart-5: 340 75% 55%; /* pink-500 */
   }
 }
 
@@ -96,11 +100,14 @@
   h3 {
     @apply text-xl font-bold;
   }
+  main {
+    @apply bg-primary/5;
+  }
 }
 
 /* components */
 @layer components {
   .card {
-    @apply bg-gradient-to-b from-backg-surface to-backg-raised dark:from-backg-dark-surface dark:to-backg-dark-raised border-gray-300 dark:border-gray-800 p-4 m-4 md:m-6 rounded-lg transition-all;
+    @apply bg-gradient-to-b from-primary/10 to-background border-border/50 border-2 p-4 m-4 md:m-6 rounded-lg transition-all;
   }
 }
