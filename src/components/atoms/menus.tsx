@@ -25,11 +25,9 @@ export function MenuDropdown({
   return (
     <Menu>
       <MenuButton className="flex items-center justify-center w-fit px-2 py-2 rounded data-[open]:bg-popover">
-        {!!MenuIcon && (
-          <MenuIcon className="w-6 h-6 hover:text-emerald-700 dark:hover:text-emerald-500" />
-        )}
+        {!!MenuIcon && <MenuIcon className="w-6 h-6 hover:text-primary" />}
         {!!menuText && (
-          <span className="flex flex-row items-center mr-2 hover:text-emerald-700 dark:hover:text-emerald-500 flex-nowrap">
+          <span className="flex flex-row items-center mr-2 hover:text-primary flex-nowrap">
             {menuText} <ChevronDown className="w-4 h-4" />
           </span>
         )}

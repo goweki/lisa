@@ -120,7 +120,7 @@ enum timeRegimes {
 }
 
 type Reminder {
-  regime  timeRegimes //minutes,hours,days
+  regime  timeRegimes
   count   Int
   channel reminderChannels
 }

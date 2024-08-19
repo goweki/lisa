@@ -82,7 +82,7 @@ export function isCase(obj: any): obj is Case {
   );
 }
 
-// extends the Case type to include the relations
+// extends the Task type to include the relations
 export type Task = _Task & {
   completedBy?: _User;
   documents?: _Document[];

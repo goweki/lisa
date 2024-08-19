@@ -40,6 +40,15 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -47,6 +56,24 @@ import { InputImage } from "./_components/inputs";
 import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { TaskModal } from "./_components/taskModals";
 
 export default function CaseView({ params }: { params: any }) {
   const { caseID } = params;
@@ -714,93 +741,163 @@ export default function CaseView({ params }: { params: any }) {
                 </div>
               </AccordionContent>
             </AccordionItem>
+
+            <AccordionItem value="tasks">
+              <AccordionTrigger>Tasks</AccordionTrigger>
+              <AccordionContent className="p-4 pt-0">
+                <Card className="overflow-hidden bg-muted/25 border-none">
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-primary/25 hover:bg-primary/25">
+                          <TableHead>Task</TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            Type
+                          </TableHead>
+                          <TableHead className="hidden sm:table-cell">
+                            Status
+                          </TableHead>
+                          <TableHead className="hidden md:table-cell">
+                            due Date
+                          </TableHead>
+                          <TableHead className="text-center">
+                            {/* <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline">New Task</Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                  <DialogTitle>New Task</DialogTitle>
+                                  <DialogDescription>
+                                    Create a new task in
+                                    <span className="italic">
+                                      {" "}
+                                      {selected.name}.{" "}
+                                    </span>
+                                    Click save when you&apos;re done.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label
+                                      htmlFor="name"
+                                      className="text-right"
+                                    >
+                                      Name
+                                    </Label>
+                                    <Input
+                                      id="name"
+                                      defaultValue="Pedro Duarte"
+                                      className="col-span-3"
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label
+                                      htmlFor="type"
+                                      className="text-right"
+                                    >
+                                      Type
+                                    </Label>
+                                    <Input
+                                      id="type"
+                                      defaultValue="@peduarte"
+                                      className="col-span-3"
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label
+                                      htmlFor="dueDate"
+                                      className="text-right"
+                                    >
+                                      Due date
+                                    </Label>
+                                    <Input
+                                      id="dueDate"
+                                      defaultValue="@peduarte"
+                                      className="col-span-3"
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button type="submit">Save changes</Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog> */}
+                            <TaskModal selectedCase={selected} />
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+
+                      <TableBody>
+                        {tasks.length > 0 ? (
+                          tasks.map((task) => (
+                            <TableRow
+                              key={task.id}
+                              className="border-muted hover:bg-muted/25"
+                            >
+                              <TableCell>
+                                <div className="font-medium">{task.name}</div>
+                                <div className="hidden text-sm text-muted-foreground md:inline">
+                                  {task.case}
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                {task.type}
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <Badge className="text-xs" variant="outline">
+                                  {task.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">
+                                {task.dueDate}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      aria-haspopup="true"
+                                      size="icon"
+                                      variant="ghost"
+                                    >
+                                      <MoreHorizontal className="h-4 w-4" />
+                                      <span className="sr-only">
+                                        Toggle menu
+                                      </span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    align="end"
+                                    className="text-foreground"
+                                  >
+                                    {/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
+                                    <DropdownMenuItem>
+                                      Complete
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow className="bg-transparent hover:bg-transparent">
+                            <TableCell
+                              colSpan={5}
+                              className="text-center italic"
+                            >
+                              No tasks found
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
-          {/* <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="email" className="opacity-75">
-              Email *
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="official email"
-              className="placeholder:italic"
-              value={caseEdit.email || selected?.email}
-              onChange={(e) =>
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  email: e.target.value,
-                }))
-              }
-            />
-          </div>
-          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="role" className="opacity-75">
-              Role *
-            </Label>
-            <Select
-              name="role"
-              value={caseEdit.role || selected?.role}
-              onValueChange={(value) => {
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  role: value,
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select user's role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="lawyer">Lawyer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div id="telWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="tel" className="opacity-75">
-              Phone No.
-            </Label>
-            <Input
-              type="tel"
-              id="tel"
-              placeholder="user's Phone No."
-              className="placeholder:italic"
-              value={caseEdit.tel || (selected?.tel as string)}
-              onChange={(e) =>
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  tel: e.target.value,
-                }))
-              }
-            />
-          </div>
-          <div id="instWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="roleWrapper" className="opacity-75">
-              Institutions *
-            </Label>
-            <MultipleSelector
-              value={caseEdit.institutionIDs.map((_id) => ({
-                value: _id,
-                label: institutions.find(({ id }: { id: string }) => id === _id)
-                  ?.name,
-              }))}
-              onChange={(newVals) => updateNewUserInstits(newVals)}
-              //
-              defaultOptions={institutions.map(
-                ({ id, name }: { id: string; name: string }) => ({
-                  value: id,
-                  label: name,
-                })
-              )}
-              //
-              placeholder="Select Institutions..."
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  no results found.
-                </p>
-              }
-            />
-          </div> */}
         </form>
       </CardContent>
       <CardFooter className="border-t px-6 py-4 min-h-20">
@@ -827,3 +924,26 @@ export default function CaseView({ params }: { params: any }) {
     </Card>
   ) : null;
 }
+
+const tasks: { [key: string]: string }[] = [
+  {
+    id: "001",
+    name: "Court Summons",
+    case: "Case Name",
+    type: "Document",
+    dueDate: "01-01-2010",
+    reminders: "3",
+    status: "incomplete",
+  },
+  {
+    id: "002",
+    name: "Hearing",
+    case: "Another case name",
+    type: "Event",
+    dueDate: "04-04-2011",
+    reminders: "8",
+    status: "complete",
+  },
+];
+
+// const tasks: { [key: string]: string }[] = [];

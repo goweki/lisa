@@ -150,8 +150,10 @@ function NavigationMenuComponent(props: { user?: Partial<User> }) {
               <NavigationMenuItem key={label}>
                 <Link
                   href={link}
-                  className={`text-foreground hover:text-primary ${
-                    pathname === link ? "font-bold" : "font-normal"
+                  className={`text-foreground hover:underline ${
+                    pathname.substring(0, link.length) === link
+                      ? "font-bold"
+                      : "font-light"
                   }`}
                 >
                   {label}
