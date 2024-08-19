@@ -157,7 +157,7 @@ const newTaskFormSchema = z.object({
   dueDate: z.date({
     required_error: "Your task requires a due date",
   }),
-  description: z.string(),
+  description: z.string().optional(),
   reminders: z.array(reminderSchema),
 });
 
@@ -222,7 +222,7 @@ export function TaskModal({
       //   disabled: false,
       // }}
       Description={
-        selectedTask?.id ? (
+        !selectedTask?.id ? (
           <>
             {" "}
             Create a new task for
@@ -332,7 +332,7 @@ export function TaskModal({
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>
+                  <FormDescription className="italic">
                     Date must be within 6 months
                   </FormDescription>
                   <FormMessage />
@@ -348,12 +348,11 @@ export function TaskModal({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Tell us a little bit about yourself"
+                      placeholder="More info about the task"
                       className="resize-none"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>More info about task</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
