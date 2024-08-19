@@ -122,6 +122,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea";
 
 // schema for a single Reminder object
 const reminderSchema = z.object({
@@ -144,10 +154,10 @@ const newTaskFormSchema = z.object({
       message: "Task name MUST NOT be longer than 30 characters",
     }),
   type: z.string({ required_error: "Please provide a task type" }),
-  dueDate: z.string({ required_error: "Please provide a due date" }).datetime(),
-  description: z.string({
-    required_error: "Description is required",
+  dueDate: z.date({
+    required_error: "Your task requires a due date",
   }),
+  description: z.string(),
   reminders: z.array(reminderSchema),
 });
 
@@ -155,6 +165,7 @@ const newTaskFormSchema = z.object({
 type FormDataNew = z.infer<typeof newTaskFormSchema>;
 // default form values.
 const defaultValues: Partial<FormDataNew> = {
+  name: "",
   reminders: [{ regime: "hours", count: 2, channel: "sms" }],
 };
 
@@ -194,11 +205,11 @@ export function TaskModal({
   // Handle form submission
 
   const onSubmitNew = (data: FormDataNew) => {
-    console.log(data);
+    console.log("submit: ", data);
   };
 
   const onSubmitEdit = (data: FormDataNew) => {
-    console.log(data);
+    console.log("submit: ", data);
   };
 
   //render
@@ -255,7 +266,11 @@ export function TaskModal({
                 <FormItem>
                   <FormLabel>Type *</FormLabel>
                   <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      // {...field}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a task type..." />
                       </SelectTrigger>
@@ -272,6 +287,78 @@ export function TaskModal({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={formNew.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>due Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date >
+                            new Date(
+                              new Date().setMonth(new Date().getMonth() + 7)
+                            ) ||
+                          date <
+                            new Date(
+                              new Date().setMonth(new Date().getMonth() - 1)
+                            )
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>
+                    Date must be within 6 months
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={formNew.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Tell us a little bit about yourself"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>More info about task</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="pt-4 flex flex-col sm:flex-row sm:justify-end md:px-4">
               <Button type="submit" disabled={false}>
                 {selectedTask ? "Update Task" : "Create Task"}
