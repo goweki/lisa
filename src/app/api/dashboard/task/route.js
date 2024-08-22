@@ -29,12 +29,12 @@ export async function POST(request) {
       return Response.json({ success: res_ });
     }
   } catch (err) {
-    console.log(
+    console.error(
       " > ERROR: task-document insertion failed.",
       err,
       "\n.........."
     );
-    return Response.json({ error: err });
+    return Response.json("SERVER ERROR");
   }
 }
 
@@ -58,7 +58,7 @@ export async function PUT(request) {
       " >> error: ",
       err
     );
-    return Response.json({ error: `Server error: please contact admin...` });
+    return Response.json("SERVER ERROR");
   }
 }
 
@@ -79,8 +79,8 @@ export async function DELETE(request) {
     // HTTP response
     return Response.json({ success: deleteTask });
   } catch (err) {
-    console.log(" > ERROR: document deletion failed.", err, "\n..........");
-    return Response.json({ error: err });
+    console.error(" > ERROR: document deletion failed.", err, "\n..........");
+    return Response.json("SERVER ERROR");
   }
 }
 
@@ -93,7 +93,7 @@ export async function GET(request) {
     if (res_) return Response.json({ success: res_ });
     else return Response.json({ failed: "no case found" });
   } catch (err) {
-    console.log(" > ERROR: document retrieval erred.", err, "\n..........");
-    return Response.json({ error: err });
+    console.error(" > ERROR: document retrieval erred.", err, "\n..........");
+    return Response.json("SERVER ERROR");
   }
 }
