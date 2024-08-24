@@ -111,6 +111,7 @@ model Case {
 enum reminderChannels {
   email
   sms
+  whatsapp
 }
 
 enum timeRegimes {
@@ -135,7 +136,7 @@ model Task {
   name        String
   type        taskType
   dueDate     DateTime
-  description String
+  description String?
   reminders   Reminder[]
 
   documents Document[]

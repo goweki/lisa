@@ -1,98 +1,3 @@
-// import { Button } from "@/components/ui/button";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-
-// export function Modal({
-//   Title: title = "Title",
-//   Description = "Description",
-//   Selected: selected,
-//   Case: theCase,
-// }: {
-//   Case: { [key: string]: any };
-//   Title?: string;
-//   Description?: string;
-//   Selected?: { [key: string]: any };
-// }) {
-//   if (theCase)
-//     return (
-//       <Dialog>
-//         <DialogTrigger asChild>
-//           <Button variant="outline">
-//             {!selected?.id ? "New Task" : "Edit Task"}
-//           </Button>
-//         </DialogTrigger>
-//         <DialogContent className="sm:max-w-[425px]">
-//           <DialogHeader>
-//             <DialogTitle>{`${
-//               !selected ? "New" : "Edit"
-//             } ${title}`}</DialogTitle>
-//             <DialogDescription>
-//               {theCase.id ? (
-//                 <>
-//                   {" "}
-//                   Create a new task for
-//                   <span className="italic"> {theCase.name}. </span>
-//                   Click save when you&apos;re done.
-//                 </>
-//               ) : (
-//                 <>
-//                   {" "}
-//                   Edit a new task in
-//                   <span className="italic"> {theCase.name}. </span>
-//                   Click save when you&apos;re done.
-//                 </>
-//               )}
-//             </DialogDescription>
-//           </DialogHeader>
-//           <div className="grid gap-4 py-4">
-//             <div className="grid grid-cols-4 items-center gap-4">
-//               <Label htmlFor="name" className="text-right">
-//                 Name
-//               </Label>
-//               <Input
-//                 id="name"
-//                 defaultValue="Pedro Duarte"
-//                 className="col-span-3"
-//               />
-//             </div>
-//             <div className="grid grid-cols-4 items-center gap-4">
-//               <Label htmlFor="type" className="text-right">
-//                 Type
-//               </Label>
-//               <Input
-//                 id="type"
-//                 defaultValue="@peduarte"
-//                 className="col-span-3"
-//               />
-//             </div>
-//             <div className="grid grid-cols-4 items-center gap-4">
-//               <Label htmlFor="dueDate" className="text-right">
-//                 Due date
-//               </Label>
-//               <Input
-//                 id="dueDate"
-//                 defaultValue="@peduarte"
-//                 className="col-span-3"
-//               />
-//             </div>
-//           </div>
-//           <DialogFooter>
-//             <Button type="submit">Save changes</Button>
-//           </DialogFooter>
-//         </DialogContent>
-//       </Dialog>
-//     );
-// }
-
 import { useState } from "react";
 import { Task as TaskType } from "@/lib/prisma/types";
 import {
@@ -129,9 +34,12 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
+import { httpCodes } from "@/lib/configs";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 // schema for a single Reminder object
 const reminderSchema = z.object({
@@ -158,7 +66,7 @@ const newTaskFormSchema = z.object({
     required_error: "Your task requires a due date",
   }),
   description: z.string().optional(),
-  reminders: z.array(reminderSchema),
+  // reminders: z.array(reminderSchema),
 });
 
 // TypeScript type inference
@@ -166,20 +74,23 @@ type FormDataNew = z.infer<typeof newTaskFormSchema>;
 // default form values.
 const defaultValues: Partial<FormDataNew> = {
   name: "",
-  reminders: [{ regime: "hours", count: 2, channel: "sms" }],
+  // reminders: [{ regime: "hours", count: 2, channel: "sms" }],
 };
 
 // Modal
 export function TaskModal({
   selectedCase,
   selectedTask,
+  refreshData,
 }: {
   selectedCase: { [key: string]: any };
   selectedTask?: { [key: string]: any };
+  refreshData: () => void;
 }) {
   // state hooks
   const [taskEdits, setTaskEdits] = useState<Partial<TaskType>>();
-
+  const [UIstate, setUIstate] = useState<"OK" | "loading" | null>(null);
+  const router = useRouter();
   // Define the form.
 
   const formNew = useForm<FormDataNew>({
@@ -195,17 +106,80 @@ export function TaskModal({
   });
 
   // Initialize useFieldArray hook
-
   // const { fields, append, remove }
-  const remindersNewForm = useFieldArray({
-    name: "reminders",
-    control: formNew.control,
-  });
+  // const remindersArr = useFieldArray({
+  //   name: "reminders",
+  //   control: formNew.control,
+  // });
 
   // Handle form submission
 
-  const onSubmitNew = (data: FormDataNew) => {
+  const onSubmitNew = async (data: FormDataNew) => {
     console.log("submit: ", data);
+
+    setUIstate("loading");
+
+    try {
+      //json body
+      // Default reminder value
+      const defaultReminder = {
+        regime: "hours",
+        count: 2,
+        channel: "whatsapp",
+      };
+
+      // fetch options
+      let fetchOptions = {
+        method: "POST",
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   'Content-Type': 'application/x-www-form-urlencoded',
+        // },
+        body: JSON.stringify({
+          ...data,
+          caseID: selectedCase.id,
+          reminders: [defaultReminder],
+        }),
+      };
+      // POST request using fetch
+      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.error(`ERROR: ` + JSON.stringify(res_));
+            toast.error(httpCodes[res_.status]);
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: task initialized successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Task initialized successfully!");
+        refreshData();
+        // Reset the form to its default values
+        formNew.reset();
+        router.refresh();
+      } else {
+        console.error(
+          "ERROR: failed to initialize case\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
+        );
+        toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Task initialization failed:", error.message);
+      } else {
+        console.error("Task initialization failed:", error);
+      }
+      // setUIstate("Error: Institution was not initialized");
+      toast.error("Task NOT initialized");
+    }
   };
 
   const onSubmitEdit = (data: FormDataNew) => {
@@ -251,10 +225,10 @@ export function TaskModal({
               render={({ field }) => (
                 <FormItem className="space-y-2">
                   <FormLabel>Name *</FormLabel>
+                  <FormMessage />
                   <FormControl>
                     <Input placeholder="Task Name" {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -265,6 +239,7 @@ export function TaskModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type *</FormLabel>
+                  <FormMessage />
                   <FormControl>
                     <Select
                       value={field.value}
@@ -274,7 +249,7 @@ export function TaskModal({
                       <SelectTrigger>
                         <SelectValue placeholder="Select a task type..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-popover text-popover-foreground">
                         {Object.values(taskTypeOptions).map((val) => (
                           <SelectItem key={val} value={val}>
                             {val}
@@ -283,7 +258,6 @@ export function TaskModal({
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -294,6 +268,7 @@ export function TaskModal({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>due Date</FormLabel>
+                  <FormMessage />
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -332,10 +307,9 @@ export function TaskModal({
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription className="italic">
+                  {/* <FormDescription className="italic">
                     Date must be within 6 months
-                  </FormDescription>
-                  <FormMessage />
+                  </FormDescription> */}
                 </FormItem>
               )}
             />
@@ -357,6 +331,60 @@ export function TaskModal({
                 </FormItem>
               )}
             />
+
+            {/* {remindersArr.fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="flex flex-row flex-nowrap space-x-0.5"
+              >
+                <label>
+                  Regime:
+                  <Input
+                    {...formNew.register(`reminders.${index}.regime` as const, {
+                      required: true,
+                    })}
+                    defaultValue={field.regime}
+                  />
+                </label>
+                <label>
+                  Count:
+                  <Input
+                    type="number"
+                    {...formNew.register(`reminders.${index}.count` as const, {
+                      required: true,
+                    })}
+                    defaultValue={field.count}
+                  />
+                </label>
+                <label>
+                  Channel:
+                  <Input
+                    {...formNew.register(
+                      `reminders.${index}.channel` as const,
+                      { required: true }
+                    )}
+                    defaultValue={field.channel}
+                  />
+                </label>
+                <div className="flex pl-2 mt-auto">
+                  <Button
+                    variant="destructive"
+                    onClick={() => remindersArr.remove(index)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="link"
+              onClick={() =>
+                remindersArr.append({ regime: "", count: 0, channel: "" })
+              }
+            >
+              Add Reminder
+            </Button> */}
 
             <div className="pt-4 flex flex-col sm:flex-row sm:justify-end md:px-4">
               <Button type="submit" disabled={false}>

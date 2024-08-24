@@ -101,7 +101,6 @@ export default function CaseView({ params }: { params: any }) {
     assignees: [],
   });
   const [UIstate, setUIstate] = useState("");
-  const [openTaskModal, setOpenTaskModal] = useState<boolean>(false);
 
   // setSelected, get case by caseID and update selected
   useEffect(() => {
@@ -390,6 +389,64 @@ export default function CaseView({ params }: { params: any }) {
     }
     setUIstate("OK");
   }
+
+  //func to Delete Task
+  const handleDeleteTask = async (caseID: string, taskID: string) => {
+    console.log("deleting...: ", taskID);
+
+    setUIstate("loading");
+
+    try {
+      // fetch options
+      let fetchOptions = {
+        method: "DELETE",
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   'Content-Type': 'application/x-www-form-urlencoded',
+        // },
+        body: JSON.stringify({
+          caseID,
+          taskID,
+        }),
+      };
+      // POST request using fetch
+      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.error(`ERROR: ` + JSON.stringify(res_));
+            toast.error(httpCodes[res_.status]);
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: task deleted successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Task deleted successfully!");
+        await refreshData();
+        router.refresh();
+      } else {
+        console.error(
+          "ERROR: failed to delete task\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
+        );
+        toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Task deletion failed:", error.message);
+      } else {
+        console.error("Task deletion failed:", error);
+      }
+      // setUIstate("Error: Institution was not initialized");
+      toast.error("Task NOT deleted");
+    }
+  };
 
   //render
   return UIstate && selected ? (
@@ -828,10 +885,7 @@ export default function CaseView({ params }: { params: any }) {
                             </Dialog> */}
                             <TaskModal
                               selectedCase={selected}
-                              afterSubmit={() => {
-                                refreshData();
-                                setOpenTaskModal(false);
-                              }}
+                              refreshData={refreshData}
                             />
                           </TableHead>
                         </TableRow>
@@ -895,7 +949,13 @@ export default function CaseView({ params }: { params: any }) {
                                       Complete
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>Edit</DropdownMenuItem>
-                                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleDeleteTask(selected.id, task.id)
+                                      }
+                                    >
+                                      Delete
+                                    </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </TableCell>

@@ -17,18 +17,12 @@ export function Modal({
   trigger = "Trigger",
   title = "Title",
   Description,
-  // actionButton,
   children,
 }: {
   trigger?: string;
   title?: string;
   Description?: React.ReactNode;
   children: React.ReactNode;
-  // actionButton?: {
-  //   label: string;
-  //   onClick: (val?: any) => void;
-  //   disabled: boolean;
-  // };
 }) {
   return (
     <Dialog>
