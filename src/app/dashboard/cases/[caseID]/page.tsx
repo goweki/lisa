@@ -74,6 +74,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TaskModal } from "./_components/taskModals";
+import { Task as TaskType } from "@/lib/prisma/types";
+import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 
 export default function CaseView({ params }: { params: any }) {
   const { caseID } = params;
@@ -99,6 +101,7 @@ export default function CaseView({ params }: { params: any }) {
     assignees: [],
   });
   const [UIstate, setUIstate] = useState("");
+  const [openTaskModal, setOpenTaskModal] = useState<boolean>(false);
 
   // setSelected, get case by caseID and update selected
   useEffect(() => {
@@ -823,14 +826,20 @@ export default function CaseView({ params }: { params: any }) {
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog> */}
-                            <TaskModal selectedCase={selected} />
+                            <TaskModal
+                              selectedCase={selected}
+                              afterSubmit={() => {
+                                refreshData();
+                                setOpenTaskModal(false);
+                              }}
+                            />
                           </TableHead>
                         </TableRow>
                       </TableHeader>
 
                       <TableBody>
-                        {tasks.length > 0 ? (
-                          tasks.map((task) => (
+                        {selected.tasks && selected.tasks.length > 0 ? (
+                          selected.tasks.map((task: TaskType) => (
                             <TableRow
                               key={task.id}
                               className="border-muted hover:bg-muted/25"
@@ -838,19 +847,30 @@ export default function CaseView({ params }: { params: any }) {
                               <TableCell>
                                 <div className="font-medium">{task.name}</div>
                                 <div className="hidden text-sm text-muted-foreground md:inline">
-                                  {task.case}
+                                  {/* {task.case?.name} */}
                                 </div>
                               </TableCell>
                               <TableCell className="hidden sm:table-cell">
                                 {task.type}
                               </TableCell>
                               <TableCell className="hidden sm:table-cell">
-                                <Badge className="text-xs" variant="outline">
-                                  {task.status}
+                                <Badge
+                                  className={`text-xs ${
+                                    task.completedByID
+                                      ? "border-emerald-500"
+                                      : isDatePassed(task.dueDate)
+                                      ? "border-destructive"
+                                      : "border-border"
+                                  }`}
+                                  variant="outline"
+                                >
+                                  {task.completedByID
+                                    ? "complete"
+                                    : "incomplete"}
                                 </Badge>
                               </TableCell>
                               <TableCell className="hidden md:table-cell">
-                                {task.dueDate}
+                                {dateShort(new Date(task.dueDate))}
                               </TableCell>
                               <TableCell className="text-center">
                                 <DropdownMenu>
@@ -924,26 +944,3 @@ export default function CaseView({ params }: { params: any }) {
     </Card>
   ) : null;
 }
-
-const tasks: { [key: string]: string }[] = [
-  {
-    id: "001",
-    name: "Court Summons",
-    case: "Case Name",
-    type: "Document",
-    dueDate: "01-01-2010",
-    reminders: "3",
-    status: "incomplete",
-  },
-  {
-    id: "002",
-    name: "Hearing",
-    case: "Another case name",
-    type: "Event",
-    dueDate: "04-04-2011",
-    reminders: "8",
-    status: "complete",
-  },
-];
-
-// const tasks: { [key: string]: string }[] = [];
