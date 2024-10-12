@@ -61,6 +61,7 @@ export type Case = _Case & {
   caseType?: _CaseType;
   institution?: _Institution;
   lawyer?: _User;
+  tasks?: _Task[];
 };
 
 export function isCase(obj: any): obj is Case {
@@ -82,7 +83,7 @@ export function isCase(obj: any): obj is Case {
   );
 }
 
-// extends the Case type to include the relations
+// extends the Task type to include the relations
 export type Task = _Task & {
   completedBy?: _User;
   documents?: _Document[];

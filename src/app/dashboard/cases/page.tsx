@@ -254,7 +254,6 @@ export default function CasesPage() {
               type="text"
               id="name"
               placeholder="case Name"
-              className="placeholder:italic"
               value={newCase.name.value}
               onChange={(e) =>
                 setNewCase((prev) => ({
@@ -279,10 +278,7 @@ export default function CasesPage() {
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue
-                  className="placeholder:italic"
-                  placeholder="Select case type..."
-                />
+                <SelectValue placeholder="Select case type..." />
               </SelectTrigger>
               <SelectContent className="bg-muted">
                 {options.caseTypes.map(({ value, label }) => (

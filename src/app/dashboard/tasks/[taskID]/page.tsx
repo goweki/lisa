@@ -48,7 +48,7 @@ import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
 
-export default function CaseView({ params }: { params: any }) {
+export default function TaskView({ params }: { params: any }) {
   const { caseID } = params;
   const {
     data: { users, institutions, cases, caseTypes },
@@ -715,92 +715,6 @@ export default function CaseView({ params }: { params: any }) {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          {/* <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="email" className="opacity-75">
-              Email *
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="official email"
-              className="placeholder:italic"
-              value={caseEdit.email || selected?.email}
-              onChange={(e) =>
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  email: e.target.value,
-                }))
-              }
-            />
-          </div>
-          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="role" className="opacity-75">
-              Role *
-            </Label>
-            <Select
-              name="role"
-              value={caseEdit.role || selected?.role}
-              onValueChange={(value) => {
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  role: value,
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select user's role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="lawyer">Lawyer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div id="telWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="tel" className="opacity-75">
-              Phone No.
-            </Label>
-            <Input
-              type="tel"
-              id="tel"
-              placeholder="user's Phone No."
-              className="placeholder:italic"
-              value={caseEdit.tel || (selected?.tel as string)}
-              onChange={(e) =>
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  tel: e.target.value,
-                }))
-              }
-            />
-          </div>
-          <div id="instWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="roleWrapper" className="opacity-75">
-              Institutions *
-            </Label>
-            <MultipleSelector
-              value={caseEdit.institutionIDs.map((_id) => ({
-                value: _id,
-                label: institutions.find(({ id }: { id: string }) => id === _id)
-                  ?.name,
-              }))}
-              onChange={(newVals) => updateNewUserInstits(newVals)}
-              //
-              defaultOptions={institutions.map(
-                ({ id, name }: { id: string; name: string }) => ({
-                  value: id,
-                  label: name,
-                })
-              )}
-              //
-              placeholder="Select Institutions..."
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  no results found.
-                </p>
-              }
-            />
-          </div> */}
         </form>
       </CardContent>
       <CardFooter className="border-t px-6 py-4 min-h-20">

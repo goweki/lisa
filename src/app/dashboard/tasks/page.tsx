@@ -59,25 +59,24 @@ const taskFormSchema = z.object({
   name: z
     .string({
       required_error: "Please provide a task name",
+      invalid_type_error: "Name must be a string",
     })
-    .min(5, {
-      message: "Task name must be at least 5 characters",
+    .min(3, {
+      message: "Task name must be at least 3 characters",
     })
     .max(30, {
       message: "Task name MUST NOT be longer than 30 characters",
     }),
-  type: z.string(),
+  type: z.string({ required_error: "Please provide a task type" }),
   // email: z
   //   .string({
   //     required_error: "Please provide an email",
   //   })
   //   .email(),
-  dueDate: z.date({ required_error: "Due date is required" }),
+  dueDate: z.string().date(),
   description: z.string({
     required_error: "Description is required",
   }),
-  caseID: z.string({ required_error: "Case ID is required" }),
-  completeByID: z.string({ required_error: "Complete By ID is required" }),
 });
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -92,7 +91,7 @@ export default function TasksPage() {
 
   // This can come from your database or API.
   const defaultValues: Partial<TaskFormValues> = {
-    dueDate: new Date(),
+    dueDate: new Date().toISOString(),
   };
 
   const form = useForm<TaskFormValues>({
@@ -192,7 +191,7 @@ export default function TasksPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name *</FormLabel>
-                  <FormControl className="!mt-1">
+                  <FormControl className="!mt-0">
                     <Input placeholder="full names" {...field} />
                   </FormControl>
                   <FormMessage />
@@ -251,13 +250,6 @@ export default function TasksPage() {
           </form>
         </Form>
       </CardContent>
-      {/* <CardFooter className="border-t px-6 py-4">
-        {UIstate === "loading" ? (
-          <Loader1 />
-        ) : (
-          <Button onClick={initializeCase}>Create Case</Button>
-        )}
-      </CardFooter> */}
     </Card>
   );
 }
