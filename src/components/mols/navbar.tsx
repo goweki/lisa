@@ -138,6 +138,15 @@ const menuItemsOptions: { [key: string]: any } = {
 function NavigationMenuComponent(props: { user?: Partial<User> }) {
   //
   const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean); // Remove empty strings
+
+  // Check the last segment and ignore it if it contains numerals (0-9)
+  const isId = /\d/.test(segments[segments.length - 1]); // Check if the last segment contains any digit (0-9)
+  const relevantSegments = isId ? segments.slice(0, -1) : segments; // Ignore the last segment if it's an ID
+
+  // Join the relevant segments back into a path
+  const pathSegement = "/" + relevantSegments.join("/");
+
   const { data: authSession, status: authStatus } = useSession();
 
   //render
@@ -151,9 +160,7 @@ function NavigationMenuComponent(props: { user?: Partial<User> }) {
                 <Link
                   href={link}
                   className={`text-foreground hover:underline ${
-                    pathname.substring(0, link.length) === link
-                      ? "font-bold"
-                      : "font-light"
+                    pathSegement === link ? "font-bold" : "font-light"
                   }`}
                 >
                   {label}

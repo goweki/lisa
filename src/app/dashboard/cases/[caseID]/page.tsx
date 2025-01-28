@@ -77,7 +77,7 @@ import { TaskModal } from "./_components/taskModals";
 import { Task as TaskType } from "@/lib/prisma/types";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 
-export default function CaseView({ params }: { params: any }) {
+export default function CaseView(params: { caseID: string }) {
   const { caseID } = params;
   const {
     data: { users, institutions, cases, caseTypes },

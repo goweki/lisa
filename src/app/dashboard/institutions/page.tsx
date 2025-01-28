@@ -22,6 +22,7 @@ import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
 import { httpCodes } from "@/lib/configs";
+import { useSession } from "next-auth/react";
 
 const _defaultInstitution = {
   name: { value: "", error: "" },
@@ -39,6 +40,7 @@ export default function InstitutionsPage() {
 
   const [UIstate, setUIstate] = useState("");
   const [newInstitution, setNewInstitution] = useState(_defaultInstitution);
+  const { data: userSession, status: authStatus } = useSession();
 
   //handle inititution initialization
   async function initializeInstitution(e: React.MouseEvent<HTMLElement>) {
@@ -139,77 +141,93 @@ export default function InstitutionsPage() {
   //render
   return (
     <Card x-chunk="dashboard-04-chunk-1">
-      <CardHeader>
-        <CardTitle className="font-light">Create New Institution</CardTitle>
-        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
+      {userSession?.user?.role === "system_admin" ? (
+        <>
+          <CardHeader>
+            <CardTitle className="font-light">Create New Institution</CardTitle>
+            {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           Create new institution
         </CardDescription> */}
-      </CardHeader>
-      <CardContent>
-        <form className=" flex flex-col gap-4">
-          <div id="nameWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionName" className="opacity-75">
-              Name *
-            </Label>
-            <Input
-              type="text"
-              id="institutionName"
-              placeholder="Institution Name"
-              className="placeholder:italic"
-              value={newInstitution.name.value}
-              onChange={(e) =>
-                setNewInstitution((prev) => ({
-                  ...prev,
-                  name: { error: "", value: e.target.value },
-                }))
-              }
-            />
-          </div>
-          <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
-              Email *
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="official email"
-              className="placeholder:italic"
-              value={newInstitution.email.value}
-              onChange={(e) =>
-                setNewInstitution((prev) => ({
-                  ...prev,
-                  email: { error: "", value: e.target.value },
-                }))
-              }
-            />
-          </div>
-          <div id="telWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="tel" className="opacity-75">
-              Phone No.
-            </Label>
-            <Input
-              type="tel"
-              id="tel"
-              placeholder="official Phone No."
-              className="placeholder:italic"
-              value={newInstitution.tel.value}
-              onChange={(e) =>
-                setNewInstitution((prev) => ({
-                  ...prev,
-                  tel: { error: "", value: e.target.value },
-                }))
-              }
-            />
-          </div>
-        </form>
-      </CardContent>
-      <CardFooter className="border-t px-6 py-4">
-        {UIstate === "loading" ? (
-          <Loader1 />
-        ) : (
-          <Button onClick={initializeInstitution}>Create Institution</Button>
-        )}
-      </CardFooter>
+          </CardHeader>
+          <CardContent>
+            <form className=" flex flex-col gap-4">
+              <div
+                id="nameWrapper"
+                className="grid w-full items-center gap-1.5"
+              >
+                <Label htmlFor="institutionName" className="opacity-75">
+                  Name *
+                </Label>
+                <Input
+                  type="text"
+                  id="institutionName"
+                  placeholder="Institution Name"
+                  className="placeholder:italic"
+                  value={newInstitution.name.value}
+                  onChange={(e) =>
+                    setNewInstitution((prev) => ({
+                      ...prev,
+                      name: { error: "", value: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+              <div
+                id="emailWrapper"
+                className="grid w-full items-center gap-1.5"
+              >
+                <Label htmlFor="institutionnName" className="opacity-75">
+                  Email *
+                </Label>
+                <Input
+                  type="email"
+                  id="email"
+                  placeholder="official email"
+                  className="placeholder:italic"
+                  value={newInstitution.email.value}
+                  onChange={(e) =>
+                    setNewInstitution((prev) => ({
+                      ...prev,
+                      email: { error: "", value: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+              <div id="telWrapper" className="grid w-full items-center gap-1.5">
+                <Label htmlFor="tel" className="opacity-75">
+                  Phone No.
+                </Label>
+                <Input
+                  type="tel"
+                  id="tel"
+                  placeholder="official Phone No."
+                  className="placeholder:italic"
+                  value={newInstitution.tel.value}
+                  onChange={(e) =>
+                    setNewInstitution((prev) => ({
+                      ...prev,
+                      tel: { error: "", value: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="border-t px-6 py-4">
+            {UIstate === "loading" ? (
+              <Loader1 />
+            ) : (
+              <Button onClick={initializeInstitution}>
+                Create Institution
+              </Button>
+            )}
+          </CardFooter>
+        </>
+      ) : (
+        <div className="my-8 mx-4 text-muted italic">
+          Select an institution to view details
+        </div>
+      )}
     </Card>
   );
 }

@@ -108,12 +108,12 @@ export default function InstitutionsPage({
   }, [searchPhrase, institutions]);
 
   //if not admin, re-route to dashboard
-  if (userSession?.user?.role !== "admin") {
+  if (!userSession?.user?.role.includes("admin")) {
     return router.push("/dashboard");
   }
 
   //render
-  return UIstate && authStatus === "authenticated" ? (
+  return UIstate ? (
     <main className="flex flex-col flex-1 gap-4 p-4 md:gap-8 md:p-10">
       {/* <div className="mx-auto grid w-full items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]"> */}
       <div className="w-full gap-2">
@@ -136,14 +136,16 @@ export default function InstitutionsPage({
           />
 
           <div className="flex flex-col space-y-1">
-            <Link
-              className={`p-2 rounded ${
-                !instId ? "bg-primary/20" : "hover:bg-primary/10"
-              }`}
-              href="/dashboard/institutions"
-            >
-              + create
-            </Link>
+            {userSession?.user?.role === "system_admin" && (
+              <Link
+                className={`p-2 rounded ${
+                  !instId ? "bg-primary/20" : "hover:bg-primary/10"
+                }`}
+                href="/dashboard/institutions"
+              >
+                + create
+              </Link>
+            )}
             {filtInstitutions.length > 0 &&
               filtInstitutions.map(({ id, name }) => (
                 <Link

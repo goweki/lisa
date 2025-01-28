@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import toast from "react-hot-toast";
 import { SVGemail, SVGhome, SVGpassword } from "@/components/atoms/svgs";
 import { InputText } from "@/components/atoms/inputs";
 import {
@@ -15,6 +14,7 @@ import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 import { strsMatch } from "@/helpers/stringHandlers";
+import toast from "react-hot-toast";
 
 export default function ResetPassword({
   params,
@@ -37,9 +37,12 @@ export default function ResetPassword({
   // onMount
   useEffect(() => {
     (async () => {
-      if (!email_ || !token || emailValidator(email_))
+      if (!token || emailValidator(email_)) {
+        const errorMessage = emailValidator(email_) || "invalid email";
+        toast.error(errorMessage);
         router.push("/reset-password");
-      setUIstate("");
+      }
+
       try {
         // API call to confirm user,token,expiry
         const fetchOptions = {
@@ -88,8 +91,8 @@ export default function ResetPassword({
   useEffect(() => {
     if (password.error || passwordRepeat.error) {
       toast.error(password.error || passwordRepeat.error);
+      setUIstate("OK");
     }
-    setUIstate("OK");
   }, [password.error, passwordRepeat.error]);
   // handle Submit
   async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
