@@ -91,46 +91,45 @@ async function getHandler(req: Request, user: Partial<User>) {
     }
 
     // GET cases
-    const caseQuery: { where: any; include: any } = institutions.some(
-      (inst) => inst.name === "Lisa"
-    )
-      ? {
-          where: {},
-          include: {
-            caseType: true,
-            institution: true,
-            lawyer: true,
-            tasks: true,
-          },
-        }
-      : user.role === "admin"
-      ? {
-          where: {
-            institutionID: {
-              in: user.institutionIDs,
+    const caseQuery: { where: any; include: any } =
+      user.role === "system_admin"
+        ? {
+            where: {},
+            include: {
+              caseType: true,
+              institution: true,
+              lawyer: true,
+              tasks: true,
             },
-          },
-          include: {
-            caseType: true,
-            institution: true,
-            lawyer: true,
-            tasks: true,
-          },
-        }
-      : {
-          where: {
-            institutionID: {
-              in: user.institutionIDs,
+          }
+        : user.role === "admin"
+        ? {
+            where: {
+              institutionID: {
+                in: user.institutionIDs,
+              },
             },
-            userID: user.id,
-          },
-          include: {
-            caseType: true,
-            institution: true,
-            lawyer: true,
-            tasks: true,
-          },
-        };
+            include: {
+              caseType: true,
+              institution: true,
+              lawyer: true,
+              tasks: true,
+            },
+          }
+        : {
+            where: {
+              institutionID: {
+                in: user.institutionIDs,
+              },
+              userID: user.id,
+            },
+            include: {
+              caseType: true,
+              institution: true,
+              lawyer: true,
+              tasks: true,
+            },
+          };
     const cases = await prisma.case.findMany(caseQuery);
 
     //Get tasks

@@ -73,7 +73,7 @@ export default function UsersLayout({
   }, [searchPhrase, users]);
 
   //if not admin, re-route to dashboard
-  if (userSession?.user?.role !== "admin") {
+  if (!userSession?.user?.role.includes("admin")) {
     return router.push("/dashboard");
   }
 

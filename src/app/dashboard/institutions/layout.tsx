@@ -55,10 +55,6 @@ export default function InstitutionsPage({
   const router = useRouter();
   const { data: userSession, status: authStatus } = useSession();
 
-  // if (status === "authenticated") {
-  //   return <p>Signed in as {session.user.email}</p>;
-  // }
-
   const {
     data: { institutions, users },
     refreshData,

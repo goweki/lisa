@@ -8,11 +8,14 @@ import { CardItemsTable } from "@/components/mols/cards";
 import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "./providers";
 import { isDatePassed } from "@/helpers/dateHandlers";
+import { useSession, signOut } from "next-auth/react";
 
 export default function UserHome() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [casesWithDues, setDueCases] = useState([]);
   const [briefs, setBriefs] = useState({});
+  const [uiState, setUIstate] = useState("");
   const { date, time, rawDate } = useDate();
   const {
     data: { cases, institutions, caseTypes, users },
@@ -70,13 +73,20 @@ export default function UserHome() {
     }));
     //setState
     setBriefs({ institutionsBrief, usersBrief, casesBrief, caseTypesBrief });
+    setUIstate("OK");
   }, [institutions, users, cases, caseTypes]);
 
   // render
-  return (
+  return uiState ? (
     <main className="flex flex-col flex-grow items-center px-4 md:py-8">
       <div className="w-full max-w-screen-lg grid grid-flow-row-dense grid-cols-1 m-4 gap-4 md:grid-cols-2">
-        <ProfileCard date={date} time={time} data={casesWithDues} />
+        <ProfileCard
+          date={date}
+          time={time}
+          data={casesWithDues}
+          entities={briefs}
+        />
+
         {/* {scheduleBrief(cases, router)}
         {UsersBrief(cases, router)}
         {InstitutionsBrief(cases, router)} */}
@@ -113,10 +123,14 @@ export default function UserHome() {
         )}
       </div>
     </main>
-  );
+  ) : null;
 }
 
-function ProfileCard({ date, time, data }) {
+function ProfileCard({ date, time, data, entities }) {
+  const { data: session } = useSession();
+
+  console.log("data - ", data);
+
   return (
     <div className="card m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal">
       <div className="grid-cols-1 m-2">
@@ -124,63 +138,95 @@ function ProfileCard({ date, time, data }) {
           <SVGtime className="w-4 h-4 mr-2 text-emerald-900" />
           {date()} {time()}
         </div>
-        <p
-          className={`font-bold text-xl mt-2 mb-4 text-center ${
-            !data.length
-              ? "text-emerald-500"
-              : data.length < 3
-              ? "text-red-800 dark:text-red-300"
-              : "text-red-500"
-          }`}
-        >
-          {!data.length
-            ? "Your schedule is clean"
-            : data.length < 3
-            ? "You have due tasks"
-            : "Your schedule is piling up!"}
-        </p>
-        <div className="text-base text-font-faded dark:text-font-dark-faded">
-          <p
-            className={`text-center ${
-              data.length < 1
-                ? ""
+        {!session.user.role.includes("admin") ? (
+          <>
+            <p
+              className={`font-bold text-xl mt-2 mb-4 text-center ${
+                !data.length
+                  ? "text-emerald-500"
+                  : data.length < 3
+                  ? "text-red-800 dark:text-red-300"
+                  : "text-red-500"
+              }`}
+            >
+              {!data.length
+                ? "Your schedule is clean"
                 : data.length < 3
-                ? "text-red-800 dark:text-red-200"
-                : "text-red-500"
-            }`}
-          >
-            {data.length} case{data.length !== 1 && <>s</>} with pending tasks
-          </p>
-          <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
-            {data &&
-              data.map((_case) => (
-                <li key={_case.id}>
-                  <div>
-                    {_case.name} :{" "}
-                    {_case.dueTasks.map((_task, i) => (
-                      <span key={i} className="italic font-bold">
-                        {_task.name +
-                          (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
-                      </span>
-                    ))}
-                  </div>
-                </li>
-              ))}
-          </ul>
-        </div>
-        <div className="mt-6 mb-2 mx-4 space-y-4">
-          {data.length !== 0 && (
-            <div>
-              <Link href="/dashboard/tasks">
-                <ButtonPrimary label="View Tasks" onClick={() => ""} />
-              </Link>
+                ? "You have due tasks"
+                : "Your schedule is piling up!"}
+            </p>
+            <div className="text-base text-font-faded dark:text-font-dark-faded">
+              <p
+                className={`text-center ${
+                  data.length < 1
+                    ? ""
+                    : data.length < 3
+                    ? "text-red-800 dark:text-red-200"
+                    : "text-red-500"
+                }`}
+              >
+                {data.length} case{data.length !== 1 && <>s</>} with pending
+                tasks
+              </p>
+              <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
+                {data &&
+                  data.map((_case) => (
+                    <li key={_case.id}>
+                      <div>
+                        {_case.name} :{" "}
+                        {_case.dueTasks.map((_task, i) => (
+                          <span key={i} className="italic font-bold">
+                            {_task.name +
+                              (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
+                          </span>
+                        ))}
+                      </div>
+                    </li>
+                  ))}
+              </ul>
             </div>
-          )}
-          <div>
-            <Link href="/dashboard/cases/new">
-              <ButtonSecondary label="New Case" onClick={() => ""} />
-            </Link>
+            <div className="mt-6 mb-2 mx-4 space-y-4">
+              {data.length !== 0 && (
+                <div>
+                  <Link href="/dashboard/tasks">
+                    <ButtonPrimary label="View Tasks" onClick={() => ""} />
+                  </Link>
+                </div>
+              )}
+              <div>
+                <Link href="/dashboard/cases/new">
+                  <ButtonSecondary label="New Case" onClick={() => ""} />
+                </Link>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="w-fit m-auto mt-6 p-2">
+            {Object.entries(entities).map(([key, value]) => (
+              <div
+                key={key}
+                className="flex w-fit border-b mb-2 hover:bg-backg-raised dark:hover:bg-backg-dark-raised"
+              >
+                <span className="text-sm pl-2 w-32">
+                  {key.replace(/Brief$/, "")} :
+                </span>
+                <span className="text-sm pr-2">{value.length || 0}</span>
+              </div>
+            ))}
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AdminCard({ data }) {
+  return (
+    <div className="card m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal">
+      <div className="grid-cols-1 m-2">
+        <div className="text-sm flex justify-center items-center">
+          <SVGtime className="w-4 h-4 mr-2 text-emerald-900" />
+          {date()} {time()}
         </div>
       </div>
     </div>

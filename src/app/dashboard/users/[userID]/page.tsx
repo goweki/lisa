@@ -349,10 +349,22 @@ export default function UserView({ params }: { params: any }) {
   return !UIstate ? null : (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        <CardTitle className="font-light">{selected?.name}</CardTitle>
-        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
-          {selected?.name}
-        </CardDescription> */}
+        <CardTitle className="font-light">
+          <span>{selected?.name}</span>
+          {
+            <Button
+              variant="ghost"
+              className={`ml-4 ${
+                selected?.status !== "INACTIVE"
+                  ? "text-red-500"
+                  : "text-emerald-500"
+              }`}
+              onClick={() => null}
+            >
+              inactivate
+            </Button>
+          }
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4">

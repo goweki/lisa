@@ -1,21 +1,17 @@
 import prisma from "@/lib/prisma/prisma";
-// const collection = db_cluster.collection("cases");
 import { withAuthAdmin } from "@/lib/authRouteWrappers";
 import { UserType } from "@/types/models";
+import { NextRequest } from "next/server";
+import { User } from "@/lib/prisma/types";
 
 export const POST = withAuthAdmin(postHandler);
 export const PUT = withAuthAdmin(putHandler);
 export const DELETE = withAuthAdmin(deleteHandler);
-// export const GET = withAuthAdmin(getHandler);
 
-/** HANDLER functions */
-/**
- *
- * @param {Request} request
- * @param {UserType} user
- * @returns {Response}
- */
-async function postHandler(request, user) {
+async function postHandler(
+  request: Request | NextRequest,
+  user: Partial<User>
+) {
   try {
     // request body
     const doc = await request.json();
@@ -38,13 +34,7 @@ async function postHandler(request, user) {
   }
 }
 
-/**
- *
- * @param {Request} request
- * @param {UserType} user
- * @returns {Response}
- */
-async function putHandler(request, user) {
+async function putHandler(request: Request | NextRequest, user: Partial<User>) {
   try {
     // request body
     const doc = await request.json();
@@ -69,17 +59,14 @@ async function putHandler(request, user) {
   }
 }
 
-/**
- *
- * @param {Request} request
- * @param {UserType} user
- * @returns {Response}
- */
-async function deleteHandler(request, user) {
+async function deleteHandler(
+  request: Request | NextRequest,
+  user: Partial<User>
+) {
+  const doc = await request.json();
+  const { id } = doc;
   try {
     // request body
-    const doc = await request.json();
-    const { id } = doc;
     console.log("DELETE REQUEST: deleting case: ", id);
     // delete doc
     const res = await prisma.case.delete({ where: { id } });
@@ -87,27 +74,32 @@ async function deleteHandler(request, user) {
     // HTTP response
     return Response.json({ success: res });
   } catch (err) {
-    console.error(`ERROR: case deletion failed: ${_id}\n >> error: ${err}\n`);
+    console.error(
+      `ERROR: case deletion failed: ${JSON.stringify(doc)}\n >> error: ${err}\n`
+    );
     return Response.json({ error: "SERVER ERROR" });
   }
 }
 
-/**
- *
- * @param {Request} request
- * @param {UserType} user
- * @returns {Response}
- */
-async function getHandler(request, user) {
+async function getHandler(request: Request | NextRequest, user: Partial<User>) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
+
+  if (!id) {
+    return Response.json("NO case id provided", {
+      status: 400,
+    });
+  }
+
   try {
     // retrieve doc
-    const res_ = await collection.findOne({ _id: new ObjectId(id) });
+    const res_ = await prisma.case.findUnique({
+      where: { id },
+    });
     if (res_) return Response.json({ success: res_ });
     else return Response.json({ failed: "no case found" });
   } catch (err) {
-    console.log(`ERROR: case retrieval erred.\n >> ${err} \n..........`);
+    console.error(`ERROR: case retrieval erred.\n >> ${err} \n..........`);
     return Response.json({ error: "SERVER ERROR" });
   }
 }

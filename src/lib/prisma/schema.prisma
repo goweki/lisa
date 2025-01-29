@@ -51,6 +51,8 @@ model User {
   role             userRole  @default(lawyer)
   photoUrl         String?
 
+  status status @default(DOMANT)
+
   institutionIDs String[] @db.ObjectId
 
   cases          Case[]

@@ -389,15 +389,15 @@ export default function ViewCase({
                 name="lawyer"
                 optionItems={users
                   .filter((user_) =>
-                    session.user.role === "admin"
-                      ? user_.role === "lawyer"
+                    session.user.role.includes("admin")
+                      ? !user_.role.includes("admin")
                       : user_.id === session.user.id
                   )
                   .map(({ name, id }) => ({ text: name, value: id }))}
                 onChange={(e) => {
                   setLawyer(
                     users
-                      .filter(({ role }) => role === "lawyer")
+                      // .filter(({ role }) => !role.includes("admin"))
                       .find(({ id }) => id === e.target.value)
                   );
                 }}

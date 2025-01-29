@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export function withAuthGeneral(handler) {
-  return async function (req, res) {
+export function withAuthGeneral(handler: any) {
+  return async function (req: Request | NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -23,8 +23,8 @@ export function withAuthGeneral(handler) {
   };
 }
 
-export function withAuthAdmin(handler) {
-  return async function (req, res) {
+export function withAuthAdmin(handler: any) {
+  return async function (req: Request | NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
@@ -40,11 +40,7 @@ export function withAuthAdmin(handler) {
       return Response.json("Unauthorized", { status: 401 });
     }
 
-    if (session.user.role !== "admin") {
-      // return NextResponse.json("You do not have necessary permissions", {
-      //   status: 403,
-      // });
-      //NO SESSION/USER
+    if (!session.user.role.includes("admin")) {
       // Determine the protocol
       const protocol = req.headers.get("x-forwarded-proto") || "http";
       // Determine the host
@@ -54,7 +50,9 @@ export function withAuthAdmin(handler) {
       // Construct the home URL
       const homeUrl = new URL("/", baseUrl);
       console.log("URL redirect: ", homeUrl.toString());
-      return Response.json("Forbidden", { status: 403 });
+      return Response.json("You do not have necessary permissions", {
+        status: 403,
+      });
     }
 
     return handler(req, session.user);

@@ -110,6 +110,14 @@ const menuItemsOptions: { [key: string]: any } = {
     { label: "Contacts", link: "/contacts" },
   ],
   auth: {
+    system_admin: [
+      { label: "Dashboard", link: "/dashboard" },
+      {
+        label: "Institutions",
+        link: "/dashboard/institutions",
+      },
+      { label: "Users", link: "/dashboard/users" },
+    ],
     admin: [
       { label: "Dashboard", link: "/dashboard" },
       {
