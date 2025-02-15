@@ -8,30 +8,25 @@ async function getHandler(req: Request, user: Partial<User>) {
   // const url = new URL(req.url);
   // const institutionId = url.searchParams.get("institution");
   // retrieve data
-  if (!user.institutionIDs || user.institutionIDs.length === 0) {
+  if (
+    user.role !== "system_admin" &&
+    (!user.institutionIDs || user.institutionIDs.length === 0)
+  ) {
+    console.error(" > No institution assigned");
     return Response.json("No institution assigned", { status: 401 });
   }
+
   try {
-    // GET institutions where
-    const institutions_ = await prisma.institution.findMany({
-      where: {
-        id: {
-          in: user.institutionIDs,
-        },
-      },
-    });
-    if (institutions_.length === 0) {
-      return Response.json("No institutions", { status: 401 });
-    }
-    // id institution includes Lisa
+    // GET institutions
     const institutions = await prisma.institution.findMany({
-      where: !institutions_.map((inst) => inst.name).includes("Lisa")
-        ? {
-            id: {
-              in: user.institutionIDs,
-            },
-          }
-        : {},
+      where:
+        user.role !== "system_admin"
+          ? {
+              id: {
+                in: user.institutionIDs,
+              },
+            }
+          : {},
       include: {
         cases: true,
         users: true,
@@ -42,7 +37,7 @@ async function getHandler(req: Request, user: Partial<User>) {
     // GET users
     let users: User[] = [];
 
-    if (user.email === "antonio@goweki.com") {
+    if (user.role === "system_admin") {
       const instUsers = await prisma.user.findMany({
         include: {
           institutions: true,

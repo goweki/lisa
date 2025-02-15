@@ -93,8 +93,8 @@ export function InputText({
           className={`${
             valObj.error
               ? "border-red-500 dark:border-red-400"
-              : "border-transparent dark:border-transparent focus:ring-emerald-800 focus:border-emerald-800 dark:focus:ring-emerald-800 dark:focus:border-emerald-800"
-          } border bg-[linear-gradient(176deg,_#cbd1d8,_#f2f8ff)] dark:bg-[linear-gradient(176deg,_#0e1526,_#10192d)] shadow dark:shadow-dak dark:focus:shadow-dpressed focus:shadow-pressed text-gray-900 text-sm rounded-lg  block w-full pl-10 p-2.5  dark:bg-gray-700  dark:placeholder-gray-400 placeholder:italic dark:text-white `}
+              : "border-transparent dark:border-transparent focus:ring-primary focus:border-primary"
+          } border shadow dark:shadow-dark dark:focus:shadow-dpressed focus:shadow-pressed text-sm rounded-lg block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic bg-transparent`}
           placeholder={placeholder}
           value={valObj.value}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
