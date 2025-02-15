@@ -18,7 +18,6 @@ export default function UserProviders({ children }) {
       const fetchOptions = {
         method: "GET",
       };
-      // console.log("FETCHING: ", session.user.institutionIDs[0]);
 
       // POST request using fetch
       const response = await fetch(
@@ -35,6 +34,8 @@ export default function UserProviders({ children }) {
 
       // console.log("RESPONSE", json_);
       if (response?.success) {
+        console.log("SUCCESS: fetched data", response.success);
+
         setData(response.success);
       } else {
         console.error(

@@ -1,10 +1,10 @@
 import prisma from "@/lib/prisma/prisma";
-import { withAuthAdmin } from "@/lib/authRouteWrappers";
+import { withAuthAdmin, withAuthGeneral } from "@/lib/authRouteWrappers";
 import { UserType } from "@/types/models";
 import { NextRequest } from "next/server";
 import { User } from "@/lib/prisma/types";
 
-export const POST = withAuthAdmin(postHandler);
+export const POST = withAuthGeneral(postHandler);
 export const PUT = withAuthAdmin(putHandler);
 export const DELETE = withAuthAdmin(deleteHandler);
 
@@ -12,10 +12,19 @@ async function postHandler(
   request: Request | NextRequest,
   user: Partial<User>
 ) {
+  // request body
+  const doc = await request.json();
+  console.log("POST - api/dashboard/case: ", doc);
+
+  const { institutionID, ...doc_ } = doc;
+
+  // if (user.role !== "system_admin") {
+  //   return Response.json("You do not have permission to update institution", {
+  //     status: 403,
+  //   });
+  // }
+
   try {
-    // request body
-    const doc = await request.json();
-    console.log("POST REQUEST - new case: ", doc);
     // insert doc
     const res_ = await prisma.case.create({
       data: doc,

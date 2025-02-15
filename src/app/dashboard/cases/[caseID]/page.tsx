@@ -83,6 +83,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     data: { users, institutions, cases, caseTypes },
     refreshData,
   } = useContext(DataContext);
+  const { data: session } = useSession();
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
@@ -93,12 +94,12 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     caseTypes: TemplateObj[];
     institutions: TemplateObj[];
     clientParties: string[];
-    assignees: TemplateObj[];
+    staff: TemplateObj[];
   }>({
     caseTypes: [],
     institutions: [],
     clientParties: [],
-    assignees: [],
+    staff: [],
   });
   const [UIstate, setUIstate] = useState("");
 
@@ -152,11 +153,11 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     }));
   }, [caseEdit.caseTypeID, selected?.caseTypeID, caseTypes]);
 
-  // update assignees options
+  // update staff options
   useEffect(() => {
     setOptions((prev) => ({
       ...prev,
-      assignees: users.map(
+      staff: users.map(
         ({ id, name, role }: { id: string; name: string; role: string }) => ({
           value: id,
           label: `${role}: ${name}`,
@@ -390,6 +391,60 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     setUIstate("OK");
   }
 
+  //func to Request Assignment
+  async function handleAssignmentRequest(e: any) {
+    console.log("Requesting assignment for case: ", selected?.id);
+    setUIstate("loading");
+
+    try {
+      // fetch options
+      let fetchOptions = {
+        method: "POST",
+        body: JSON.stringify({
+          caseID: selected?.id,
+        }),
+      };
+      // POST request using fetch
+      const _res = await fetch("/api/dashboard/assignment", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            console.error(`ERROR: ` + JSON.stringify(res_));
+            toast.error(httpCodes[res_.status]);
+          }
+        }
+      );
+      if (_res?.success) {
+        console.log(
+          "SUCCESS: assignment requested successfully\n > " +
+            JSON.stringify(_res.success) +
+            "\n.............."
+        );
+        toast.success("Assignment requested successfully!");
+        await refreshData();
+        router.refresh();
+      } else {
+        console.error(
+          "ERROR: failed to request assignment\n > " +
+            JSON.stringify(_res) +
+            "\n.............."
+        );
+        toast.error(_res?.error ?? "No Response, check internet connection");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Assignment request failed:", error.message);
+      } else {
+        console.error("Assignment request failed:", error);
+      }
+      // setUIstate("Error: Institution was not initialized");
+      toast.error("Assignment request failed");
+    } finally {
+      setUIstate("OK");
+    }
+  }
+
   //func to Delete Task
   const handleDeleteTask = async (caseID: string, taskID: string) => {
     console.log("deleting...: ", taskID);
@@ -512,7 +567,9 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
               id="caseNo"
               placeholder="case Number (court filed)"
               className="placeholder:italic"
-              value={caseEdit.caseNumber || (selected.caseNumber as string)}
+              value={
+                caseEdit.caseNumber || (selected.caseNumber as string) || ""
+              }
               onChange={(e) =>
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -525,27 +582,38 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
             <Label htmlFor="lawyer" className="opacity-75">
               Assignee
             </Label>
-            <Select
-              name="lawyer"
-              value={caseEdit.userID || (selected.userID as string) || ""}
-              onValueChange={(value) => {
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  userID: value,
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an assignee" />
-              </SelectTrigger>
-              <SelectContent className="bg-muted">
-                {options.assignees.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {session?.user?.role.includes("admin") ? (
+              <Select
+                name="lawyer"
+                value={caseEdit.userID || (selected.userID as string) || ""}
+                onValueChange={(value) => {
+                  setCaseEdit((prev) => ({
+                    ...prev,
+                    userID: value,
+                  }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an assignee" />
+                </SelectTrigger>
+                <SelectContent className="bg-muted">
+                  {options.staff.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Button
+                variant="secondary"
+                type="button"
+                className="w-fit"
+                onClick={handleAssignmentRequest}
+              >
+                Request Assignment
+              </Button>
+            )}
           </div>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="clientDetails">
@@ -980,27 +1048,31 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
           </Accordion>
         </form>
       </CardContent>
-      <CardFooter className="border-t px-6 py-4 min-h-20">
-        {UIstate === "loading" ? (
-          <Loader1 />
-        ) : (
-          <div
-            className="flex flex-row justify-between w-full items-center"
-            id="buttonWrapper"
-          >
-            <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
-              Update Case
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteCase}
-              disabled={!selected?.id}
+      {(session?.user?.role.includes("admin") ||
+        selected.userID === session?.user?.id) && (
+        <CardFooter className="border-t px-6 py-4 min-h-20">
+          {UIstate === "loading" ? (
+            <Loader1 />
+          ) : (
+            <div
+              className="flex flex-row justify-between w-full items-center"
+              id="buttonWrapper"
             >
-              Delete Case
-            </Button>
-          </div>
-        )}
-      </CardFooter>
+              <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
+                Update Case
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={handleDeleteCase}
+                disabled={!selected?.id}
+              >
+                Delete Case
+              </Button>
+            </div>
+          )}
+        </CardFooter>
+      )}
     </Card>
   ) : null;
 }

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
 import { User } from "@/lib/prisma/types";
-export const revalidate = 60; // false | 'force-cache' | 0 | number
+export const revalidate = 6; // false | 'force-cache' | 0 | number
 
 async function getHandler(req: Request, user: Partial<User>) {
   // const url = new URL(req.url);
@@ -116,7 +116,17 @@ async function getHandler(req: Request, user: Partial<User>) {
               institutionID: {
                 in: user.institutionIDs,
               },
-              userID: user.id,
+              OR: [
+                { userID: user.id },
+                {
+                  userID: null,
+                },
+                {
+                  userID: {
+                    isSet: false,
+                  },
+                },
+              ],
             },
             include: {
               caseType: true,
