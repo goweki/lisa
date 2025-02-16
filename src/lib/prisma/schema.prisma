@@ -120,7 +120,7 @@ model Case {
 
 enum assigneeRequestStatus {
   pending
-  accepted
+  approved
   rejected
 }
 

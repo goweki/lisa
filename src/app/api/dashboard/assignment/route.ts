@@ -35,7 +35,7 @@ async function postHandler(
     });
 
     // insert doc
-    const res_ = await prisma.assigneeRequest.create({
+    const res_assigneeRequest = await prisma.assigneeRequest.create({
       data: {
         case: { connect: { id: caseID } },
         assignee: { connect: { id: userID } },
@@ -47,25 +47,37 @@ async function postHandler(
     });
 
     console.log(
-      `SUCCESS: assignment request by ${res_.assignee.email} saved.\n > case:  ${res_.case.name}`
+      `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${res_assigneeRequest.case.name}`
     );
 
-    if (res_ && case_ && !case_.userID) {
+    if (res_assigneeRequest && case_ && !case_.userID) {
       const res_case_ = await prisma.case.update({
         where: { id: caseID },
         data: {
           userID,
         },
       });
+
+      await prisma.assigneeRequest.update({
+        where: {
+          id: res_assigneeRequest.id,
+        },
+        data: {
+          status: "approved",
+        },
+      });
+
       console.log(
-        `SUCCESS: case assigned to ${res_.assignee.email}.\n > case:  ${
-          res_.case.name
-        } \n > case.userID:  ${res_case_.userID === userID}.\n`
+        `SUCCESS: case assigned to ${
+          res_assigneeRequest.assignee.email
+        }.\n > case:  ${res_assigneeRequest.case.name} \n > case.userID:  ${
+          res_case_.userID === userID
+        }.\n`
       );
     }
 
     // HTTP response
-    return Response.json({ success: res_ });
+    return Response.json({ success: res_assigneeRequest });
   } catch (err) {
     console.error(`ERROR: /api/dashboard/assignment POST\n >> error: `, err);
     return Response.json({ error: "SERVER ERROR" });

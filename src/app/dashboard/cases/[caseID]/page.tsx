@@ -77,6 +77,7 @@ import { TaskModal } from "./_components/taskModals";
 import { Task as TaskType } from "@/lib/prisma/types";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import AssignmentRequestComponent from "./_components/assigneeComponent";
+import { stat } from "fs";
 
 export default function CaseView({ params }: { params: { caseID: string } }) {
   const { caseID } = params;
@@ -560,7 +561,8 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
                 pendingRequest={assignmentRequests.find(
                   (req: Record<string, string>) =>
                     req.caseID === selected.id &&
-                    req.assigneeID === session?.user?.id
+                    req.assigneeID === session?.user?.id &&
+                    req.status === "pending"
                 )}
                 uiState={UIstate}
                 setUIstate={setUIstate}
