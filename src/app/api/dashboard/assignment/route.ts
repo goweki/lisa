@@ -26,6 +26,14 @@ async function postHandler(
   }
 
   try {
+    // check if user is Case creator
+    const case_ = await prisma.case.findFirst({
+      where: {
+        id: caseID,
+        createdBy: userID,
+      },
+    });
+
     // insert doc
     const res_ = await prisma.assigneeRequest.create({
       data: {
@@ -37,9 +45,25 @@ async function postHandler(
         assignee: true,
       },
     });
+
     console.log(
       `SUCCESS: assignment request by ${res_.assignee.email} saved.\n > case:  ${res_.case.name}`
     );
+
+    if (res_ && case_ && !case_.userID) {
+      const res_case_ = await prisma.case.update({
+        where: { id: caseID },
+        data: {
+          userID,
+        },
+      });
+      console.log(
+        `SUCCESS: case assigned to ${res_.assignee.email}.\n > case:  ${
+          res_.case.name
+        } \n > case.userID:  ${res_case_.userID === userID}.\n`
+      );
+    }
+
     // HTTP response
     return Response.json({ success: res_ });
   } catch (err) {
@@ -54,14 +78,14 @@ async function deleteHandler(
 ) {
   // request body
   const doc = await request.json();
-  const { id } = doc;
-  console.log("DELETE - api/dashboard/assignment: ", id);
+  const { requestID } = doc;
+  console.log("DELETE - api/dashboard/assignment: ", requestID);
 
   try {
     //doc owner?
     const doc__ = await prisma.assigneeRequest.findFirst({
       where: {
-        id,
+        id: requestID,
         assigneeID: user.id,
       },
     });
@@ -72,8 +96,10 @@ async function deleteHandler(
       });
     }
     // delete doc
-    const res = await prisma.assigneeRequest.delete({ where: { id } });
-    console.log(`SUCCESS: assignmentRequest deleted - ${id}\n`);
+    const res = await prisma.assigneeRequest.delete({
+      where: { id: requestID },
+    });
+    console.log(`SUCCESS: assignmentRequest deleted - ${requestID}\n`);
     // HTTP response
     return Response.json({ success: res });
   } catch (err) {

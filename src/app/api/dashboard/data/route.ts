@@ -176,9 +176,23 @@ async function getHandler(req: Request, user: Partial<User>) {
       },
     });
 
+    //Get assignment requests
+    const assignmentRequests = await prisma.assigneeRequest.findMany({
+      where: {
+        assigneeID: user.id,
+      },
+    });
+
     // HTTP response
     return Response.json({
-      success: { institutions, users, caseTypes, cases, tasks },
+      success: {
+        institutions,
+        users,
+        caseTypes,
+        cases,
+        tasks,
+        assignmentRequests,
+      },
     });
   } catch (error) {
     // handle ERROR if caught

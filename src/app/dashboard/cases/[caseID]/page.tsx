@@ -76,11 +76,12 @@ import {
 import { TaskModal } from "./_components/taskModals";
 import { Task as TaskType } from "@/lib/prisma/types";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
+import AssignmentRequestComponent from "./_components/assigneeComponent";
 
 export default function CaseView({ params }: { params: { caseID: string } }) {
   const { caseID } = params;
   const {
-    data: { users, institutions, cases, caseTypes },
+    data: { users, institutions, cases, caseTypes, assignmentRequests },
     refreshData,
   } = useContext(DataContext);
   const { data: session } = useSession();
@@ -391,60 +392,6 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     setUIstate("OK");
   }
 
-  //func to Request Assignment
-  async function handleAssignmentRequest(e: any) {
-    console.log("Requesting assignment for case: ", selected?.id);
-    setUIstate("loading");
-
-    try {
-      // fetch options
-      let fetchOptions = {
-        method: "POST",
-        body: JSON.stringify({
-          caseID: selected?.id,
-        }),
-      };
-      // POST request using fetch
-      const _res = await fetch("/api/dashboard/assignment", fetchOptions).then(
-        async (res_) => {
-          if (res_.ok) {
-            return await res_.json();
-          } else {
-            console.error(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_.status]);
-          }
-        }
-      );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: assignment requested successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        toast.success("Assignment requested successfully!");
-        await refreshData();
-        router.refresh();
-      } else {
-        console.error(
-          "ERROR: failed to request assignment\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
-        );
-        toast.error(_res?.error ?? "No Response, check internet connection");
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Assignment request failed:", error.message);
-      } else {
-        console.error("Assignment request failed:", error);
-      }
-      // setUIstate("Error: Institution was not initialized");
-      toast.error("Assignment request failed");
-    } finally {
-      setUIstate("OK");
-    }
-  }
-
   //func to Delete Task
   const handleDeleteTask = async (caseID: string, taskID: string) => {
     console.log("deleting...: ", taskID);
@@ -578,13 +525,16 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
               }
             />
           </div>
-          <div id="lawyerWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="lawyer" className="opacity-75">
+          <div
+            id="assigneeWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="assignee" className="opacity-75">
               Assignee
             </Label>
             {session?.user?.role.includes("admin") ? (
               <Select
-                name="lawyer"
+                name="assignee"
                 value={caseEdit.userID || (selected.userID as string) || ""}
                 onValueChange={(value) => {
                   setCaseEdit((prev) => ({
@@ -605,14 +555,18 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
                 </SelectContent>
               </Select>
             ) : (
-              <Button
-                variant="secondary"
-                type="button"
-                className="w-fit"
-                onClick={handleAssignmentRequest}
-              >
-                Request Assignment
-              </Button>
+              <AssignmentRequestComponent
+                assigneeID={selected.userID}
+                pendingRequest={assignmentRequests.find(
+                  (req: Record<string, string>) =>
+                    req.caseID === selected.id &&
+                    req.assigneeID === session?.user?.id
+                )}
+                uiState={UIstate}
+                setUIstate={setUIstate}
+                selectedCaseID={selected.id}
+                refreshData={refreshData}
+              />
             )}
           </div>
           <Accordion type="single" collapsible className="w-full">

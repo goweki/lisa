@@ -27,7 +27,7 @@ async function postHandler(
   try {
     // insert doc
     const res_ = await prisma.case.create({
-      data: doc,
+      data: { ...doc, createdBy: user.id },
       include: {
         institution: true,
       },

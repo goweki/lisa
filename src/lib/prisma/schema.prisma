@@ -113,6 +113,8 @@ model Case {
   createdAt DateTime @default(now()) // Automatically set when the record is created
   updatedAt DateTime @updatedAt // Automatically updates when modified
 
+  createdBy String? @db.ObjectId
+
   @@map("cases")
 }
 
