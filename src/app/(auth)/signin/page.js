@@ -84,15 +84,13 @@ export default function SigninPage() {
     <Loader1 />
   ) : (
     <div className="flex flex-1 flex-col w-full items-center">
-      <div className="w-full max-w-md p-4 m-auto divide-y space-y-3 divide-emerald-800">
-        <p
-          className={`text-xl font-bold text-emerald-800 dark:text-emerald-500 text-center pb-6`}
-        >
+      <div className="w-full max-w-md p-4 m-auto divide-y space-y-3 divide-primary">
+        <p className={`text-primary text-xl font-bold text-center pb-6`}>
           Welcome
         </p>
         <form
           id="signin"
-          className="bg-background-surface dark:bg-background-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33]"
+          className="rounded space-y-6 md:space-y-6 p-8 shadow dark:shadow-dark"
         >
           {/* INPUT FIELDS */}
           <div className="space-y-4">
@@ -155,7 +153,7 @@ export default function SigninPage() {
             </Link>
             <Link
               href="/reset-password"
-              className="text-font-inactive italic dark:text-font-dark-inactive dark:hover:text-font-dark-faded text-sm font-medium  hover:underline"
+              className="text-font-inactive italic text-sm font-medium  hover:underline"
             >
               Forgot password?
             </Link>

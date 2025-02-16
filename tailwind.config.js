@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class",
-  // darkMode: ["class"],
+  darkMode: ["class"],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,21 +9,20 @@ module.exports = {
   theme: {
     container: {
       center: true,
-      // padding: "2rem",
       screens: {
         "2xl": "1400px",
       },
     },
     extend: {
       backgroundImage: {
-        "gradient-sunken": {
-          DEFAULT: "linear-gradient(176deg, #cbd1d8, #f2f8ff)",
-          dark: "linear-gradient(176deg, #0e1526, #10192d)",
-        },
-        "gradient-bulge": {
-          DEFAULT: "linear-gradient(176deg, #f2f8ff, #cbd1d8)",
-          dark: "linear-gradient(176deg, #10192d, #0e1526)",
-        },
+        "gradient-sunken":
+          "linear-gradient(176deg, theme('colors.slate.300'), theme('colors.slate.100'))",
+        "gradient-sunken-dark":
+          "linear-gradient(176deg, theme('colors.slate.900'), theme('colors.slate.800'))",
+        "gradient-bulge":
+          "linear-gradient(176deg, theme('colors.slate.100'), theme('colors.slate.300'))",
+        "gradient-bulge-dark":
+          "linear-gradient(176deg, theme('colors.slate.800'), theme('colors.slate.900'))",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,27 +58,12 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-
-        //prev
-        backg: {
-          DEFAULT: "#f1f5f9", //slate.100
-          surface: "#e2e8f0", //slate.200
-          raised: "#cbd5e1", //slate.300
-          dark: {
-            DEFAULT: "#020617", //slate.950
-            surface: "#0f172a", //slate.900
-            raised: "#1e293b", //slate.800
-          },
-        },
-        font: {
-          DEFAULT: "#0f172a", //slate.900
-          faded: "#1e293b", //slate.800
-          inactive: "#475569", //slate.600
-          dark: {
-            DEFAULT: "#f1f5f9", //slate.100
-            faded: "#e2e8f0", //slate.200
-            inactive: "#94a3b8", //slate.400
-          },
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
         },
       },
       borderRadius: {
@@ -90,12 +73,20 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
         loader: {
           to: {
@@ -104,8 +95,12 @@ module.exports = {
           },
         },
         fadein: {
-          "0%": { opacity: 0 }, //from: { opacity: 0 }
-          "100%": { opacity: 1 }, //to: { opacity: 1 }
+          "0%": {
+            opacity: 0,
+          },
+          "100%": {
+            opacity: 1,
+          },
         },
         doodle: {
           "90%": {
@@ -133,16 +128,11 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
-      //prev
       boxShadow: {
-        DEFAULT: "6px 6px 12px #cbd1d8,-6px -6px 12px #f9ffff",
-        pressed: "inset 6px 6px 12px #cbd1d8,inset -6px -6px 12px #f9ffff",
-        dak: "8px 8px 16px #090d18,-8px -8px 16px #15213c",
-        dpressed: "inset 8px 8px 16px #090d18,inset -8px -8px 16px #15213c",
-        // dak: {
-        //   DEFAULT: "8px 8px 16px #090d18,-8px -8px 16px #15213c",
-        //   pressed: "inset 8px 8px 16px #090d18,inset -8px -8px 16px #15213c",
-        // },
+        light: "2px 2px 4px #cbd1d8, -2px -2px 4px #f9ffff",
+        pressed: "inset 3px 3px 6px #cbd1d8, inset -3px -3px 6px #f9ffff",
+        dark: "2px 2px 4px #065f46, -2px -2px 4px #022c22",
+        dpressed: "inset 4px 4px 8px #065f46, inset -4px -4px 8px #064e3b",
       },
     },
   },

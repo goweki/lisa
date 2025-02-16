@@ -1,8 +1,22 @@
 "use client";
 
-import { Loader1 } from "@/components/atoms/loader";
 import { useRouter } from "next/navigation";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
 import {
   Card,
   CardContent,
@@ -24,15 +38,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
   emailValidator,
   nameValidator,
   telValidator,
@@ -51,12 +56,21 @@ import {
 } from "@/lib/prisma/types";
 import { taskType as taskTypeOptions } from "@prisma/client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 const taskFormSchema = z.object({
-  name: z
+  taskName: z
     .string({
       required_error: "Please provide a task name",
       invalid_type_error: "Name must be a string",
@@ -67,101 +81,38 @@ const taskFormSchema = z.object({
     .max(30, {
       message: "Task name MUST NOT be longer than 30 characters",
     }),
-  type: z.string({ required_error: "Please provide a task type" }),
-  // email: z
-  //   .string({
-  //     required_error: "Please provide an email",
-  //   })
-  //   .email(),
-  dueDate: z.string().date(),
-  description: z.string({
+  taskType: z.string({ required_error: "Please provide a task type" }),
+  dueDate: z.date(),
+  taskDescription: z.string({
     required_error: "Description is required",
   }),
 });
 
-type TaskFormValues = z.infer<typeof taskFormSchema>;
+const defaultValues: Partial<TaskFormValues> = {
+  taskName: "",
+  // taskType: undefined,
+  dueDate: new Date(),
+  taskDescription: "",
+};
 
-export default function TasksPage() {
-  const {
-    data: { institutions, users, cases, caseTypes },
-    refreshData,
-  } = useContext(DataContext);
-
-  const router = useRouter();
-
-  // This can come from your database or API.
-  const defaultValues: Partial<TaskFormValues> = {
-    dueDate: new Date().toISOString(),
-  };
-
-  const form = useForm<TaskFormValues>({
+export default function InputForm() {
+  const form = useForm<z.infer<typeof taskFormSchema>>({
     resolver: zodResolver(taskFormSchema),
     defaultValues,
-    // mode: "onChange",
   });
-
-  // Define a submit handler.
-  async function onSubmit(data: TaskFormValues) {
-    toast(`submitting form data ${JSON.stringify(data, null, 2)}`);
-    console.log("Submitting data: ", data);
-
-    try {
-      // fetch options
-      let fetchOptions = {
-        method: "POST",
-        // headers: {
-        //   "Content-Type": "application/json",
-        //   'Content-Type': 'application/x-www-form-urlencoded',
-        // },
-        body: JSON.stringify(data),
-      };
-
-      // POST request using fetch
-      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
-        async (res_) => {
-          if (res_.ok) {
-            return await res_.json();
-          } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            setUIstate(httpCodes[res_.status]);
-          }
-        }
-      );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: task initialized successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        toast.success("Task initialized successfully!");
-        await refreshData();
-        router.replace(`/dashboard/tasks/${_res.success.id}`);
-      } else {
-        console.error(
-          "ERROR: failed to initialize case at /dashboard/tasks /page\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
-        );
-        setUIstate(_res?.error ?? "No Response, check internet connection");
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Case initialization failed:", error.message);
-      } else {
-        console.error("Case initialization failed:", error);
-      }
-      // setUIstate("Error: Institution was not initialized");
-      toast.error("Case NOT initialized");
-    }
-  }
-
-  const [UIstate, setUIstate] = useState("");
-  const [newTask, setNewTask] = useState<Partial<TaskType>>({});
+  const router = useRouter();
   const [options, setOptions] = useState<{
     taskTypes: string[];
   }>({
     taskTypes: [],
   });
+  const {
+    data: { institutions, users, cases, caseTypes },
+    refreshData,
+  } = useContext(DataContext);
+
+  const [UIstate, setUIstate] = useState("");
+  // const [newTask, setNewTask] = useState<Partial<TaskType>>({});
 
   // update taskTypes options
   useEffect(() => {
@@ -171,26 +122,75 @@ export default function TasksPage() {
     }));
   }, []);
 
-  //handle case initialization
-  async function initializeCase(e: React.MouseEvent<HTMLElement>) {}
+  async function onSubmit(data: z.infer<typeof taskFormSchema>) {
+    console.log("form data: ", data);
+
+    // try {
+    //   // fetch options
+    //   let fetchOptions = {
+    //     method: "POST",
+    //     // headers: {
+    //     //   "Content-Type": "application/json",
+    //     //   'Content-Type': 'application/x-www-form-urlencoded',
+    //     // },
+    //     body: JSON.stringify(data),
+    //   };
+
+    //   // POST request using fetch
+    //   const _res = await fetch("/api/dashboard/task", fetchOptions).then(
+    //     async (res_) => {
+    //       if (res_.ok) {
+    //         return await res_.json();
+    //       } else {
+    //         console.log(`ERROR: ` + JSON.stringify(res_));
+    //         setUIstate(httpCodes[res_.status]);
+    //       }
+    //     }
+    //   );
+    //   if (_res?.success) {
+    //     console.log(
+    //       "SUCCESS: task initialized successfully\n > " +
+    //         JSON.stringify(_res.success) +
+    //         "\n.............."
+    //     );
+    //     toast.success("Task initialized successfully!");
+    //     await refreshData();
+    //     router.replace(`/dashboard/tasks/${_res.success.id}`);
+    //   } else {
+    //     console.error(
+    //       "ERROR: failed to initialize case at /dashboard/tasks /page\n > " +
+    //         JSON.stringify(_res) +
+    //         "\n.............."
+    //     );
+    //     setUIstate(_res?.error ?? "No Response, check internet connection");
+    //   }
+    // } catch (error) {
+    //   if (error instanceof Error) {
+    //     // console.error("Case initialization failed:", error.message);
+    //   } else {
+    //     console.error("Case initialization failed:", error);
+    //   }
+    //   // setUIstate("Error: Institution was not initialized");
+    //   toast.error("Case NOT initialized");
+    // }
+  }
 
   return (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        <CardTitle className="font-light">Create New Task</CardTitle>
-        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
-          Create New Case
-        </CardDescription> */}
+        <CardTitle className="font-light opacity-75">Create New Task</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             <FormField
               control={form.control}
-              name="name"
+              name="taskName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name *</FormLabel>
+                  <FormLabel className="opacity-75">
+                    Task Name <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl className="!mt-0">
                     <Input placeholder="full names" {...field} />
                   </FormControl>
@@ -200,10 +200,12 @@ export default function TasksPage() {
             />
             <FormField
               control={form.control}
-              name="type"
+              name="taskType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>case Type *</FormLabel>
+                  <FormLabel className="opacity-75">
+                    Task Type <span className="text-destructive">*</span>
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -214,13 +216,11 @@ export default function TasksPage() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-popover text-foreground">
-                      <SelectItem value="m@example.com">
-                        m@example.com
-                      </SelectItem>
-                      <SelectItem value="m@google.com">m@google.com</SelectItem>
-                      <SelectItem value="m@support.com">
-                        m@support.com
-                      </SelectItem>
+                      {options.taskTypes.map((type, index) => (
+                        <SelectItem key={index} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -229,13 +229,58 @@ export default function TasksPage() {
             />
             <FormField
               control={form.control}
-              name="description"
+              name="dueDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bio</FormLabel>
+                  <FormLabel className="opacity-75 h-[17.5px] flex w-full items-end">
+                    Due date<span className="text-destructive ml-1"> *</span>
+                  </FormLabel>
+                  <FormControl className="!mt-1">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[280px] justify-start text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(val) => field.onChange(val)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {/*  */}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="taskDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="opacity-75">
+                    Description
+                    <span className="text-destructive ml-1">*</span>
+                  </FormLabel>
                   <FormControl className="!mt-1">
                     <Textarea
-                      placeholder="Tell us a little bit about yourself"
+                      placeholder="Task Description"
                       className="resize-none"
                       {...field}
                     />
@@ -245,7 +290,7 @@ export default function TasksPage() {
               )}
             />
             <div className="px-6 py-4">
-              <Button type="submit">Initialize Task</Button>
+              <Button type="submit">Submit</Button>
             </div>
           </form>
         </Form>

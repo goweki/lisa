@@ -120,10 +120,6 @@ const menuItemsOptions: { [key: string]: any } = {
     ],
     admin: [
       { label: "Dashboard", link: "/dashboard" },
-      {
-        label: "Institutions",
-        link: "/dashboard/institutions",
-      },
       { label: "Users", link: "/dashboard/users" },
       { label: "Cases", link: "/dashboard/cases" },
       { label: "Tasks", link: "/dashboard/tasks" },

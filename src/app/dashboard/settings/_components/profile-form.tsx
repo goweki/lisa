@@ -23,10 +23,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 
 const profileFormSchema = z.object({
   name: z
@@ -79,14 +80,7 @@ export function ProfileForm() {
   });
 
   function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    toast(`Values: ${JSON.stringify(data, null, 2)}`);
   }
 
   return authStatus === "authenticated" && authSession.user ? (

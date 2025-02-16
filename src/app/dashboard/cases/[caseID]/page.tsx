@@ -76,13 +76,16 @@ import {
 import { TaskModal } from "./_components/taskModals";
 import { Task as TaskType } from "@/lib/prisma/types";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
+import AssignmentRequestComponent from "./_components/assigneeComponent";
+import { stat } from "fs";
 
 export default function CaseView({ params }: { params: { caseID: string } }) {
   const { caseID } = params;
   const {
-    data: { users, institutions, cases, caseTypes },
+    data: { users, institutions, cases, caseTypes, assignmentRequests },
     refreshData,
   } = useContext(DataContext);
+  const { data: session } = useSession();
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
@@ -93,12 +96,12 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     caseTypes: TemplateObj[];
     institutions: TemplateObj[];
     clientParties: string[];
-    assignees: TemplateObj[];
+    staff: TemplateObj[];
   }>({
     caseTypes: [],
     institutions: [],
     clientParties: [],
-    assignees: [],
+    staff: [],
   });
   const [UIstate, setUIstate] = useState("");
 
@@ -152,11 +155,11 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
     }));
   }, [caseEdit.caseTypeID, selected?.caseTypeID, caseTypes]);
 
-  // update assignees options
+  // update staff options
   useEffect(() => {
     setOptions((prev) => ({
       ...prev,
-      assignees: users.map(
+      staff: users.map(
         ({ id, name, role }: { id: string; name: string; role: string }) => ({
           value: id,
           label: `${role}: ${name}`,
@@ -512,7 +515,9 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
               id="caseNo"
               placeholder="case Number (court filed)"
               className="placeholder:italic"
-              value={caseEdit.caseNumber || (selected.caseNumber as string)}
+              value={
+                caseEdit.caseNumber || (selected.caseNumber as string) || ""
+              }
               onChange={(e) =>
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -521,31 +526,50 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
               }
             />
           </div>
-          <div id="lawyerWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="lawyer" className="opacity-75">
+          <div
+            id="assigneeWrapper"
+            className="grid w-full items-center gap-1.5"
+          >
+            <Label htmlFor="assignee" className="opacity-75">
               Assignee
             </Label>
-            <Select
-              name="lawyer"
-              value={caseEdit.userID || (selected.userID as string) || ""}
-              onValueChange={(value) => {
-                setCaseEdit((prev) => ({
-                  ...prev,
-                  userID: value,
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an assignee" />
-              </SelectTrigger>
-              <SelectContent className="bg-muted">
-                {options.assignees.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {session?.user?.role.includes("admin") ? (
+              <Select
+                name="assignee"
+                value={caseEdit.userID || (selected.userID as string) || ""}
+                onValueChange={(value) => {
+                  setCaseEdit((prev) => ({
+                    ...prev,
+                    userID: value,
+                  }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an assignee" />
+                </SelectTrigger>
+                <SelectContent className="bg-muted">
+                  {options.staff.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <AssignmentRequestComponent
+                assigneeID={selected.userID}
+                pendingRequest={assignmentRequests.find(
+                  (req: Record<string, string>) =>
+                    req.caseID === selected.id &&
+                    req.assigneeID === session?.user?.id &&
+                    req.status === "pending"
+                )}
+                uiState={UIstate}
+                setUIstate={setUIstate}
+                selectedCaseID={selected.id}
+                refreshData={refreshData}
+              />
+            )}
           </div>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="clientDetails">
@@ -980,27 +1004,31 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
           </Accordion>
         </form>
       </CardContent>
-      <CardFooter className="border-t px-6 py-4 min-h-20">
-        {UIstate === "loading" ? (
-          <Loader1 />
-        ) : (
-          <div
-            className="flex flex-row justify-between w-full items-center"
-            id="buttonWrapper"
-          >
-            <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
-              Update Case
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteCase}
-              disabled={!selected?.id}
+      {(session?.user?.role.includes("admin") ||
+        selected.userID === session?.user?.id) && (
+        <CardFooter className="border-t px-6 py-4 min-h-20">
+          {UIstate === "loading" ? (
+            <Loader1 />
+          ) : (
+            <div
+              className="flex flex-row justify-between w-full items-center"
+              id="buttonWrapper"
             >
-              Delete Case
-            </Button>
-          </div>
-        )}
-      </CardFooter>
+              <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
+                Update Case
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={handleDeleteCase}
+                disabled={!selected?.id}
+              >
+                Delete Case
+              </Button>
+            </div>
+          )}
+        </CardFooter>
+      )}
     </Card>
   ) : null;
 }

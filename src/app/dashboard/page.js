@@ -129,8 +129,6 @@ export default function UserHome() {
 function ProfileCard({ date, time, data, entities }) {
   const { data: session } = useSession();
 
-  console.log("data - ", data);
-
   return (
     <div className="card m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal">
       <div className="grid-cols-1 m-2">

@@ -93,7 +93,7 @@ export function ReqDemoModal({ handleCloseModal }) {
       id="requestDemoModal"
       tabIndex="-1"
       aria-hidden="true"
-      className={`fixed top-0 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-backg/50 dark:bg-backg-dark/50 backdrop-blur-sm`}
+      className={`fixed top-0 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background/80 backdrop-blur-xl`}
     >
       {/* Request Demo */}
       <div className="bg-backg-surface dark:bg-backg-dark-surface rounded space-y-6 md:space-y-6 p-8 shadow-[6px_6px_4px_#ecf0f4,-6px_-6px_4px_#f6fafe] dark:shadow-[1px_1px_2px_#0c1221,-1px_-1px_2px_#121c33] max-w-md border border-emerald-800">

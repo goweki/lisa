@@ -77,3 +77,15 @@ export const roleLabels: { [key: string]: string } = {
   advocate: "Advocate",
   lawyer: "Lawyer",
 };
+
+export const prismaErrorMessages: { [key: string]: string } = {
+  P2002: "A unique constraint violation occurred. This record already exists.",
+  P2003:
+    "A foreign key constraint failed. Ensure related records exist before inserting.",
+  P2004: "A constraint failed on the database.",
+  P2011: "Null constraint violation on a required field.",
+  P2014:
+    "You cannot delete this record because it is referenced by other records. Delete related data first.",
+  P2025:
+    "Record not found. It may have already been deleted or does not exist.",
+};

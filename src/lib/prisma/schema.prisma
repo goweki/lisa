@@ -55,9 +55,10 @@ model User {
 
   institutionIDs String[] @db.ObjectId
 
-  cases          Case[]
-  completedTasks Task[]
-  institutions   Institution[] @relation(fields: [institutionIDs], references: [id])
+  cases            Case[]
+  completedTasks   Task[]
+  institutions     Institution[]     @relation(fields: [institutionIDs], references: [id])
+  AssigneeRequests AssigneeRequest[]
 
   @@map("users")
 }
@@ -106,9 +107,36 @@ model Case {
   userID String? @db.ObjectId
   lawyer User?   @relation(fields: [userID], references: [id])
 
-  tasks Task[]
+  tasks            Task[]
+  AssigneeRequests AssigneeRequest[]
+
+  createdAt DateTime @default(now()) // Automatically set when the record is created
+  updatedAt DateTime @updatedAt // Automatically updates when modified
+
+  createdBy String? @db.ObjectId
 
   @@map("cases")
+}
+
+enum assigneeRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model AssigneeRequest {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  caseID String @db.ObjectId
+  case   Case   @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  assigneeID String @db.ObjectId
+  assignee   User   @relation(fields: [assigneeID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  status    assigneeRequestStatus @default(pending)
+  createdAt DateTime              @default(now()) // Automatically set when the record is created
+
+  @@map("assigneeRequests")
 }
 
 enum reminderChannels {

@@ -2,36 +2,31 @@ import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
 import { User } from "@/lib/prisma/types";
-export const revalidate = 60; // false | 'force-cache' | 0 | number
+export const revalidate = 6; // false | 'force-cache' | 0 | number
 
 async function getHandler(req: Request, user: Partial<User>) {
   // const url = new URL(req.url);
   // const institutionId = url.searchParams.get("institution");
   // retrieve data
-  if (!user.institutionIDs || user.institutionIDs.length === 0) {
+  if (
+    user.role !== "system_admin" &&
+    (!user.institutionIDs || user.institutionIDs.length === 0)
+  ) {
+    console.error(" > No institution assigned");
     return Response.json("No institution assigned", { status: 401 });
   }
+
   try {
-    // GET institutions where
-    const institutions_ = await prisma.institution.findMany({
-      where: {
-        id: {
-          in: user.institutionIDs,
-        },
-      },
-    });
-    if (institutions_.length === 0) {
-      return Response.json("No institutions", { status: 401 });
-    }
-    // id institution includes Lisa
+    // GET institutions
     const institutions = await prisma.institution.findMany({
-      where: !institutions_.map((inst) => inst.name).includes("Lisa")
-        ? {
-            id: {
-              in: user.institutionIDs,
-            },
-          }
-        : {},
+      where:
+        user.role !== "system_admin"
+          ? {
+              id: {
+                in: user.institutionIDs,
+              },
+            }
+          : {},
       include: {
         cases: true,
         users: true,
@@ -42,7 +37,7 @@ async function getHandler(req: Request, user: Partial<User>) {
     // GET users
     let users: User[] = [];
 
-    if (user.email === "antonio@goweki.com") {
+    if (user.role === "system_admin") {
       const instUsers = await prisma.user.findMany({
         include: {
           institutions: true,
@@ -121,7 +116,17 @@ async function getHandler(req: Request, user: Partial<User>) {
               institutionID: {
                 in: user.institutionIDs,
               },
-              userID: user.id,
+              OR: [
+                { userID: user.id },
+                {
+                  userID: null,
+                },
+                {
+                  userID: {
+                    isSet: false,
+                  },
+                },
+              ],
             },
             include: {
               caseType: true,
@@ -171,9 +176,23 @@ async function getHandler(req: Request, user: Partial<User>) {
       },
     });
 
+    //Get assignment requests
+    const assignmentRequests = await prisma.assigneeRequest.findMany({
+      where: {
+        assigneeID: user.id,
+      },
+    });
+
     // HTTP response
     return Response.json({
-      success: { institutions, users, caseTypes, cases, tasks },
+      success: {
+        institutions,
+        users,
+        caseTypes,
+        cases,
+        tasks,
+        assignmentRequests,
+      },
     });
   } catch (error) {
     // handle ERROR if caught

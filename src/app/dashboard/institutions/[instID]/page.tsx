@@ -42,6 +42,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InputImage } from "./_components/inputs";
+import { status } from "@prisma/client";
 
 interface InstitutionEdit {
   name: string;
@@ -283,62 +284,20 @@ export default function InstitutionView({ params }: { params: any }) {
 
     // api call
     try {
-      console.log("editing institution: ", instEdit);
+      console.log("INFO: toggling institution");
 
-      // const { email, location, name, photoFile_ } = instEdit;
-      //upload image and retain url
-      let logoUrl_: string | null = null;
-      if (instEdit.imageFile) {
-        // console.log("New logo to be uploaded");
-
-        // upload file using edgestore- edgestore returns:
-        // const res: {
-        //   url: string;
-        //   size: number;
-        //   uploadedAt: Date;
-        //   metadata: Record<string, never>;
-        //   path: Record<string, never>;
-        //   pathOrder: string[];
-        // }
-        const uploadOptions: { replaceTargetUrl: string } | undefined =
-          !selected.logoUrl
-            ? undefined
-            : {
-                replaceTargetUrl: selected.logoUrl,
-              };
-
-        const logoEdgeUpload = await edgestore.publicFiles.upload({
-          file: instEdit.imageFile,
-          options: uploadOptions,
-          // onProgressChange: (progress) => {
-          //   // you can use this to show a progress bar
-          //   console.log(progress);
-          // },
-        });
-
-        // console.log("edge File - ", logoEdgeUpload);
-        logoUrl_ = logoEdgeUpload.url;
-        setInstEdit((prev) => {
-          return { ...prev, imageFile: null };
-        });
-        if (!logoUrl_) console.error("image upload failed");
-      }
-
+      const newStatus = selected.status === "INACTIVE" ? "ACTIVE" : "INACTIVE";
       const fetchBody = {
         id: selected.id,
-        name: instEdit.name || selected.name,
-        email: instEdit.email || selected.email,
-        location: instEdit.location || selected.location,
-        logoUrl: logoUrl_ || selected.logoUrl,
-        tel: instEdit.tel || selected.tel,
+        status: newStatus,
       };
 
       const fetchOptions = {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(fetchBody),
       };
 
-      // PUT request using fetch
+      // PATCH request using fetch
       const res = await fetch("/api/dashboard/institution", fetchOptions).then(
         async (res_) => {
           if (res_?.ok) {
@@ -444,7 +403,7 @@ export default function InstitutionView({ params }: { params: any }) {
       <CardHeader>
         <CardTitle className="font-light">
           <span>{selected?.name}</span>
-          {
+          {userSession?.user?.role === "system_admin" && (
             <Button
               variant="ghost"
               className={`ml-4 ${
@@ -454,9 +413,9 @@ export default function InstitutionView({ params }: { params: any }) {
               }`}
               onClick={toggleInstitutionStatus}
             >
-              inactivate
+              {selected.status === "INACTIVE" ? "activate" : "inactivate"}
             </Button>
-          }
+          )}
         </CardTitle>
         {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected?.name}
