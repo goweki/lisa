@@ -34,7 +34,7 @@ export default function UserProviders({ children }) {
 
       // console.log("RESPONSE", json_);
       if (response?.success) {
-        console.log("SUCCESS: fetched data", response.success);
+        // console.log("SUCCESS: fetched data", response.success);
 
         setData(response.success);
       } else {

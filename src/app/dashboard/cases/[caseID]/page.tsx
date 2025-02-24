@@ -29,7 +29,7 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
-import { User, Institution, Case } from "@/lib/prisma/types";
+import { User, Institution, Case, Task } from "@/lib/prisma/types";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/lib/types";
 import {
@@ -73,11 +73,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { TaskModal } from "./_components/taskModals";
+import TaskModal from "@/components/mols/taskModals";
 import { Task as TaskType } from "@/lib/prisma/types";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import AssignmentRequestComponent from "./_components/assigneeComponent";
 import { stat } from "fs";
+import { handleTaskCreation } from "../../tasks/_actions/add-task";
 
 export default function CaseView({ params }: { params: { caseID: string } }) {
   const { caseID } = params;
@@ -449,6 +450,23 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
       // setUIstate("Error: Institution was not initialized");
       toast.error("Task NOT deleted");
     }
+  };
+
+  //func to Create Task
+  const handleCreateTask = async (newTask: Partial<Task>) => {
+    setUIstate("loading");
+
+    const { caseID, ...newTask_ } = newTask;
+
+    if (!caseID && !newTask_.name) {
+      console.error(" > Missing task attributes - ", newTask);
+    }
+
+    const res_ = await handleTaskCreation({
+      newTask: newTask_,
+      selectedCase: { id: caseID },
+    });
+    return res_;
   };
 
   //render
@@ -908,8 +926,11 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
                               </DialogContent>
                             </Dialog> */}
                             <TaskModal
-                              selectedCase={selected}
-                              refreshData={refreshData}
+                              // selectedCase={selected}
+                              // refreshData={refreshData}
+                              Obj={{ caseID: selected.id }}
+                              createObj={handleCreateTask}
+                              refresh={refreshData}
                             />
                           </TableHead>
                         </TableRow>

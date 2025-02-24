@@ -139,18 +139,7 @@ async function getHandler(req: Request, user: Partial<User>) {
 
     //Get tasks
     const caseIDs_ = cases.map(({ id }) => id);
-    const tasks = await prisma.task.findMany({
-      where: {
-        id: {
-          in: caseIDs_,
-        },
-      },
-      include: {
-        documents: true,
-        case: true,
-        completedBy: true,
-      },
-    });
+    const tasks = cases.map(({ tasks }) => tasks).flat();
 
     //Get case-types
     const caseTypes = await prisma.caseType.findMany({
@@ -184,6 +173,14 @@ async function getHandler(req: Request, user: Partial<User>) {
     });
 
     // HTTP response
+    // console.log(" > USER data Data retrieved - ", {
+    //   institutions,
+    //   users,
+    //   caseTypes,
+    //   cases,
+    //   tasks,
+    //   assignmentRequests,
+    // });
     return Response.json({
       success: {
         institutions,

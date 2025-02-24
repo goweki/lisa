@@ -6,66 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
-import {
-  Card,
-  CardContent,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  emailValidator,
-  nameValidator,
-  telValidator,
-} from "@/helpers/inputValidators";
+import Calendar from "./_components/calendar/calendar";
+import { CalendarTask, Mode } from "./_components/calendar/calendar-types";
 import { useCallback, useContext, useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { DataContext } from "../providers";
-import { httpCodes } from "@/lib/configs";
-import MultiSelect, {
-  Option as MultiSelectOption,
-} from "@/components/atoms/multiSelect";
-import { TemplateObj } from "@/lib/types";
-import {
-  Institution as InstitutionType,
-  Task as TaskType,
-} from "@/lib/prisma/types";
 import { taskType as taskTypeOptions } from "@prisma/client";
-
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Task } from "@/lib/prisma/types";
+import { handleTaskCreation } from "./_actions/add-task";
+import { handleTaskDeletion } from "./_actions/delete-task";
+import { handleTaskUpdate } from "./_actions/update-task";
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
 
@@ -95,7 +44,7 @@ const defaultValues: Partial<TaskFormValues> = {
   taskDescription: "",
 };
 
-export default function InputForm() {
+export default function TasksView() {
   const form = useForm<z.infer<typeof taskFormSchema>>({
     resolver: zodResolver(taskFormSchema),
     defaultValues,
@@ -107,11 +56,13 @@ export default function InputForm() {
     taskTypes: [],
   });
   const {
-    data: { institutions, users, cases, caseTypes },
+    data: { institutions, users, cases, caseTypes, tasks },
     refreshData,
   } = useContext(DataContext);
 
-  const [UIstate, setUIstate] = useState("");
+  const [mode, setMode] = useState<Mode>("month");
+  const [date, setDate] = useState<Date>(new Date());
+
   // const [newTask, setNewTask] = useState<Partial<TaskType>>({});
 
   // update taskTypes options
@@ -122,179 +73,67 @@ export default function InputForm() {
     }));
   }, []);
 
-  async function onSubmit(data: z.infer<typeof taskFormSchema>) {
-    console.log("form data: ", data);
+  // func to handle adding a new task
+  async function addTask(
+    newTask: Partial<Task>
+  ): Promise<{ status: number; message: string }> {
+    const { caseID, ..._task } = newTask;
 
-    // try {
-    //   // fetch options
-    //   let fetchOptions = {
-    //     method: "POST",
-    //     // headers: {
-    //     //   "Content-Type": "application/json",
-    //     //   'Content-Type': 'application/x-www-form-urlencoded',
-    //     // },
-    //     body: JSON.stringify(data),
-    //   };
+    if (!caseID) {
+      console.error("Missing caseID - ", newTask);
+    }
 
-    //   // POST request using fetch
-    //   const _res = await fetch("/api/dashboard/task", fetchOptions).then(
-    //     async (res_) => {
-    //       if (res_.ok) {
-    //         return await res_.json();
-    //       } else {
-    //         console.log(`ERROR: ` + JSON.stringify(res_));
-    //         setUIstate(httpCodes[res_.status]);
-    //       }
-    //     }
-    //   );
-    //   if (_res?.success) {
-    //     console.log(
-    //       "SUCCESS: task initialized successfully\n > " +
-    //         JSON.stringify(_res.success) +
-    //         "\n.............."
-    //     );
-    //     toast.success("Task initialized successfully!");
-    //     await refreshData();
-    //     router.replace(`/dashboard/tasks/${_res.success.id}`);
-    //   } else {
-    //     console.error(
-    //       "ERROR: failed to initialize case at /dashboard/tasks /page\n > " +
-    //         JSON.stringify(_res) +
-    //         "\n.............."
-    //     );
-    //     setUIstate(_res?.error ?? "No Response, check internet connection");
-    //   }
-    // } catch (error) {
-    //   if (error instanceof Error) {
-    //     // console.error("Case initialization failed:", error.message);
-    //   } else {
-    //     console.error("Case initialization failed:", error);
-    //   }
-    //   // setUIstate("Error: Institution was not initialized");
-    //   toast.error("Case NOT initialized");
-    // }
+    const res_ = await handleTaskCreation({
+      newTask: _task,
+      selectedCase: { id: caseID },
+    });
+
+    return res_;
+  }
+
+  // func to handle updating a new task
+  async function updateTask(
+    update: Partial<Task>
+  ): Promise<{ status: number; message: string }> {
+    const { id, ..._task } = update;
+
+    if (!id) {
+      console.error("Missing task-id : ", update);
+    }
+
+    const res_ = await handleTaskUpdate(update);
+
+    return res_;
+  }
+
+  // func to handle deleting a task
+  async function deleteTask(
+    _task: Partial<Task>
+  ): Promise<{ status: number; message: string }> {
+    const { caseID, id } = _task;
+
+    if (!caseID && !id) {
+      console.error("Missing caseID || taskID - ", _task);
+    }
+
+    const res_ = await handleTaskDeletion({
+      id,
+      caseID,
+    });
+
+    return res_;
   }
 
   return (
-    <Card x-chunk="dashboard-04-chunk-1">
-      <CardHeader>
-        <CardTitle className="font-light opacity-75">Create New Task</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-            <FormField
-              control={form.control}
-              name="taskName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="opacity-75">
-                    Task Name <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl className="!mt-0">
-                    <Input placeholder="full names" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="taskType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="opacity-75">
-                    Task Type <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl className="!mt-1">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a task type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-popover text-foreground">
-                      {options.taskTypes.map((type, index) => (
-                        <SelectItem key={index} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="opacity-75 h-[17.5px] flex w-full items-end">
-                    Due date<span className="text-destructive ml-1"> *</span>
-                  </FormLabel>
-                  <FormControl className="!mt-1">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-[280px] justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(val) => field.onChange(val)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-
-                    {/*  */}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="taskDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="opacity-75">
-                    Description
-                    <span className="text-destructive ml-1">*</span>
-                  </FormLabel>
-                  <FormControl className="!mt-1">
-                    <Textarea
-                      placeholder="Task Description"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="px-6 py-4">
-              <Button type="submit">Submit</Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <Calendar
+      events={tasks}
+      addEvent={addTask}
+      updateEvent={updateTask}
+      deleteEvent={deleteTask}
+      mode={mode}
+      setMode={setMode}
+      date={date}
+      setDate={setDate}
+    />
   );
 }
