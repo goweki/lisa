@@ -1,8 +1,9 @@
-// import { Binary } from "mongodb";
 import prisma from "@/lib/prisma/prisma";
-import { strPascalcase } from "@/helpers/stringHandlers";
+import { httpCodes } from "@/lib/configs";
+import { withAuthGeneral } from "@/lib/authRouteWrappers";
+import { User } from "@/lib/prisma/types";
 
-export async function POST(request) {
+async function postHandler(request: Request, user: Partial<User>) {
   const { caseID, dueDate, ...doc } = await request.json();
   console.log("POST REQUEST: new task: ", doc.name);
   try {
@@ -38,62 +39,53 @@ export async function POST(request) {
   }
 }
 
-export async function PUT(request) {
-  // request body
-  const { id, ...doc } = await request.json();
-  console.log("PUT REQUEST: updating task ", id);
+async function patchHandler(request: Request, user: Partial<User>) {
   try {
+    // request body
+    const { id, ...doc } = await request.json();
+    console.log("PATCH REQUEST: updating task - ", id);
     // update doc
-    const updateTask = await prisma.task.update({
+    const updatedTask_ = await prisma.task.update({
       where: { id },
       data: doc,
     });
-    console.log("SUCCESS: task updated\n >> ", updateTask);
+    console.log("SUCCESS: task updated\n >> ", updatedTask_);
     // HTTP response
-    return Response.json({ success: updateTask });
-  } catch (err) {
-    console.error(
-      "ERROR: task completion failed -id \n",
-      id,
-      " >> error: ",
-      err
-    );
-    return Response.json("SERVER ERROR");
+    return Response.json({ success: updatedTask_ });
+  } catch (err: any) {
+    console.error("ERROR: erred deleting task \n >> error: ", err);
+    return Response.json({
+      status: err.status || 500,
+      message: httpCodes[err.status || "Server error"],
+    });
   }
 }
 
-export async function DELETE(request) {
+async function deleteHandler(request: Request, user: Partial<User>) {
   // request body
   const doc = await request.json();
-  const { caseID, taskID } = doc;
-  console.log("DELETE REQUEST: deleting task: ", taskID, " of ", caseID);
+  const { caseID, id } = doc;
+  console.log("DELETE REQUEST: deleting task: ", id, " of ", caseID);
   try {
     // delete (pull) object from the dueDates array
     const deleteTask = await prisma.task.delete({
       where: {
-        id: taskID,
+        id: id,
         caseID: caseID,
       },
     });
     console.log(`SUCCESS: task deleted.\n..........`);
     // HTTP response
     return Response.json({ success: deleteTask });
-  } catch (err) {
-    console.error(" > ERROR: document deletion failed.", err, "\n..........");
-    return Response.json("SERVER ERROR");
+  } catch (err: any) {
+    console.error("ERROR: erred deleting task \n >> error: ", err);
+    return Response.json({
+      status: err.status || 500,
+      message: httpCodes[err.status || "Server error"],
+    });
   }
 }
 
-export async function GET(request) {
-  const url = new URL(request.url);
-  const id = url.searchParams.get("id");
-  try {
-    // retrieve doc
-    const res_ = await collection.findOne({ id: id });
-    if (res_) return Response.json({ success: res_ });
-    else return Response.json({ failed: "no case found" });
-  } catch (err) {
-    console.error(" > ERROR: document retrieval erred.", err, "\n..........");
-    return Response.json("SERVER ERROR");
-  }
-}
+export const POST = withAuthGeneral(postHandler);
+export const PATCH = withAuthGeneral(patchHandler);
+export const DELETE = withAuthGeneral(deleteHandler);

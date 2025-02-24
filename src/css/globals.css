@@ -111,3 +111,12 @@
     @apply bg-gradient-to-b from-primary/10 to-background border-border/50 border-2 p-4 m-4 md:m-6 rounded-lg transition-all;
   }
 }
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

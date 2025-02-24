@@ -88,60 +88,7 @@ export default function TasksLayout({
       <div className="w-full gap-2">
         <h1 className="uppercase">Tasks</h1>
       </div>
-      <div className="w-full items-start gap-6 flex flex-col md:flex-row">
-        <nav
-          className="grid gap-4 w-full col-span-1 max-w-[240px] "
-          x-chunk="dashboard-04-chunk-0"
-        >
-          <Input
-            type="text"
-            name="search"
-            placeholder="search..."
-            className="placeholder:italic"
-            value={searchPhrase.value}
-            onChange={(e) =>
-              setSearchPhrase({ ...searchPhrase, value: e.target.value })
-            }
-          />
-
-          <div className="flex flex-col space-y-1">
-            <Link
-              className={`p-2 rounded ${
-                !taskId ? "bg-primary/20" : "hover:bg-primary/10"
-              }`}
-              href="/dashboard/tasks"
-            >
-              + create
-            </Link>
-            {filtTasks.length > 0 &&
-              filtTasks.map(({ id, name, caseType, clientParty }) => (
-                // <Link
-                //   key={id}
-                //   // className="p-2 hover:bg-muted/25"
-                //   className={`p-2 ${userId === id ? "bg-muted/50" : ""}`}
-                //   href={`/dashboard/tasks/${id}`}
-                // >
-                //   {name}
-                // </Link>
-                <Link
-                  key={id}
-                  className={`p-2 rounded ${
-                    taskId === id ? "bg-primary/20" : "hover:bg-primary/10"
-                  }`}
-                  href={`/dashboard/tasks/${id}`}
-                >
-                  <div className="font-medium">{name}</div>
-                  <div className="hidden text-sm md:inline-block">
-                    {caseType?.name}
-                    <div className="italic">{clientParty}</div>
-                  </div>
-                </Link>
-              ))}
-          </div>
-        </nav>
-
-        <div className="col-span-2 w-full">{children}</div>
-      </div>
+      <div className="block">{children}</div>
     </main>
   ) : null;
 }
