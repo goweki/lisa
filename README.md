@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# LISA: Legal Intelligent Support Assistant
 
-## Getting Started
+LISA is a Next.js web application designed to provide intelligent support for legal professionals. It offers a range of features to manage tasks, cases, and reminders efficiently.
 
-First, run the development server:
+## Table of Contents
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Task management: Create, update, and delete tasks.
+- Case management: Organize and track legal cases.
+- Reminders: Set and manage reminders for important dates.
+- User authentication: Secure login and registration.
+- Responsive design: Optimized for both desktop and mobile devices.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Installation
 
-## Learn More
+To get started with LISA, follow these steps:
 
-To learn more about Next.js, take a look at the following resources:
+1. Clone the repository:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   git clone https://github.com/goweki/lisa
+   cd lisa
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+2. Install the dependencies:
 
-## Deploy on Vercel
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Create a `.env` file in the root directory and add your environment variables listed in `.env.template`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+4. Run the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Usage
+
+Once the development server is running, you can start using LISA by navigating to [http://localhost:3000](http://localhost:3000). You can register a new account or log in with an existing account to access the features.
+
+## Contributing
+
+We welcome contributions to LISA! To contribute, follow these steps:
+
+1. Fork the repository.
+2. Create a new branch with a descriptive name.
+3. Make your changes and commit them with clear commit messages.
+4. Push your changes to your forked repository.
+5. Create a pull request to the main repository.
+
+Please ensure your code follows the project's coding standards and includes tests for any new functionality.
+
+## License
+
+This project is owned by the creator.
