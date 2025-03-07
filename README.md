@@ -12,11 +12,10 @@ LISA is a Next.js web application designed to provide intelligent support for le
 
 ## Features
 
-- Task management: Create, update, and delete tasks.
-- Case management: Organize and track legal cases.
-- Reminders: Set and manage reminders for important dates.
-- User authentication: Secure login and registration.
 - Responsive design: Optimized for both desktop and mobile devices.
+- User authentication: Secure login and registration.
+- Case management: Organize and track legal cases.
+- ~~ Task management: Create, update, and delete tasks embedded in each case. Set and manage reminders for tasks. ~~
 
 ## Installation
 
@@ -54,7 +53,7 @@ Once the development server is running, you can start using LISA by navigating t
 We welcome contributions to LISA! To contribute, follow these steps:
 
 1. Fork the repository.
-2. Create a new branch with a descriptive name.
+2. Create a new branch with a descriptive name. eg. `<CONTRIBUTOR>-<CREATE/FIX/>-<DESCRIPTION>`
 3. Make your changes and commit them with clear commit messages.
 4. Push your changes to your forked repository.
 5. Create a pull request to the main repository.
