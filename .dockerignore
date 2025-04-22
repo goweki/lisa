@@ -1,0 +1,32 @@
+README.md
+# Node.js and dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+# Next.js build outputs (except standalone)
+.next/cache
+.next/server
+.next/trace
+# Local development files
+.env
+.env.*
+out
+build
+# Git repository
+.git
+# Docker files (to prevent infinite recursion)
+Dockerfile
+.dockerignore
+docker-compose*
+# System files
+*.log
+*.swp
+*~
+tmp/
+temp/
+# Editor and IDE files
+.vscode
+.idea
+*.suo
+*.user
+*.bak
