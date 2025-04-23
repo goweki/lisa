@@ -22,7 +22,7 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
-RUN echo "EDGE_STORE_ACCESS_KEY=dummy-key\nEDGE_STORE_SECRET_KEY=dummy-secret" > .env
+RUN echo -e "EDGE_STORE_ACCESS_KEY=dummy-key\nEDGE_STORE_SECRET_KEY=dummy-secret" > .env
 RUN cat .env
 RUN NODE_ENV=production npm run build
 
