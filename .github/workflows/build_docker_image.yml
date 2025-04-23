@@ -1,0 +1,79 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build
+        id: build
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::8}  # First 8 characters of commit hash
+          IMAGE_NAME=ghcr.io/goweki/lisa:$IMAGE_TAG
+          echo "Building docker image $IMAGE_NAME"
+          docker build -t $IMAGE_NAME -t ghcr.io/goweki/lisa:latest .
+          # docker push $IMAGE_NAME
+          # docker push ghcr.io/goweki/lisa:latest
+          # echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          # echo "Docker image pushed: $IMAGE_NAME"
+
+# - name: executing remote ssh commands using password
+#   uses: appleboy/ssh-action@v1.2.1
+#   env:
+#     IMAGE_URL: ${{ env.IMAGE_NAME }}
+#     ENV_URL: ${{ secrets.GIST_ENV_RAW_URL }}
+#   with:
+#     host: ${{secrets.DO_SSH_HOST}}
+#     username: ${{ secrets.DO_SSH_USERNAME }}
+#     key: ${{ secrets.SSH_PRIVATE_KEY }}
+#     envs: IMAGE_URL,ENV_URL
+#     script: |
+#       # echo 'Stopping existing docker image...'
+#       # docker compose stop lisa
+#       # docker compose rm -f lisa
+
+#       # docker pull $IMAGE_URL
+#       echo 'Downloading .env.lisa...'
+#       curl -sSL $ENV_URL > .env.lisa
+#       cat .env.lisa
+
+#       # Start the service again with the new image
+#       # echo 'Starting new docker image...'
+#       # docker compose up -d lisa
+
+#       # Check lisa container status: running? and healthy? (optional)
+#       status1=$(docker ps --filter "name=lisa" --format "{{.State}}")
+#       status2=$(docker inspect --format='{{.State.Health.Status}}' lisa 2>/dev/null)
+#       echo "existing lisa container state: $status1 - $status2"
+
+#       # Error Handling Step
+
+# - name: Send Failure Notification (Optional)
+#   if: ${{ failure() }}
+#   uses: slackapi/slack-github-action@v1 #Example using slack
+#   with:
+#     payload: |
+#       {
+#         "text": "Deployment failed for lisa ${{ github.sha }} in ${{ github.repository }}."
+#       }
+#   env:
+#     SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+#     SLACK_CHANNEL: your-slack-channel
+# permissions:
+#   contents: read
+#   packages: write

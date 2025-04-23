@@ -132,7 +132,7 @@ export default function AssignmentRequestComponent(params: {
 
   return (
     <Button
-      variant={!pendingRequest ? "secondary" : "outline"}
+      variant="outline"
       type="button"
       className={`w-fit ${
         !pendingRequest

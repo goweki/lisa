@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "docker:build": "docker build -t ghcr.io/goweki/lisa:latest .",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
     "postinstall": "prisma generate --schema=./src/lib/prisma/schema.prisma"
   },
