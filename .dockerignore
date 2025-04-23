@@ -8,8 +8,8 @@ yarn-error.log
 .next/server
 .next/trace
 # Local development files
-.env
-.env.*
+.env*
+!.env.template
 out
 build
 # Git repository
