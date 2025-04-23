@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "prisma generate --schema=./src/lib/prisma/schema.prisma && next dev",
     "build": "next build",
     "docker:build": "docker build -t ghcr.io/goweki/lisa:latest .",
     "start": "next start -p ${PORT:-3000}",
