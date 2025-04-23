@@ -10,6 +10,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
+COPY src/lib/prisma ./src/lib/prisma
 RUN npm ci
 
 # Rebuild the source code only when needed
