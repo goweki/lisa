@@ -26,7 +26,7 @@ jobs:
           IMAGE_TAG=${GITHUB_SHA::8}  # First 8 characters of commit hash
           IMAGE_NAME=ghcr.io/goweki/lisa:$IMAGE_TAG
           echo "Building docker image $IMAGE_NAME"
-          mv .env.template .env.local
+          mv .env.template .env
           docker build -t $IMAGE_NAME -t ghcr.io/goweki/lisa:latest .
           # docker push $IMAGE_NAME
           # docker push ghcr.io/goweki/lisa:latest
