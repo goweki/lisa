@@ -72,28 +72,22 @@ export default function ForgotPassword() {
 
     const response = await fetch("/api/auth/reset-password", fetchOptions).then(
       async (res_) => {
-        if (res_.status === 200) {
+        if (res_.ok) {
+          toast.success("Password reset link sent to your email");
           return await res_.json();
         } else {
-          console.log(`ERROR: ` + JSON.stringify(res_));
-          // setUIstate(httpCodes[res_.status]);
-          if (res_.status && res_.status in httpCodes) {
-            setUIstate(httpCodes[res_.status]);
-          } else {
-            setUIstate("Unknown Error, try again later"); // Handle unknown errors
-          }
+          const error_ =
+            (await res_.json()) || "Unknown error, try again later";
+          console.error("Error in sending reset password link:", error_);
+          toast.error(error_);
         }
       }
     );
     //validate sending reset link
-    if (response?.success) {
-      toast.success(response.success);
-      router.push(`/`);
+    if (!response) {
+      return;
     } else {
-      setUIstate(
-        (Object.values(response)[0] as string) ??
-          "Unknown error, try again later"
-      );
+      router.push(`/`);
     }
   }
   // Render
@@ -130,7 +124,7 @@ export default function ForgotPassword() {
             <ButtonPrimary
               label="Get Password Reset Link"
               type="submit"
-              disabled={!email.value || email.error}
+              disabled={!email.value || !!email.error}
               loading={UIstate === "loading"}
             />
           </div>

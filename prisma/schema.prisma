@@ -1,0 +1,303 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum status {
+  ACTIVE
+  DORMANT // Fixed typo
+  INACTIVE
+}
+
+model Institution {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  location String?
+  tel      String?
+  logoUrl  String?
+  status   status  @default(DORMANT)
+
+  users         InstitutionUser[] // join table
+  cases         Case[]
+  caseTypes     CaseType[]
+  subscriptions Subscription[]
+  payments      PaymentTransaction[]
+
+  @@map("institutions")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  names            String    @unique
+  email            String    @unique
+  tel              String?
+  password         String?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  role             userRole  @default(lawyer)
+  photoUrl         String?
+  status           status    @default(DORMANT) // Fixed typo
+
+  institutions     InstitutionUser[] // join table
+  cases            Case[]
+  completedTasks   Task[]
+  AssigneeRequests AssigneeRequest[]
+
+  @@map("users")
+}
+
+// Join model for Institution <-> User many-to-many
+model InstitutionUser {
+  id            String   @id @default(uuid())
+  institutionId String
+  userId        String
+  role          userRole
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, userId, role])
+  @@map("institutionUsers")
+}
+
+// Subscription by Institution
+model Subscription {
+  id                  String               @id @default(uuid())
+  institutionId       String
+  institution         Institution          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  planId              String
+  plan                Plan                 @relation(fields: [planId], references: [id])
+  status              SubscriptionStatus
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelAtPeriodEnd   Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  paymentTransactions PaymentTransaction[]
+
+  @@index([institutionId])
+  @@map("subscriptions")
+}
+
+// Pricing plans
+model Plan {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  description  String?
+  price        Float
+  currency     String   @default("KES")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  priceMonthly Float
+  priceAnnual  Float
+  trialDays    Int      @default(0)
+
+  planFeatures  PlanFeature[]
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Feature {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  limits      Json?
+  isActive    Boolean @default(true)
+
+  planFeatures PlanFeature[]
+
+  @@map("features")
+}
+
+model PlanFeature {
+  id        String  @id @default(uuid())
+  planId    String
+  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureId String
+  feature   Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  limits    Json?
+
+  @@unique([planId, featureId])
+}
+
+// Payment records
+model PaymentTransaction {
+  id                    String        @id @default(uuid())
+  institutionId         String
+  institution           Institution   @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  subscriptionId        String?
+  subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
+  paymentMethod         String
+  amount                Float
+  currency              String        @default("KES")
+  status                PaymentStatus @default(PENDING)
+  providerTransactionId String
+  description           String?
+  metadata              String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([institutionId])
+  @@index([subscriptionId])
+  @@map("payments")
+}
+
+model CaseType {
+  id             String  @id @default(uuid())
+  institutionId  String? // Fixed naming convention
+  name           String  @unique
+  primaryParty   String
+  secondaryParty String
+
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  cases       Case[]
+
+  @@map("caseTypes")
+}
+
+model Case {
+  id                    String     @id @default(uuid())
+  name                  String
+  description           String?
+  status                caseStatus @default(open)
+  caseNumber            String?
+  clientParty           String
+  clientName            String
+  clientTel             String
+  clientID              String?
+  clientEmail           String?
+  otherPartyName        String?
+  otherPartyTel         String?
+  otherPartyEmail       String?
+  otherPartyDescription String?
+  court                 String?
+
+  caseTypeID    String
+  caseType      CaseType    @relation(fields: [caseTypeID], references: [id])
+  institutionID String
+  institution   Institution @relation(fields: [institutionID], references: [id])
+  userID        String?
+  lawyer        User?       @relation(fields: [userID], references: [id])
+
+  tasks            Task[]
+  AssigneeRequests AssigneeRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  @@map("cases")
+}
+
+model AssigneeRequest {
+  id         String                @id @default(uuid())
+  caseID     String
+  case       Case                  @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  assigneeID String
+  assignee   User                  @relation(fields: [assigneeID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  status     assigneeRequestStatus @default(pending)
+  createdAt  DateTime              @default(now())
+
+  @@map("assigneeRequests")
+}
+
+model Task {
+  id            String     @id @default(uuid())
+  name          String
+  type          taskType
+  dueDate       DateTime
+  description   String?
+  reminders     Reminder[]
+  documents     Document[]
+  completedByID String?
+  completedBy   User?      @relation(fields: [completedByID], references: [id])
+  caseID        String
+  case          Case       @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("tasks")
+}
+
+model Document {
+  id     String @id @default(uuid())
+  name   String
+  link   String
+  taskID String
+
+  task Task @relation(fields: [taskID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("documents")
+}
+
+model Reminder {
+  id      String           @id @default(uuid())
+  regime  timeRegimes
+  count   Int
+  channel reminderChannels
+  Task    Task?            @relation(fields: [taskId], references: [id])
+  taskId  String?
+}
+
+// ENUMS
+enum userRole {
+  system_admin
+  admin
+  advocate
+  lawyer
+}
+
+enum caseStatus {
+  open
+  closed
+}
+
+enum assigneeRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+enum reminderChannels {
+  email
+  sms
+  whatsapp
+}
+
+enum timeRegimes {
+  minutes
+  hours
+  days
+}
+
+enum taskType {
+  event
+  document
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+  TRIALING
+  PAUSED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}

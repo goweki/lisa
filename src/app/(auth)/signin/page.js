@@ -76,7 +76,7 @@ export default function SigninPage() {
           res
         )}\n`
       );
-      setUIstate(qParamsErrors[res.error] || "Unknown error");
+      setUIstate(qParamsErrors[res.error] || "Unknown error, try again later.");
     }
   }
   // Render

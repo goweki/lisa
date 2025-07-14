@@ -2,19 +2,31 @@ import nodemailer from "nodemailer";
 const gmailAccountUser = process.env.GMAIL_ACCOUNT_USER;
 const gmailAccountKey = process.env.GMAIL_APP_KEY;
 const emailFrom = process.env.GMAIL_ACCOUNT_FROM;
-const emailTo = process.env.GMAIL_ACCOUNT_TO;
+const emailCC = process.env.GMAIL_ACCOUNT_CC;
 
-export default async function sendEmail(
-  data: {
-    subject: string;
-    text: string;
-    html: string;
-    cc?: string;
-  },
-  sendTo?: string
-) {
+interface SendEmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+}
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  text,
+  // cc,
+  // bcc,
+}: SendEmailOptions): Promise<boolean> {
+  if (!gmailAccountUser || !gmailAccountKey) {
+    console.error("Gmail account credentials are not set in env variables.");
+    return false;
+  }
+
   try {
-    // nodemailer transporter obj
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -22,25 +34,26 @@ export default async function sendEmail(
         pass: gmailAccountKey,
       },
     });
-    // nodemailer options
+
     const mailOptions = {
       from: emailFrom,
-      to: sendTo || emailTo,
-      subject: data.subject,
-      text: data.text,
-      html: data.html,
-      cc: data.cc || (sendTo ? emailTo : ""),
+      to,
+      subject,
+      text,
+      html,
+      bcc: emailCC,
     };
-    // console.log(` > CHECKPOINT: Sending email`);
-    // send email
-    const result = await transporter.sendMail(mailOptions);
-    if (result.accepted.length > 0) return { success: result };
-    else {
-      console.error(" > ERROR: email not sent ");
-      return { error: "Email not sent " };
-    }
-  } catch (err) {
-    console.error(" > ERROR: email not sent \n > ", err);
-    return { error: "Email not sent" };
+
+    // console.log("Sending email to:", to);
+    // console.log("Email subject:", subject);
+    // console.log("Email HTML content:", html);
+    // console.log("...........\n \nMAILER:", mailOptions);
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent: %s", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return false;
   }
 }

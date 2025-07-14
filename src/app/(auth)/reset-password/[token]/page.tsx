@@ -204,9 +204,9 @@ export default function ResetPassword({
               type="submit"
               disabled={
                 !password.value ||
-                password.error ||
+                !!password.error ||
                 !passwordRepeat.value ||
-                passwordRepeat.error
+                !!passwordRepeat.error
               }
               loading={UIstate === "loading"}
               onClick={() => "Submitting"}

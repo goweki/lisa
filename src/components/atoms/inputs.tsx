@@ -38,6 +38,9 @@ export function InputText({
             {label}
           </label>
         )}
+        {valObj.error && (
+          <p className="text-xs px-2 text-red-500">{valObj.error}</p>
+        )}
       </div>
       <div className="relative mb-6 mt-0">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
@@ -97,58 +100,63 @@ export function ComboboxSearchable({
   label,
   options,
   value,
+  error,
   setValue,
 }: {
   label: string;
   options: Options;
   value: string;
-  setValue: React.Dispatch<React.SetStateAction<string>>;
+  error?: string;
+  setValue: React.Dispatch<React.SetStateAction<any>>;
 }) {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[200px] justify-between"
-        >
-          {value
-            ? options.find((option) => option.value === value)?.label
-            : `Select ${label}...`}
-          <ChevronsUpDown className="opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder={`Search ${label}...`} className="h-9" />
-          <CommandList>
-            <CommandEmpty>No {label} found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  {option.label}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={`w-[200px] justify-between}`}
+          >
+            {value
+              ? options.find((option) => option.value === value)?.label
+              : `Select ${label}...`}
+            <ChevronsUpDown className="opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder={`Search ${label}...`} className="h-9" />
+            <CommandList>
+              <CommandEmpty>No {label} found.</CommandEmpty>
+              <CommandGroup>
+                {options.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={(currentValue) => {
+                      setValue(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    {option.label}
+                    <Check
+                      className={cn(
+                        "ml-auto",
+                        value === option.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }

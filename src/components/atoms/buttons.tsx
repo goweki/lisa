@@ -1,26 +1,30 @@
 import { Button } from "../ui/button";
 
+type buttonType = "button" | "submit" | "reset";
+
 export function ButtonPrimary({
   label = "PrimaryButton",
-  loading,
-  onClick = () => "",
-  disabled,
-  type = "button",
+  loading = false,
+  onClick = (e: React.MouseEvent<HTMLButtonElement>) =>
+    console.log("ButtonPrimary clicked"),
+  disabled = false,
+  type = "button" as buttonType,
 }) {
   return (
     <Button
       disabled={disabled || loading}
       className={`relative min-h-4 overflow-hidden w-full bg-[linear-gradient(176deg,_#06664b,_#05563f)] disabled:cursor-not-allowed disabled:opacity-50 focus:ring-4 focus:ring-primary/50 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none cursor-pointer transition-all duration-150 ease-in-out enabled:hover:scale-105 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-emerald-900 before:to-emerald-500 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] enabled:hover:before:left-0`}
       onClick={onClick}
+      type={type}
     >
-      {!loading ? (
-        label
-      ) : (
+      {loading ? (
         <div className="items-center justify-center space-x-2 pt-1 loader [&>*:nth-child(even)]:bg-emerald-200 [&>*:nth-child(odd)]:bg-gray-200 rounded-full flex">
           <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] "></div>
           <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] delay-200"></div>
           <div className="w-4 h-4 rounded-full animate-[loader_0.6s_infinite_alternate] delay-400"></div>
         </div>
+      ) : (
+        label
       )}
     </Button>
   );
@@ -28,10 +32,11 @@ export function ButtonPrimary({
 
 export function ButtonSecondary({
   label = "ButtonSecondary",
-  loading,
-  onClick = () => console.log("ButtonSecondary clicked"),
-  disabled,
-  type = "button",
+  loading = false,
+  onClick = (e: React.MouseEvent<HTMLButtonElement>) =>
+    console.log("ButtonSecondary clicked"),
+  disabled = false,
+  type = "button" as buttonType,
 }) {
   return (
     <button
@@ -55,10 +60,11 @@ export function ButtonSecondary({
 
 export function ButtonDestructive({
   label = "ButtonText",
-  loading,
-  onClick = () => console.log("ButtonText clicked"),
-  disabled,
-  type = "button",
+  loading = false,
+  onClick = (e: React.MouseEvent<HTMLButtonElement>) =>
+    console.log("ButtonDestructive clicked"),
+  disabled = false,
+  type = "button" as buttonType,
 }) {
   return (
     <button

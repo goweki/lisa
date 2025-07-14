@@ -1,10 +1,9 @@
 import prisma from "@/lib/prisma/prisma";
 import { type NextRequest } from "next/server";
-import sendEmail from "@/lib/emailService";
 import crypto from "crypto";
 import { hash } from "@/helpers/bcryptHandlers";
-import { emailHTML } from "@/app/api/mailer/emailTemplates";
 import { BASE_URL } from "@/helpers/getUrl";
+import { resetPasswordEmail as resetPasswordEmailTemplate } from "@/lib/emailRenderer";
 
 //generates password-reset link and emails user
 export async function POST(request: Request) {
@@ -41,38 +40,36 @@ export async function POST(request: Request) {
     console.log("Password Reset link SAVED: \n", updatedUser);
     //reset password URL
     const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
-    const html = emailHTML(
-      updatedUser.name,
-      resetURL,
-      "Reset your password (Lisa)"
+
+    // send email
+    const renderedEmail = await resetPasswordEmailTemplate(
+      updatedUser.names,
+      resetURL
     );
 
-    const emailOptions = {
-      subject: "Reset Password for Lisa",
-      html,
-      // `
-      //       <p>Reset your password by clicking the below URL:</p>
-      //       <p><a href="${resetURL}">${resetURL}</a></p>
-      //       <br/>
-      //       <br/>
-      //       <i>If you did not request a password reset, please ignore this email and do not share contents with anyone.</i>
-      //       `
-      text: `
-      Password Reset Request
+    console.log("renderedEmail:\n", renderedEmail);
 
-      Reset your password by clicking or pasting below URL into your address-bar:
-      ${resetURL}
+    const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
+      method: "POST",
+      body: JSON.stringify({
+        email: {
+          to: updatedUser.email,
+          subject: "Lisa - Reset Password",
+          html: renderedEmail.html,
+          text: renderedEmail.text,
+        },
+      }),
+    });
 
-      If you did not request a password reset, please ignore this email.
-      `,
-    };
-    const sendMail = await sendEmail(emailOptions, userEmail);
-    if (sendMail.success)
-      return Response.json({ success: "Check email for the reset link" });
-    else return Response.json({ failed: "Reset failed, try again later" });
+    if (!emailerRes.ok) {
+      throw new Error("Failed to send password reset link");
+    }
+
+    console.log("Password reset email sent successfully");
+    return Response.json({ message: "Check email for the reset link" });
   } catch (err: any) {
-    console.log("ERROR in route: >", err);
-    return Response.json({ error: err.message });
+    console.log("ERROR in route: > /api/auth/reset-password", err);
+    return Response.json({ message: err.message }, { status: 500 });
   }
 }
 
@@ -95,12 +92,10 @@ export async function GET(request: NextRequest) {
       },
     });
     if (!userExists) return Response.json({ failed: "Invalid token" });
-    //user exists
     else return Response.json({ success: "Enter new password" });
-    //
   } catch (err: any) {
-    console.log("ERROR in route: >", err);
-    return Response.json({ error: err.message });
+    console.log("ERROR in route: > /api/auth/reset-password", err);
+    return Response.json({ message: err.message }, { status: 500 });
   }
 }
 
@@ -119,13 +114,14 @@ export async function PUT(request: Request) {
         resetTokenExpiry: null,
       },
     });
-    if (!updateUser) return Response.json({ failed: "Database error" });
+    if (!updateUser)
+      return Response.json({ message: "Database error" }, { status: 500 });
 
     //user exists
     console.log("SUCCESS:\n >", updateUser);
     return Response.json({ success: "Password updated" });
   } catch (err: any) {
     console.log("ERROR in route /api/reset-password:\n >", err.message ?? err);
-    return Response.json({ error: "Server error" });
+    return Response.json({ message: err.message }, { status: 500 });
   }
 }
