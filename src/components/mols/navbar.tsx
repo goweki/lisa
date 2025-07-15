@@ -155,33 +155,34 @@ function NavigationMenuComponent(props: {
   const relevantSegments = isId ? segments.slice(0, -1) : segments; // Ignore the last segment if it's an ID
 
   // Join the relevant segments back into a path
-  const pathSegement = "/" + relevantSegments.join("/");
+  const cleanPathname = "/" + relevantSegments.join("/");
 
   const { data: authSession, status: authStatus } = useSession();
 
+  const menulinks =
+    props.user?.role === "system"
+      ? menuItemsOptions.auth.system
+      : props.user?.role === "admin"
+        ? menuItemsOptions.auth.admin
+        : menuItemsOptions.auth.lawyer;
+
   //render
-  if (authSession?.user)
-    return pathname.includes("/dashboard") ? (
+  if (authSession?.user && menulinks)
+    return cleanPathname.includes("/dashboard") ? (
       <NavigationMenu>
         <NavigationMenuList className="gap-4">
-          {props.user?.role === "system"
-            ? menuItemsOptions.auth.system
-            : props.user?.role === "admin"
-              ? menuItemsOptions.auth.admin
-              : menuItemsOptions.auth.lawyer.map(
-                  ({ label, link }: { label: string; link: string }) => (
-                    <NavigationMenuItem key={label}>
-                      <Link
-                        href={link}
-                        className={`text-foreground hover:underline ${
-                          pathSegement === link ? "font-bold" : "font-light"
-                        }`}
-                      >
-                        {label}
-                      </Link>
-                    </NavigationMenuItem>
-                  )
-                )}
+          {menulinks.map(({ label, link }: { label: string; link: string }) => (
+            <NavigationMenuItem key={label}>
+              <Link
+                href={link}
+                className={`text-foreground hover:underline ${
+                  cleanPathname === link ? "font-bold" : "font-light"
+                }`}
+              >
+                {label}
+              </Link>
+            </NavigationMenuItem>
+          ))}
         </NavigationMenuList>
       </NavigationMenu>
     ) : (

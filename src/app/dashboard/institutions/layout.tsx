@@ -39,6 +39,7 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
+import { Institution } from "@/types/models";
 
 const _defaultInstitution = {
   name: { value: "", error: "" },
@@ -61,7 +62,7 @@ export default function InstitutionsPage({
   } = useContext(DataContext);
 
   const [UIstate, setUIstate] = useState("");
-  const [filtInstitutions, setFiltInstitutions] = useState([]);
+  const [filtInstitutions, setFiltInstitutions] = useState<Institution[]>([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [newInstitution, setNewInstitution] = useState(_defaultInstitution);
   const [instId, setInstId] = useState<string | null>(null);
@@ -94,17 +95,23 @@ export default function InstitutionsPage({
 
   //filter institutions by searchPhrase
   useEffect(() => {
-    setFiltInstitutions(
-      institutions?.filter(
-        ({ name, location }: { name: string; location: string }) =>
-          name.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
-          location?.toLowerCase().includes(searchPhrase.value?.toLowerCase())
-      )
-    );
+    setFiltInstitutions(() => {
+      const insts_ = institutions?.filter(({ name, location }) => {
+        const search = searchPhrase.value?.toLowerCase() ?? "";
+        return (
+          name.toLowerCase().includes(search) ||
+          (location?.toLowerCase()?.includes(search) ?? false)
+        );
+      });
+      return insts_ || [];
+    });
   }, [searchPhrase, institutions]);
 
   //if not admin, re-route to dashboard
-  if (!userSession?.user?.role.includes("admin")) {
+  if (
+    userSession?.user?.role !== "system" &&
+    userSession?.user?.role !== "admin"
+  ) {
     return router.push("/dashboard");
   }
 
@@ -132,16 +139,14 @@ export default function InstitutionsPage({
           />
 
           <div className="flex flex-col space-y-1">
-            {userSession?.user?.role === "system_admin" && (
-              <Link
-                className={`p-2 rounded ${
-                  !instId ? "bg-primary/20" : "hover:bg-primary/10"
-                }`}
-                href="/dashboard/institutions"
-              >
-                + create
-              </Link>
-            )}
+            <Link
+              className={`p-2 rounded ${
+                !instId ? "bg-primary/20" : "hover:bg-primary/10"
+              }`}
+              href="/dashboard/institutions"
+            >
+              + create
+            </Link>
             {filtInstitutions.length > 0 &&
               filtInstitutions.map(({ id, name }) => (
                 <Link

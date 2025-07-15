@@ -15,6 +15,7 @@ declare module "next-auth" {
     systemAdmin: boolean;
     photoUrl: string | null;
     tel: string;
+    role: string;
   }
 }
 

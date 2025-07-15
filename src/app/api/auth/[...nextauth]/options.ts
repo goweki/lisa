@@ -86,11 +86,29 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         // Persist role to the token right after signIn
-        // console.log("user obj - ", user);
+        console.log("user obj - ", user);
         token.id = user.id;
         token.name = user.names.split(" ")[0];
         token.systemAdmin = user.systemAdmin;
         token.photoUrl = user.photoUrl;
+        // embed role in token
+        let userRole_: string = "";
+        if (user.systemAdmin) {
+          userRole_ = "system";
+        } else {
+          const isAdmin_ = !!(await prisma.institutionUser.findFirst({
+            where: {
+              userId: user.id,
+              role: "admin",
+            },
+          }));
+          if (isAdmin_) {
+            userRole_ = "admin";
+          } else {
+            userRole_ = "user";
+          }
+        }
+        token.role = userRole_;
       }
       return token;
     },
@@ -100,6 +118,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.systemAdmin = token.systemAdmin as boolean;
         session.user.photoUrl = token.photoUrl as string;
+        session.user.role = token.role as string;
       }
       // console.log("session here: ", session);
       return session;
