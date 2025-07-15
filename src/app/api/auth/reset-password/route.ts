@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma/prisma";
 import { type NextRequest } from "next/server";
 import crypto from "crypto";
-import { hash } from "@/helpers/bcryptHandlers";
+import { compareHash, generateRandom, hash } from "@/helpers/passwordHandlers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { resetPasswordEmail as resetPasswordEmailTemplate } from "@/lib/emailRenderer";
 
@@ -15,30 +15,30 @@ export async function POST(request: Request) {
       where: { email: userEmail },
     });
     console.log("userExists-", userExists);
-    if (!userExists) return Response.json({ failed: "User NOT FOUND" });
+    if (!userExists)
+      return Response.json({ message: "User NOT FOUND" }, { status: 404 });
     //user exists
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    const passwordResetToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
+    const resetToken = await generateRandom(20);
+    const hashedResetToken = await hash(resetToken);
     const passwordResetExpires = Date.now() + 3600000;
     //update db
     const updatedUser = await prisma.user.update({
       where: { id: userExists.id },
       data: {
-        resetToken: passwordResetToken,
+        resetToken: hashedResetToken,
         resetTokenExpiry: new Date(passwordResetExpires),
       },
     });
     if (!updatedUser) {
       console.error("Password Reset link NOT SAVED: \n", userExists);
-      return Response.json({
-        failed: "Error generating reset link, try again later",
-      });
+      return Response.json(
+        {
+          message: "Error generating reset link, try again later",
+        },
+        { status: 500 }
+      );
     }
     console.log("Password Reset link SAVED: \n", updatedUser);
-    //reset password URL
     const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
 
     // send email
@@ -79,20 +79,31 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const email = searchParams.get("email") as string;
     const token = searchParams.get("token") as string;
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    console.log("email-", email, "token-", token);
+    console.log("email-", email, "\ntoken-", token);
 
     const userExists = await prisma.user.findUnique({
       where: {
-        email: email,
-        resetToken: hashedToken,
+        email,
         resetTokenExpiry: {
           gt: new Date(),
         },
       },
     });
-    if (!userExists) return Response.json({ failed: "Invalid token" });
-    else return Response.json({ success: "Enter new password" });
+
+    if (!userExists) {
+      return Response.json({ message: "Invalid link" }, { status: 400 });
+    }
+
+    const _isTokenValid: boolean =
+      !!userExists.resetToken &&
+      (await compareHash(token, userExists.resetToken));
+
+    if (!_isTokenValid) {
+      return Response.json(
+        { message: "Invalid token. Try restting password" },
+        { status: 400 }
+      );
+    } else return Response.json({ message: "Enter new password" });
   } catch (err: any) {
     console.log("ERROR in route: > /api/auth/reset-password", err);
     return Response.json({ message: err.message }, { status: 500 });
@@ -102,24 +113,53 @@ export async function GET(request: NextRequest) {
 //updates password
 export async function PUT(request: Request) {
   const { userEmail, token, password } = await request.json();
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  console.log("password update request by - ", userEmail);
   try {
-    console.log("password-", password);
-    console.log("password hash:\n >", await hash(password));
-    const updateUser = await prisma.user.update({
-      where: { email: userEmail, resetToken: hashedToken },
+    const userExists = await prisma.user.findUnique({
+      where: {
+        email: userEmail,
+        resetTokenExpiry: {
+          gt: new Date(),
+        },
+      },
+      select: {
+        id: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+      },
+    });
+
+    if (!userExists || !userExists.resetToken) {
+      return Response.json(
+        { message: "Not found. Try resetting your password later." },
+        { status: 404 }
+      );
+    }
+
+    const _isTokenValid = await compareHash(token, userExists.resetToken);
+    //user exists
+    if (!_isTokenValid)
+      return Response.json(
+        { message: "Invalid token. Try Resetting your password later" },
+        { status: 401 }
+      );
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userExists.id },
       data: {
         password: await hash(password),
         resetToken: null,
         resetTokenExpiry: null,
       },
     });
-    if (!updateUser)
-      return Response.json({ message: "Database error" }, { status: 500 });
 
-    //user exists
-    console.log("SUCCESS:\n >", updateUser);
-    return Response.json({ success: "Password updated" });
+    if (!updatedUser)
+      return Response.json(
+        { message: "Password not updated" },
+        { status: 500 }
+      );
+
+    return Response.json({ message: "Password updated" });
   } catch (err: any) {
     console.log("ERROR in route /api/reset-password:\n >", err.message ?? err);
     return Response.json({ message: err.message }, { status: 500 });

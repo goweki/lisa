@@ -36,7 +36,7 @@ import MultiSelect, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
 import { TemplateObj } from "@/lib/types";
-import { Institution as InstitutionType } from "@/lib/prisma/types";
+import { Institution } from "@/types/models";
 
 type newCaseType = {
   name: TemplateObj;
@@ -60,7 +60,7 @@ const _defaultCase: newCaseType = {
 
 export default function CasesPage() {
   const {
-    data: { institutions, users, cases, caseTypes },
+    data: { institutions = [], users = [], cases = [], caseTypes = [] },
     refreshData,
   } = useContext(DataContext);
 
@@ -109,11 +109,18 @@ export default function CasesPage() {
 
   // update clientParty options
   useEffect(() => {
-    if (!newCase.caseTypeID) return;
+    if (!newCase.caseTypeID || !caseTypes.length || caseTypes.length < 1)
+      return;
 
-    const { primaryParty, secondaryParty } = caseTypes.find(
+    const foundCaseType = caseTypes.find(
       ({ id }: { id: string }) => id === newCase.caseTypeID
     );
+    if (!foundCaseType) {
+      toast.error("CaseType not found");
+      return;
+    }
+    const { primaryParty, secondaryParty } = foundCaseType;
+
     setOptions((prev) => ({
       ...prev,
       clientParties: [primaryParty, secondaryParty],

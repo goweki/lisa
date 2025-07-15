@@ -1,7 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 import prisma from "@/lib/prisma/prisma";
-import { compareHash } from "@/helpers/bcryptHandlers";
+import { compareHash } from "@/helpers/passwordHandlers";
 
 // interface User {
 //   id: string
@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
         //check
         // console.log(user);
         // ifCredentialsValid
+
         if (
           user &&
           user.password &&
@@ -83,23 +84,22 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
-      // Persist role to the token right after signIn
       if (user) {
-        // console.log("token here: ", user);
+        // Persist role to the token right after signIn
+        // console.log("user obj - ", user);
         token.id = user.id;
-        token.role = user.role;
-        token.institutionIDs = user.institutionIDs;
-        token.imageUrl = user.imageUrl;
+        token.name = user.names.split(" ")[0];
+        token.systemAdmin = user.systemAdmin;
+        token.photoUrl = user.photoUrl;
       }
       return token;
     },
     async session({ session, token }) {
-      // Append role,institution to properties sent to the client
+      // append additional properties sent to the client
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.institutionIDs = token.institutionIDs as string[];
-        session.user.imageUrl = token.imageUrl as string;
+        session.user.systemAdmin = token.systemAdmin as boolean;
+        session.user.photoUrl = token.photoUrl as string;
       }
       // console.log("session here: ", session);
       return session;

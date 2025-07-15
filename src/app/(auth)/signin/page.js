@@ -129,27 +129,14 @@ export default function SigninPage() {
             />
           </div>
           <div className="flex flex-wrap items-center justify-between">
-            {/* <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="remember"
-                  aria-describedby="remember"
-                  type="checkbox"
-                  className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                  required=""
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label
-                  htmlFor="remember"
-                  className="text-font-inactive dark:text-font-dark-inactive"
-                >
-                  Remember me
-                </label>
-              </div>
-            </div> */}
+            <Link
+              href="/register"
+              className="text-font-inactive italic text-sm font-medium  hover:underline"
+            >
+              Sign Up
+            </Link>
             <Link href={"/"} className="mt-3">
-              <SVGhome className="h-6 w-6" />
+              <SVGhome className="h-6 w-6 text-emerald-800 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-200" />
             </Link>
             <Link
               href="/reset-password"
@@ -158,16 +145,6 @@ export default function SigninPage() {
               Forgot password?
             </Link>
           </div>
-          {/* Signup */}
-          {/* <p className="text-sm font-light text-font-inactive dark:text-font-dark-inactive">
-            Don’t have an account yet?{" "}
-            <a
-              href="#"
-              className="font-medium text-primary-600 hover:underline dark:text-primary-500 dark:hover:text-font-dark-faded"
-            >
-              Sign up
-            </a>
-          </p> */}
         </form>
       </div>
     </div>

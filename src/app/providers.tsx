@@ -5,7 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { Loader1 } from "@/components/atoms/loader";
 import { SessionProvider } from "next-auth/react";
 
-export default function Providers({ children }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   const [UIstate, setUIstate] = useState("loading");
   // onMount
   useEffect(() => {

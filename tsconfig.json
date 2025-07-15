@@ -28,7 +28,8 @@
     ".next/types/**/*.ts",
     "tailwind.config.js",
     "src/scripts/seed.js",
-    "src/app/dashboard/users/page.js"
+    "src/app/dashboard/users/page.js",
+    "src/app/dashboard/page.js"
   ],
   "exclude": ["node_modules"]
 }

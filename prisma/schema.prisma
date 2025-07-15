@@ -34,11 +34,11 @@ model User {
   id               String    @id @default(uuid())
   names            String    @unique
   email            String    @unique
+  systemAdmin      Boolean   @default(false)
   tel              String?
   password         String?
   resetToken       String?
   resetTokenExpiry DateTime?
-  role             userRole  @default(lawyer)
   photoUrl         String?
   status           status    @default(DORMANT) // Fixed typo
 
@@ -55,12 +55,12 @@ model InstitutionUser {
   id            String   @id @default(uuid())
   institutionId String
   userId        String
-  role          userRole
+  role          userRole @default(lawyer)
 
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([institutionId, userId, role])
+  @@unique([institutionId, userId])
   @@map("institutionUsers")
 }
 

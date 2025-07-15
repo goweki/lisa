@@ -19,7 +19,7 @@ export default function LandingPage() {
       <div className="flex flex-wrap items-center">
         <div className="w-full px-4">
           <div className="z-10 p-16 mx-auto max-w-md min-w-sm">
-            <SVGlogoAnimation1 />
+            <SVGlogoAnimation1 className={""} />
           </div>
         </div>
         {status === "loading" ? (
@@ -41,10 +41,10 @@ export default function LandingPage() {
                   />
                 </li>
                 <Link
-                  href="/signin"
+                  href="/register"
                   className="flex items-center py-1 px-6 hover:text-emerald-600 dark:hover:text-emerald-500 font-medium transition duration-150 ease-in-out sm:px-10"
                 >
-                  Sign In
+                  Sign Up
                   <span className="pl-2">
                     <svg
                       width="20"
@@ -69,7 +69,7 @@ export default function LandingPage() {
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
               <h1 className="mb-4 text-font-inactive dark:text-font-dark-inactive font-bold">
-                {`${wish()} ${session.user.name}`}
+                {`${wish()} ${session?.user?.name || ""}`}
               </h1>
               <div className="mb-10 flex flex-wrap items-center justify-center space-x-4">
                 <ButtonDestructive

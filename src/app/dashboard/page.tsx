@@ -9,17 +9,30 @@ import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "./providers";
 import { isDatePassed } from "@/helpers/dateHandlers";
 import { useSession, signOut } from "next-auth/react";
+import { Case, Task } from "@/types/models";
+
+interface UsersBrief {
+  id: string;
+  email: string;
+  name: string;
+}
 
 export default function UserHome() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [casesWithDues, setDueCases] = useState([]);
-  const [briefs, setBriefs] = useState({});
+  const [casesWithDues, setDueCases] = useState<
+    Array<(typeof cases)[0] & { dueTasks: (typeof cases)[0]["tasks"] }>
+  >([]);
+  const [briefs, setBriefs] = useState<Record<string, Record<string, any>[]>>({
+    institutionsBrief: [],
+    usersBrief: [],
+  });
   const [uiState, setUIstate] = useState("");
   const { date, time, rawDate } = useDate();
   const {
     data: { cases, institutions, caseTypes, users },
   } = useContext(DataContext);
+
   //onMount or //cases
   useEffect(() => {
     const _casesWithDues = cases
@@ -33,16 +46,18 @@ export default function UserHome() {
           ),
         };
       })
-      .filter((case_) => case_.tasks?.length > 0);
+      .filter((case_) => case_.tasks && case_.tasks?.length > 0);
     setDueCases(_casesWithDues);
     // institutions
-    const institutionsBrief = institutions.map((inst) => ({
-      id: inst.id,
-      institution: inst.name,
-      location: inst.location,
-      users: inst.userIDs.length,
-      cases: inst.cases?.length,
-    }));
+    const institutionsBrief = institutions
+      ? institutions.map((inst) => ({
+          id: inst.id,
+          institution: inst.name,
+          location: inst.location,
+          users: inst.users ? inst.users.length : [],
+          cases: inst.cases?.length,
+        }))
+      : [];
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
     const casesBrief = cases
@@ -51,7 +66,7 @@ export default function UserHome() {
       .map((_case) => ({
         id: _case.id,
         case: _case.name,
-        type: _case.type,
+        type: _case.caseType?.name,
         client: [_case.clientName, _case.clientParty],
         status: _case.status,
       }));
@@ -59,9 +74,11 @@ export default function UserHome() {
     const usersBrief = users.map((user_) => ({
       id: user_.id,
       email: user_.email,
-      name: user_.name,
-      role: user_.role,
-      institutions: user_.institutions.map((inst) => inst.name).join(", "),
+      name: user_.names,
+      role: user_.email,
+      institutions: user_.institutions
+        ? user_.institutions.map((inst) => inst.name).join(", ")
+        : [],
     }));
     // casetypes
     const caseTypesBrief = caseTypes.map((_type) => ({
@@ -118,7 +135,7 @@ export default function UserHome() {
           <CardItemsTable
             title={"Types of Cases"}
             data={briefs.caseTypesBrief}
-            // pageLink={"/dashboard/case-types"}
+            pageLink={"/dashboard/case-types"}
           />
         )}
       </div>
@@ -126,7 +143,17 @@ export default function UserHome() {
   ) : null;
 }
 
-function ProfileCard({ date, time, data, entities }) {
+function ProfileCard({
+  date,
+  time,
+  data,
+  entities,
+}: {
+  date: () => string;
+  time: () => string;
+  data: any[];
+  entities: Record<string, Record<string, any>[]>;
+}) {
   const { data: session } = useSession();
 
   return (
@@ -136,22 +163,22 @@ function ProfileCard({ date, time, data, entities }) {
           <SVGtime className="w-4 h-4 mr-2 text-emerald-900" />
           {date()} {time()}
         </div>
-        {!session.user.role.includes("admin") ? (
+        {!session?.user?.systemAdmin ? (
           <>
             <p
               className={`font-bold text-xl mt-2 mb-4 text-center ${
                 !data.length
                   ? "text-emerald-500"
                   : data.length < 3
-                  ? "text-red-800 dark:text-red-300"
-                  : "text-red-500"
+                    ? "text-red-800 dark:text-red-300"
+                    : "text-red-500"
               }`}
             >
               {!data.length
                 ? "Your schedule is clean"
                 : data.length < 3
-                ? "You have due tasks"
-                : "Your schedule is piling up!"}
+                  ? "You have due tasks"
+                  : "Your schedule is piling up!"}
             </p>
             <div className="text-base text-font-faded dark:text-font-dark-faded">
               <p
@@ -159,8 +186,8 @@ function ProfileCard({ date, time, data, entities }) {
                   data.length < 1
                     ? ""
                     : data.length < 3
-                    ? "text-red-800 dark:text-red-200"
-                    : "text-red-500"
+                      ? "text-red-800 dark:text-red-200"
+                      : "text-red-500"
                 }`}
               >
                 {data.length} case{data.length !== 1 && <>s</>} with pending
@@ -168,19 +195,21 @@ function ProfileCard({ date, time, data, entities }) {
               </p>
               <ul className="hidden sm:block list-disc text-sm pl-6 pt-1">
                 {data &&
-                  data.map((_case) => (
-                    <li key={_case.id}>
-                      <div>
-                        {_case.name} :{" "}
-                        {_case.dueTasks.map((_task, i) => (
-                          <span key={i} className="italic font-bold">
-                            {_task.name +
-                              (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
-                          </span>
-                        ))}
-                      </div>
-                    </li>
-                  ))}
+                  data.map(
+                    (_case: { id: string; name: string; dueTasks: Task[] }) => (
+                      <li key={_case.id}>
+                        <div>
+                          {_case.name} :{" "}
+                          {_case.dueTasks.map((_task, i) => (
+                            <span key={i} className="italic font-bold">
+                              {_task.name +
+                                (i !== _case.dueTasks.length - 1 ? ", " : ". ")}
+                            </span>
+                          ))}
+                        </div>
+                      </li>
+                    )
+                  )}
               </ul>
             </div>
             <div className="mt-6 mb-2 mx-4 space-y-4">
@@ -200,32 +229,21 @@ function ProfileCard({ date, time, data, entities }) {
           </>
         ) : (
           <div className="w-fit m-auto mt-6 p-2">
-            {Object.entries(entities).map(([key, value]) => (
-              <div
-                key={key}
-                className="flex w-fit border-b mb-2 hover:bg-backg-raised dark:hover:bg-backg-dark-raised"
-              >
-                <span className="text-sm pl-2 w-32">
-                  {key.replace(/Brief$/, "")} :
-                </span>
-                <span className="text-sm pr-2">{value.length || 0}</span>
-              </div>
-            ))}
+            {Object.entries(entities).map(
+              ([key, value]: [key: string, value: any]) => (
+                <div
+                  key={key}
+                  className="flex w-fit border-b mb-2 hover:bg-backg-raised dark:hover:bg-backg-dark-raised"
+                >
+                  <span className="text-sm pl-2 w-32">
+                    {key.replace(/Brief$/, "")} :
+                  </span>
+                  <span className="text-sm pr-2">{value.length || 0}</span>
+                </div>
+              )
+            )}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function AdminCard({ data }) {
-  return (
-    <div className="card m-auto max-w-lg w-full h-full border-1 flex flex-col leading-normal">
-      <div className="grid-cols-1 m-2">
-        <div className="text-sm flex justify-center items-center">
-          <SVGtime className="w-4 h-4 mr-2 text-emerald-900" />
-          {date()} {time()}
-        </div>
       </div>
     </div>
   );

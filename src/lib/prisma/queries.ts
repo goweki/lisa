@@ -1,38 +1,59 @@
-import crypto from "crypto";
+import { hash, generateRandom } from "@/helpers/passwordHandlers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { PrismaClient, userRole } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export async function registerUser(userData: {
+export async function createUser(userData: {
   names: string;
   email: string;
-  institutionName: string;
+  institutionName?: string;
+  institutionId?: string;
 }) {
-  try {
-    // 1. Create the new Institution
-    const newInstitution = await prisma.institution.create({
-      data: {
-        name: userData.institutionName,
-      },
-    });
+  const {
+    names,
+    email,
+    institutionId: _institutionId,
+    institutionName,
+  } = userData;
+  if (!_institutionId && !institutionName) {
+    throw new Error("Institution ID or Name is required");
+  }
 
-    console.log("Created Institution:", newInstitution);
+  try {
+    // 1. Ensure Institution
+    let institutionId: string | null = null;
+    if (userData.institutionId) {
+      const institution = await prisma.institution.findUnique({
+        where: { id: userData.institutionId },
+      });
+      if (!institution) {
+        throw new Error("Institution not found");
+      }
+      institutionId = institution.id;
+    } else if (institutionName) {
+      const newInstitution = await prisma.institution.create({
+        data: {
+          name: institutionName,
+        },
+      });
+      institutionId = newInstitution.id;
+    }
+
+    if (!institutionId) {
+      throw new Error("Failed to create or find institution");
+    }
 
     // 2. Create the new User
-
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    const passwordResetToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-    const passwordResetExpires = Date.now() + 3600000; //1 hr
+    const resetToken = await generateRandom(11);
+    const hashedResetToken = await hash(resetToken);
+    const passwordResetExpires = new Date(Date.now() + 3600000); // 1 hour
 
     const newUser = await prisma.user.create({
       data: {
-        names: userData.names,
-        email: userData.email,
-        resetToken: passwordResetToken,
-        resetTokenExpiry: new Date(passwordResetExpires),
+        names,
+        email,
+        resetToken: hashedResetToken,
+        resetTokenExpiry: passwordResetExpires,
       },
     });
 
@@ -41,7 +62,7 @@ export async function registerUser(userData: {
     // 3. Link the new User to the new Institution via the InstitutionUser join table
     const institutionUserLink = await prisma.institutionUser.create({
       data: {
-        institutionId: newInstitution.id,
+        institutionId,
         userId: newUser.id,
         role: userRole.admin,
       },
@@ -55,12 +76,12 @@ export async function registerUser(userData: {
     return {
       name: newUser.names,
       email: newUser.email,
-      institutionName: newInstitution.name,
+      institutionId,
       onboardingURL: resetURL,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating institution and user:", error);
-    throw error;
+    throw error.message || "Failed to create institution and user";
   }
 }
 

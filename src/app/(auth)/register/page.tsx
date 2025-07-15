@@ -106,7 +106,8 @@ export default function RegisterPage() {
     );
 
     if (sendResetToken) {
-      router.push("/payments?package=" + packag);
+      toast.success("Registration successful. Check email for activation link");
+      router.push("/");
     }
   }
   // Render
@@ -115,8 +116,10 @@ export default function RegisterPage() {
   ) : UIstate === "OK" || UIstate === "loading" ? (
     <div className="flex flex-1 flex-col w-full items-center">
       <div className="w-full max-w-md p-4 m-auto divide-y space-y-3 divide-primary">
-        <p className={`text-primary text-xl font-bold text-center pb-6`}>
-          Register
+        <p
+          className={`text-primary text-xl font-bold text-center pb-6 text-emerald-800 dark:text-emerald-400`}
+        >
+          Create A New Account
         </p>
         <form
           id="register"
@@ -190,8 +193,14 @@ export default function RegisterPage() {
             />
           </div>
           <div className="flex flex-wrap items-center justify-between">
+            <Link
+              href="/signin"
+              className="text-font-inactive italic text-sm font-medium  hover:underline"
+            >
+              Sign In
+            </Link>
             <Link href={"/"} className="mt-3">
-              <SVGhome className="h-6 w-6" />
+              <SVGhome className="h-6 w-6 text-emerald-800 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-200" />
             </Link>
             <Link
               href="/reset-password"

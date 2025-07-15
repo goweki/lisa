@@ -1,200 +1,104 @@
 import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
-import { User } from "@/lib/prisma/types";
-export const revalidate = 6; // false | 'force-cache' | 0 | number
+import { User } from "@/types/models";
+import { Prisma } from "@prisma/client";
+
+export const revalidate = 6;
 
 async function getHandler(req: Request, user: Partial<User>) {
-  // const url = new URL(req.url);
-  // const institutionId = url.searchParams.get("institution");
-  // retrieve data
-  if (
-    user.role !== "system_admin" &&
-    (!user.institutionIDs || user.institutionIDs.length === 0)
-  ) {
-    console.error(" > No institution assigned");
-    return Response.json("No institution assigned", { status: 401 });
-  }
-
   try {
-    // GET institutions
-    const institutions = await prisma.institution.findMany({
-      where:
-        user.role !== "system_admin"
-          ? {
-              id: {
-                in: user.institutionIDs,
-              },
-            }
-          : {},
-      include: {
-        cases: true,
-        users: true,
-        //   caseTypes: true,
-      },
+    const isSysAdmin = !!user.systemAdmin;
+
+    const instUsers = await prisma.institutionUser.findMany({
+      where: { userId: user.id },
+      select: { institutionId: true },
     });
 
-    // GET users
-    let users: User[] = [];
+    const instIDs = instUsers.map((i) => i.institutionId);
 
-    if (user.role === "system_admin") {
-      const instUsers = await prisma.user.findMany({
-        include: {
-          institutions: true,
-          cases: true,
-          completedTasks: true,
-        },
-      });
+    // Run institution, users, cases, caseTypes, assignmentRequests in parallel
+    const [institutions, rawUsers, cases, caseTypes, assignmentRequests] =
+      await Promise.all([
+        prisma.institution.findMany({
+          where: isSysAdmin ? {} : { id: { in: instIDs } },
+          include: {
+            cases: true,
+            users: true,
+          },
+        }),
 
-      users = [
-        ...excludeFields(instUsers, [
-          "password",
-          "resetToken",
-          "resetTokenExpiry",
-        ]),
-      ];
-    } else {
-      // not suser
-      if (user.institutionIDs && user.institutionIDs.length > 0) {
-        for (const instID_ of user.institutionIDs) {
-          const instUsers = await prisma.user.findMany({
-            where: {
-              institutionIDs: {
-                has: instID_,
+        isSysAdmin
+          ? prisma.user.findMany({
+              include: {
+                institutions: true,
+                cases: true,
+                completedTasks: true,
               },
-              // id: {
-              //   not: user.id,
-              // },
-            },
-            include: {
-              institutions: true,
-              cases: true,
-              completedTasks: true,
-            },
-          });
-
-          users = [
-            ...users,
-            ...excludeFields(instUsers, [
-              "password",
-              "resetToken",
-              "resetTokenExpiry",
-            ]),
-          ];
-        }
-      }
-    }
-
-    // GET cases
-    const caseQuery: { where: any; include: any } =
-      user.role === "system_admin"
-        ? {
-            where: {},
-            include: {
-              caseType: true,
-              institution: true,
-              lawyer: true,
-              tasks: true,
-            },
-          }
-        : user.role === "admin"
-        ? {
-            where: {
-              institutionID: {
-                in: user.institutionIDs,
-              },
-            },
-            include: {
-              caseType: true,
-              institution: true,
-              lawyer: true,
-              tasks: true,
-            },
-          }
-        : {
-            where: {
-              institutionID: {
-                in: user.institutionIDs,
-              },
-              OR: [
-                { userID: user.id },
-                {
-                  userID: null,
-                },
-                {
-                  userID: {
-                    isSet: false,
+            })
+          : instIDs.length > 0
+            ? prisma.user.findMany({
+                where: {
+                  institutions: {
+                    some: {
+                      institutionId: { in: instIDs },
+                    },
                   },
                 },
-              ],
-            },
-            include: {
-              caseType: true,
-              institution: true,
-              lawyer: true,
-              tasks: true,
-            },
-          };
-    const cases = await prisma.case.findMany(caseQuery);
+                include: {
+                  institutions: {
+                    include: {
+                      institution: true,
+                    },
+                  },
+                },
+              })
+            : [],
 
-    //Get tasks
-    const caseIDs_ = cases.map(({ id }) => id);
-    const tasks = cases.map(({ tasks }) => tasks).flat();
-
-    //Get case-types
-    const caseTypes = await prisma.caseType.findMany({
-      where: {
-        OR: [
-          {
-            institutionID: null,
+        prisma.case.findMany({
+          where: isSysAdmin ? {} : { institutionID: { in: instIDs } },
+          include: {
+            caseType: true,
+            institution: true,
+            lawyer: true,
+            tasks: true,
           },
-          {
-            institutionID: {
-              isSet: false,
-            },
-          },
-          {
-            institutionID: {
-              in: user.institutionIDs,
-            },
-          },
-        ],
-      },
-      include: {
-        institution: true,
-      },
-    });
+        }),
 
-    //Get assignment requests
-    const assignmentRequests = await prisma.assigneeRequest.findMany({
-      where: {
-        assigneeID: user.id,
-      },
-    });
+        prisma.caseType.findMany({
+          where: {
+            OR: [{ institutionId: null }, { institutionId: { in: instIDs } }],
+          },
+          include: {
+            institution: true,
+          },
+        }),
 
-    // HTTP response
-    // console.log(" > USER data Data retrieved - ", {
-    //   institutions,
-    //   users,
-    //   caseTypes,
-    //   cases,
-    //   tasks,
-    //   assignmentRequests,
-    // });
+        prisma.assigneeRequest.findMany({
+          where: {
+            assigneeID: user.id,
+          },
+        }),
+      ]);
+
+    const users = excludeFields(rawUsers, [
+      "password",
+      "resetToken",
+      "resetTokenExpiry",
+    ]);
+
+    const tasks = cases.flatMap((c) => c.tasks);
+
     return Response.json({
-      success: {
-        institutions,
-        users,
-        caseTypes,
-        cases,
-        tasks,
-        assignmentRequests,
-      },
+      institutions,
+      users,
+      caseTypes,
+      cases,
+      tasks,
+      assignmentRequests,
     });
   } catch (error) {
-    // handle ERROR if caught
-    console.log(` > Error caught at api/dashboard/data GET \n  >> ${error}\n`);
-    // return Response.json({ error: "SERVER ERROR" });
+    console.error(`❌ Error at GET /api/dashboard/data:`, error);
     return Response.json("Server error", { status: 500 });
   }
 }

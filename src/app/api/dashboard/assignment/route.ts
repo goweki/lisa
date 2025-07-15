@@ -1,15 +1,11 @@
 import prisma from "@/lib/prisma/prisma";
-import { withAuthAdmin, withAuthGeneral } from "@/lib/authRouteWrappers";
-import { UserType } from "@/types/models";
+import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
-import { User } from "@/lib/prisma/types";
-
-export const POST = withAuthGeneral(postHandler);
-export const DELETE = withAuthGeneral(deleteHandler);
+import { SessionUser } from "@/types/next-auth";
 
 async function postHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: Partial<SessionUser>
 ) {
   // request body
   const doc = await request.json();
@@ -86,7 +82,7 @@ async function postHandler(
 
 async function deleteHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: Partial<SessionUser>
 ) {
   // request body
   const doc = await request.json();
@@ -123,3 +119,6 @@ async function deleteHandler(
     return Response.json({ error: "SERVER ERROR" });
   }
 }
+
+export const POST = withAuthGeneral(postHandler);
+export const DELETE = withAuthGeneral(deleteHandler);

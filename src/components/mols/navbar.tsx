@@ -12,7 +12,7 @@ import {
   MenuDropdown,
   // NavigationMenuComponent,
 } from "../atoms/menus";
-import { User } from "@/lib/prisma/types";
+import { User } from "@/types/models";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,7 +24,9 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
-export default function Navbar(props: { user?: Partial<User> }) {
+export default function Navbar(props: {
+  user?: { name: string; systemAdmin: boolean; role: string };
+}) {
   const pathname = usePathname();
   return (
     <nav
@@ -50,7 +52,7 @@ export default function Navbar(props: { user?: Partial<User> }) {
             <ThemeToggler />
             {pathname.includes("/dashboard") ? (
               <MenuDropdown
-                menuText={props.user?.name?.split(" ")[0] as string}
+                menuText={props.user?.name}
                 menuItems={menuItemsOptions.user}
                 terminalButton={{
                   label: props.user ? "Sign Out" : "Sign In",
@@ -79,9 +81,11 @@ export default function Navbar(props: { user?: Partial<User> }) {
                 menuIcon={SVGhamburger}
                 menuItems={
                   pathname.includes("/dashboard")
-                    ? props.user?.role === "admin"
-                      ? menuItemsOptions.auth.admin
-                      : menuItemsOptions.auth.lawyer
+                    ? props.user?.role === "system"
+                      ? menuItemsOptions.auth.system
+                      : props.user?.role === "admin"
+                        ? menuItemsOptions.auth.admin
+                        : menuItemsOptions.auth.lawyer
                     : menuItemsOptions.unauth
                 }
                 terminalButton={{
@@ -110,7 +114,7 @@ const menuItemsOptions: { [key: string]: any } = {
     { label: "Contacts", link: "/contacts" },
   ],
   auth: {
-    system_admin: [
+    system: [
       { label: "Dashboard", link: "/dashboard" },
       {
         label: "Institutions",
@@ -139,7 +143,9 @@ const menuItemsOptions: { [key: string]: any } = {
 };
 
 // Nav Menu
-function NavigationMenuComponent(props: { user?: Partial<User> }) {
+function NavigationMenuComponent(props: {
+  user?: { name: string; systemAdmin: boolean; role: string };
+}) {
   //
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean); // Remove empty strings
@@ -158,20 +164,24 @@ function NavigationMenuComponent(props: { user?: Partial<User> }) {
     return pathname.includes("/dashboard") ? (
       <NavigationMenu>
         <NavigationMenuList className="gap-4">
-          {menuItemsOptions.auth[authSession.user.role].map(
-            ({ label, link }: { label: string; link: string }) => (
-              <NavigationMenuItem key={label}>
-                <Link
-                  href={link}
-                  className={`text-foreground hover:underline ${
-                    pathSegement === link ? "font-bold" : "font-light"
-                  }`}
-                >
-                  {label}
-                </Link>
-              </NavigationMenuItem>
-            )
-          )}
+          {props.user?.role === "system"
+            ? menuItemsOptions.auth.system
+            : props.user?.role === "admin"
+              ? menuItemsOptions.auth.admin
+              : menuItemsOptions.auth.lawyer.map(
+                  ({ label, link }: { label: string; link: string }) => (
+                    <NavigationMenuItem key={label}>
+                      <Link
+                        href={link}
+                        className={`text-foreground hover:underline ${
+                          pathSegement === link ? "font-bold" : "font-light"
+                        }`}
+                      >
+                        {label}
+                      </Link>
+                    </NavigationMenuItem>
+                  )
+                )}
         </NavigationMenuList>
       </NavigationMenu>
     ) : (

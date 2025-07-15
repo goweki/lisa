@@ -33,20 +33,7 @@ export default function ForgotPassword() {
       }
     } else setUIstate("OK");
   }, [searchParams]);
-  // Notify on UIstate-error
-  useEffect(() => {
-    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
-      toast.error(UIstate);
-      setUIstate("OK");
-    }
-  }, [UIstate]);
-  // Notify on input-Error
-  useEffect(() => {
-    if (email.error) {
-      setUIstate("OK");
-      if (email.error) toast.error(email.error);
-    }
-  }, [email.error]);
+
   // handle Submit
   async function handleSendResetLink(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -73,20 +60,20 @@ export default function ForgotPassword() {
     const response = await fetch("/api/auth/reset-password", fetchOptions).then(
       async (res_) => {
         if (res_.ok) {
-          toast.success("Password reset link sent to your email");
           return await res_.json();
         } else {
           const error_ =
             (await res_.json()) || "Unknown error, try again later";
-          console.error("Error in sending reset password link:", error_);
-          toast.error(error_);
+          console.error("Error in sending reset password link: ", error_);
+          toast.error(error_.message || error_);
         }
       }
     );
-    //validate sending reset link
+
     if (!response) {
-      return;
+      return setUIstate("OK");
     } else {
+      toast.success(response.message);
       router.push(`/`);
     }
   }
@@ -107,7 +94,7 @@ export default function ForgotPassword() {
           onSubmit={handleSendResetLink}
         >
           {/* INPUT FIELDS */}
-          <div className="mb-12">
+          <div className="my-8">
             <InputText
               label="Email"
               name="email"
@@ -119,7 +106,7 @@ export default function ForgotPassword() {
               valValidator={emailValidator}
             />
           </div>
-          {/* forgot passwords */}
+          {/* navigation options */}
           <div className="mx-2 pt-4">
             <ButtonPrimary
               label="Get Password Reset Link"
@@ -129,45 +116,22 @@ export default function ForgotPassword() {
             />
           </div>
           <div className="flex flex-wrap items-center justify-between">
-            {/* <div className="flex items-start">
-            <div className="flex items-center h-5">
-              <input
-                id="remember"
-                aria-describedby="remember"
-                type="checkbox"
-                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                required=""
-              />
-            </div>
-            <div className="ml-3 text-sm">
-              <label
-                htmlFor="remember"
-                className="text-font-inactive dark:text-font-dark-inactive"
-              >
-                Remember me
-              </label>
-            </div>
-          </div> */}
-            <Link href={"/"} className="mt-3">
-              <SVGhome className="h-6 w-6" />
-            </Link>
             <Link
               href="/signin"
-              className="text-font-inactive italic dark:text-font-dark-inactive dark:hover:text-font-dark-faded text-sm font-medium  hover:underline"
+              className="text-font-inactive italic text-sm font-medium  hover:underline"
             >
               Sign In
             </Link>
+            <Link href={"/"} className="mt-3">
+              <SVGhome className="h-6 w-6 text-emerald-800 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-200" />
+            </Link>
+            <Link
+              href="/register"
+              className="text-font-inactive italic text-sm font-medium  hover:underline"
+            >
+              Sign Up
+            </Link>
           </div>
-          {/* Signup */}
-          {/* <p className="text-sm font-light text-font-inactive dark:text-font-dark-inactive">
-          Don’t have an account yet?{" "}
-          <a
-            href="#"
-            className="font-medium text-primary-600 hover:underline dark:text-primary-500 dark:hover:text-font-dark-faded"
-          >
-            Sign up
-          </a>
-        </p> */}
         </form>
       </div>
     </div>

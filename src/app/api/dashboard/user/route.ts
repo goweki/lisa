@@ -1,43 +1,36 @@
 import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
-import { hash } from "@/helpers/bcryptHandlers";
+import { hash } from "@/helpers/passwordHandlers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { NextRequest } from "next/server";
-import { User } from "@/lib/prisma/types";
-import { useState } from "react";
+import { welcomeEmail } from "@/lib/emailRenderer";
+import { InstitutionUser } from "@prisma/client";
+import { User } from "@/types/models";
 
 async function postHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: Partial<User>,
+  institutionUser: InstitutionUser | null
 ) {
-  if (!user.role?.includes("admin")) {
-    return Response.json("You do not have permission to delete institution", {
-      status: 403,
-    });
-  }
-
   try {
-    // request body
     const doc = await request.json();
-    const { institutionIds, ...doc_ } = doc;
+    const { password, role, institutionId: _institutionId, ...doc_ } = doc;
 
-    // Validation checks
-    let validCheck: boolean = institutionIds.every((instId: string) =>
-      user.institutionIDs?.includes(instId)
-    );
-
-    if (user.role === "system_admin") {
-      validCheck = true;
+    // institutionId check
+    const institutionId =
+      institutionUser?.institutionId ||
+      (user.systemAdmin ? _institutionId : undefined) ||
+      undefined;
+    if (!institutionId) {
+      return Response.json(
+        { message: "Institution Not Found" },
+        { status: 400 }
+      );
     }
-
-    if (validCheck === false) Response.json("Forbidden", { status: 403 });
-    // console.log("POST REQUEST: create new user: ", doc_);
-    // console.log("by USER - ", user);
 
     // new user object
     const newUser_ = {
-      password: await hash(doc.email),
-      institutionIDs: institutionIds,
+      password: await hash(password),
       ...doc_,
     };
     console.log("newUser_:", newUser_);
@@ -48,61 +41,73 @@ async function postHandler(
     });
     if (!newUser) {
       console.error("FAILED: didnt save new user.\n > ", doc);
-      return Response.json({ failed: "Failed creating new user" });
+      return Response.json(
+        { message: "Failed creating new user, try later" },
+        { status: 500 }
+      );
     }
-    // update user's Institution to include the new userID
-    newUser.institutionIDs.forEach((instId) => {
-      prisma.institution.update({
-        where: { id: instId },
-        data: {
-          userIDs: {
-            push: newUser.id,
-          },
-        },
-      });
+
+    prisma.institutionUser.create({
+      data: {
+        institutionId,
+        userId: newUser.id,
+        role: role || undefined,
+      },
     });
-    // send register link
-    const fetchOptions = {
+
+    // send email
+    const emailToSend = await welcomeEmail(
+      newUser_.name,
+      newUser_.onboardingURL
+    );
+
+    const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
       method: "POST",
-      body: JSON.stringify({ userEmail: newUser.email }),
-    };
-    const regLink = await fetch(
-      `${BASE_URL}/api/auth/reset-password`,
-      fetchOptions
-    ).then(async (res_) => {
-      if (res_.ok) {
-        return await res_.json();
-      } else {
-        console.log(`ERROR: ` + JSON.stringify(res_));
-        // setUIstate(httpCodes[res_.status]);
-        return;
-      }
+      body: JSON.stringify({
+        email: {
+          to: newUser.email,
+          subject: "Welcome to Lisa",
+          html: emailToSend.html,
+          text: emailToSend.text,
+        },
+      }),
     });
-    if (!regLink.success) {
-      console.error("FAILED: didnt send registration mail.\n > ", newUser);
-      return Response.json({ failed: "Failed sending registration link" });
+
+    if (!emailerRes.ok) {
+      throw new Error("Failed to send email");
     }
-    return Response.json({ success: newUser });
+
+    console.log("User created successfully");
+    return Response.json({
+      message: "User created successfully",
+    });
   } catch (err) {
     console.error(
       "ERROR: user insertion failed -route:/api/dashboard/user POST\n >> error:",
       err
     );
-    return Response.json("SERVER ERROR ", { status: 500 });
+    return Response.json({ message: "SERVER ERROR " }, { status: 500 });
   }
 }
 
-async function getHandler(request: Request | NextRequest, user: Partial<User>) {
+async function getHandler(
+  request: Request | NextRequest,
+  user: Partial<User>,
+  institutionUser: InstitutionUser | null
+) {
   const url = new URL(request.url);
-  const id = url.searchParams.get("id");
+  const userID = url.searchParams.get("id");
 
-  if (!id) {
+  if (!userID) {
     return Response.json("No userID provided", {
       status: 400,
     });
   }
 
-  if (!user.role?.includes("admin")) {
+  if (
+    !institutionUser ||
+    (institutionUser.role !== "admin" && !user.systemAdmin)
+  ) {
     return Response.json("You do not have permission to delete user", {
       status: 403,
     });
@@ -110,7 +115,7 @@ async function getHandler(request: Request | NextRequest, user: Partial<User>) {
 
   try {
     // retrieve doc
-    const res_ = await prisma.user.findUnique({ where: { id } });
+    const res_ = await prisma.user.findUnique({ where: { id: userID } });
     if (res_) {
       return Response.json({ success: res_ });
     } else {
@@ -122,7 +127,11 @@ async function getHandler(request: Request | NextRequest, user: Partial<User>) {
   }
 }
 
-async function putHandler(request: Request | NextRequest, user: Partial<User>) {
+async function putHandler(
+  request: Request | NextRequest,
+  user: Partial<User>,
+  institutionUser: InstitutionUser | null
+) {
   try {
     // request body
     const doc = await request.json();
@@ -151,7 +160,8 @@ async function putHandler(request: Request | NextRequest, user: Partial<User>) {
 
 async function deleteHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: Partial<User>,
+  institutionUser: InstitutionUser | null
 ) {
   const doc = await request.json();
   const { id } = doc;
@@ -161,19 +171,24 @@ async function deleteHandler(
     });
   }
 
-  if (!user.role?.includes("admin")) {
-    return Response.json("You do not have permission to delete user", {
-      status: 403,
-    });
-  }
   try {
     console.log("DELETE REQUEST: deleting user: ", id);
+    //permissions check
+    const del_institutionUser = await prisma.institutionUser.findFirst({
+      where: { userId: id },
+    });
+    if (!del_institutionUser || del_institutionUser.role === "admin") {
+      return Response.json(
+        { message: "You do not have permission to delete this user" },
+        { status: 403 }
+      );
+    }
     // delete doc
     const res = await prisma.user.delete({ where: { id } });
-    if (!res) Response.json({ failed: "Database error" });
-    else console.log(`SUCCESS: user deleted - ${id}\n`);
+    if (!res) Response.json({ message: "Database error" }, { status: 500 });
+    console.log(`SUCCESS: user deleted - ${id}\n`);
     // HTTP response
-    return Response.json({ success: `User deleted ${res.email}` });
+    return Response.json({ message: `User deleted ${res.email}` });
   } catch (err) {
     console.error(`ERROR: User deletion failed:}\n >`, err);
     return Response.json({ error: `Server error` });

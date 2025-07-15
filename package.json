@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx prisma migrate dev && next dev",
-    "build": "next build",
+    "build": "NODE_ENV=production next build",
     "postbuild": "npx prisma migrate deploy",
     "docker:build": "docker build -t ghcr.io/goweki/lisa:latest .",
     "start": "next start -p ${PORT:-3000}",

@@ -34,9 +34,9 @@ const WelcomeHtml = ({ name, onboardLink }: WelcomeEmailProps) => {
           <Section>
             <Text style={text}>Hello {name},</Text>
             <Text style={text}>
-              Thank you for signing up to Lisa. We're excited to have you on
-              board! Let's get you started into a new way of managing cases and
-              improving productivity.
+              Thank you for signing up to Lisa. We&apos;re excited to have you
+              on board! Let&apos;s get you started into a new way of managing
+              cases and improving productivity.
             </Text>
             <Text style={text}>
               To finish setting up your account, create a new password using
