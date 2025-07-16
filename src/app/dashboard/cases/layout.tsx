@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
-import { Case as CaseType } from "@/lib/prisma/types";
+import { Case as CaseType } from "@/types/models";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import toast from "react-hot-toast";
@@ -64,32 +64,21 @@ export default function CasesLayout({
 
   //filter cases by searchPhrase
   useEffect(() => {
+    if (!cases || !cases.length || cases.length < 1) return;
     setFiltCases(
       cases?.filter(
-        ({
-          name,
-          clientName,
-          description,
-          clientEmail,
-          otherPartyName,
-        }: {
-          name: string;
-          clientName: string;
-          clientEmail: string;
-          otherPartyName: string;
-          description: string;
-        }) =>
+        ({ name, clientName, description, clientEmail, otherPartyName }) =>
           name.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
           clientName
             .toLowerCase()
             .includes(searchPhrase.value?.toLowerCase()) ||
           clientEmail
-            .toLowerCase()
+            ?.toLowerCase()
             .includes(searchPhrase.value?.toLowerCase()) ||
           otherPartyName
-            .toLowerCase()
+            ?.toLowerCase()
             .includes(searchPhrase.value?.toLowerCase()) ||
-          description.toLowerCase().includes(searchPhrase.value?.toLowerCase())
+          description?.toLowerCase().includes(searchPhrase.value?.toLowerCase())
       )
     );
   }, [searchPhrase, cases]);

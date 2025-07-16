@@ -14,12 +14,16 @@ export interface Institution extends _Institution {
 }
 
 export function isInstitution(obj: any): obj is Institution {
+  if (obj === null || typeof obj !== "object") return false;
+  const allowedKeys = ["id", "name", "location", "logoUrl"];
+  const keys = Object.keys(obj);
+  if (!keys.every((k) => allowedKeys.includes(k))) return false;
+
   return (
-    obj !== null &&
-    typeof obj === "object" &&
-    obj.hasOwnProperty("name") &&
-    obj.hasOwnProperty("userIDs") &&
-    obj.hasOwnProperty("cases")
+    typeof obj.name === "string" &&
+    typeof obj.location === "string" &&
+    (obj.id === undefined || typeof obj.id === "string") &&
+    (obj.logoUrl === undefined || typeof obj.logoUrl === "string")
   );
 }
 

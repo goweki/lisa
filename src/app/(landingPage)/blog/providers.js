@@ -9,34 +9,28 @@ export default function BlogProvider({ children }) {
   const [blogposts, setBlog] = useState(null);
   //onMount
   useEffect(() => {
-    const fetchOptions = {
-      method: "GET",
-    };
-    fetch(`/api/data?colle=library`, fetchOptions)
-      .then(async (res_) => {
-        if (res_.ok) {
-          return await res_.json();
-        } else {
-          setBlog(httpCodes[res_.status]);
-          return false;
+    (() => {
+      const fetchOptions = {
+        method: "GET",
+      };
+      const blogpost_s = fetch(`/api/data?colle=library`, fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            const error_ =
+              (await res_.json()) || "Unknown error, try again later";
+            console.error("Error in sending reset password link:", error_);
+            toast.error(error_.message || error_);
+            return null;
+          }
         }
-      })
-      .then((json_) => {
-        if (json_?.success) {
-          setBlog(json_.success.filter((v) => v.type === "blogpost"));
-        } else {
-          console.error(
-            "FAILED: could not fetch library items\n > " +
-              JSON.stringify(json_.error ?? "....") +
-              "\n................"
-          );
-          setBlog("failed");
-        }
-      })
-      .catch((err) => {
-        setBlog("failed");
-        console.error("ERROR: caught error\n > " + err);
-      });
+      );
+
+      if (!blogpost_s) return;
+
+      setBlog(blogpost_s.filter((v_) => v_.type === "blogpost"));
+    })();
   }, []);
   //render
   return !blogposts ? (

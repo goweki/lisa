@@ -30,10 +30,10 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes, roleLabels } from "@/lib/configs";
-import { userRole as userRoles } from "@prisma/client";
-import { User, Institution } from "@/lib/prisma/types";
+import { status, userRole as userRoles } from "@prisma/client";
+import { User, Institution } from "@/types/models";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
-import { TemplateObj } from "@/lib/types";
+import { TemplateObj } from "@/types/custom";
 import {
   Card,
   CardContent,
@@ -45,27 +45,27 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { InputImage } from "./_components/inputs";
+import { InputImage } from "@/components/atoms/inputs";
 import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
 
-interface UserEdit {
-  name: string;
+interface SelectedEditUser {
+  id?: string;
+  names: string;
   email: string;
-  tel: string;
-  role: string;
-  institutionIDs: string[];
-  photoFile: File | null;
+  tel: string | null;
+  status?: string;
+  institutionIDs?: string[];
+  photoUrl: string | null;
+  photoFile?: File | undefined;
 }
 
-const def_UserEdit = {
-  name: "",
+const default_UserEdit: SelectedEditUser = {
+  names: "",
   email: "",
-  tel: "",
-  role: "",
-  institutionIDs: [],
-  photoFile: null,
+  tel: null,
+  photoUrl: null,
 };
 
 export default function UserView({ params }: { params: any }) {
@@ -77,76 +77,67 @@ export default function UserView({ params }: { params: any }) {
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
-  const [selected, setSelected] = useState<User>();
-  const [userEdit, setUserEdit] = useState<UserEdit>(def_UserEdit);
+  const [selected, setSelected] = useState<SelectedEditUser>();
+  const [userEdit, setUserEdit] = useState<SelectedEditUser>(default_UserEdit);
   const [userIsUpdated, setUserIsUpdated] = useState(false);
   const [UIstate, setUIstate] = useState("");
+
+  // check form edits
+  useEffect(() => {
+    if (!selected || !userEdit) return;
+    const userIsUpdated = (
+      selected_: SelectedEditUser,
+      editObj: SelectedEditUser
+    ): boolean => {
+      // ditObj has no values
+      const hasAnyChanges = Object.values(editObj).some((val) => Boolean(val));
+      if (!hasAnyChanges) return false;
+      // If photoFile is present
+      if (editObj.photoFile) return true;
+      // Compare each key in editObj to selected_
+      for (const key in editObj) {
+        const typedKey = key as keyof SelectedEditUser;
+        if (editObj[typedKey] && editObj[typedKey] !== selected_[typedKey]) {
+          console.log(
+            `${selected_[typedKey]} has changed to ${editObj[typedKey]}`
+          );
+        }
+        // const newValue = editObj[typedKey];
+        // const oldValue = selected_[typedKey];
+
+        // if (newValue !== undefined && oldValue !== newValue) {
+        //   console.log(`${key} has changed from ${oldValue} to ${newValue}`);
+        //   return true;
+        // }
+      }
+      return false;
+    };
+    setUserIsUpdated(userIsUpdated(selected, userEdit));
+  }, [selected, userEdit]);
 
   // setSelected, get user by userID and update selected
   useEffect(() => {
     if (userID) {
-      const _selected = users.find(({ id }: { id: string }) => id === userID);
-      setSelected(_selected);
-      setUserEdit((prev) => ({
-        ...prev,
-        institutionIDs: _selected?.institutionIDs,
-      }));
+      const foundUser_ = users.find(({ id }: { id: string }) => id === userID);
+
+      if (!foundUser_) {
+        toast.error("User not found");
+        router.push("/dashboard/users");
+        return;
+      }
+
+      setSelected({
+        id: foundUser_.id,
+        names: foundUser_.names,
+        photoUrl: foundUser_.photoUrl,
+        email: foundUser_.email,
+        tel: foundUser_.tel,
+        status: foundUser_.status,
+        institutionIDs: foundUser_.institutions?.map(({ id }) => id) || [],
+      });
     }
     setUIstate("OK");
-  }, [users, userID]);
-
-  // // UIstate OK after updating selected
-  // useEffect(() => {
-  //   if (selected) {
-  //     setUIstate("OK");
-  //   }
-  // }, [selected]);
-
-  // UIstate OK on UI error
-  useEffect(() => {
-    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
-      toast.error(UIstate);
-      setUIstate("OK");
-    }
-  }, [UIstate]);
-
-  //check if any edits to user
-  useEffect(() => {
-    if (selected) {
-      //&& Object.keys(instEdit).length > 0
-      const userIsUpdated = ((selected_: User, editObj: TemplateObj) => {
-        // if no values in editObj
-        if (Object.values(userEdit).filter(Boolean).length === 0) return false;
-        if (userEdit.photoFile) return true;
-        // if (userEdit.photoFile) return true;
-        for (const key in editObj) {
-          if (selected_.hasOwnProperty(key)) {
-            // console.log("Updates");
-            //
-            if (isKeyOf<User>(key, selected_ as User)) {
-              if (
-                (Array.isArray(editObj[key])
-                  ? editObj[key].length > 0
-                  : editObj[key]) &&
-                (Array.isArray(editObj[key])
-                  ? !arraysEqual(editObj[key], selected_[key] as string[])
-                  : selected_[key] !== editObj[key]) &&
-                selected_.hasOwnProperty(key)
-              ) {
-                // console.log(
-                //   `${key} has changed from ${selected_[key]} to ${editObj[key]}`
-                // );
-                return true;
-              }
-            }
-          }
-        }
-        // console.log("NO updates");
-        return false;
-      })(selected as User, userEdit);
-      setUserIsUpdated(userIsUpdated);
-    }
-  }, [selected, userEdit]);
+  }, [userID]);
 
   //handleUpdateUser
   async function handleUpdateUser(e: React.MouseEvent<HTMLElement>) {
@@ -164,8 +155,8 @@ export default function UserView({ params }: { params: any }) {
       telError_: "",
     };
 
-    if (userEdit.name) {
-      inputErrors.nameError_ = nameValidator(userEdit.name);
+    if (userEdit.names) {
+      inputErrors.nameError_ = nameValidator(userEdit.names);
     }
     if (userEdit.email) {
       inputErrors.emailError_ = emailValidator(userEdit.email);
@@ -191,15 +182,6 @@ export default function UserView({ params }: { params: any }) {
       if (userEdit.photoFile) {
         // console.log("New logo to be uploaded");
 
-        // upload file using edgestore- edgestore returns:
-        // const res: {
-        //   url: string;
-        //   size: number;
-        //   uploadedAt: Date;
-        //   metadata: Record<string, never>;
-        //   path: Record<string, never>;
-        //   pathOrder: string[];
-        // }
         const uploadOptions: { replaceTargetUrl: string } | undefined =
           !selected.photoUrl
             ? undefined
@@ -215,11 +197,20 @@ export default function UserView({ params }: { params: any }) {
           //   console.log(progress);
           // },
         });
+        // upload file using edgestore- edgestore returns:
+        // const res: {
+        //   url: string;
+        //   size: number;
+        //   uploadedAt: Date;
+        //   metadata: Record<string, never>;
+        //   path: Record<string, never>;
+        //   pathOrder: string[];
+        // }
 
         // console.log("edge File - ", logoEdgeUpload);
         photoUrl_ = photoEdgeUpload.url;
         setUserEdit((prev) => {
-          return { ...prev, photoFile: null };
+          return { ...prev, photoFile: undefined };
         });
         if (!photoUrl_) console.error("image upload failed");
       }
@@ -227,14 +218,13 @@ export default function UserView({ params }: { params: any }) {
       //Updated User
       const updatedUserObj = {
         id: selected.id,
-        name: userEdit.name || selected.name,
+        name: userEdit.names || selected.names,
         email: userEdit.email || selected.email,
-        photoUrl: photoUrl_ || selected.photoUrl,
         tel: userEdit.tel || selected.tel,
-        role: userEdit.role || selected.role,
         institutionIDs: userEdit.institutionIDs,
+        photoUrl: photoUrl_ || selected.photoUrl,
       };
-      // console.log("Updated User: ", fetchBody);
+      console.log("Updated User: ", updatedUserObj);
 
       const fetchOptions = {
         method: "PUT",
@@ -247,10 +237,12 @@ export default function UserView({ params }: { params: any }) {
           if (res_?.ok) {
             return await res_.json();
           } else {
-            setUIstate("OK");
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_?.status] ?? "Unknown error");
-            return;
+            const error_ =
+              (await res_.json()).message ||
+              `ERROR: ` + res_.status + "Unknown error";
+            console.error(error_);
+            setUIstate(error_);
+            return null;
           }
         }
       );
@@ -263,7 +255,7 @@ export default function UserView({ params }: { params: any }) {
           "\n.............."
         );
         toast.success("user updated");
-        setUserEdit(def_UserEdit);
+        setUserEdit(default_UserEdit);
         await refreshData();
       } else {
         console.log("FAILED: User not updated\n > ", res, "\n..............");
@@ -281,12 +273,12 @@ export default function UserView({ params }: { params: any }) {
   }
 
   // handle onSelect Institutions
-  function updateNewUserInstits(selections: MultiSelectOption[]) {
-    // console.log("Changed D1: ", selections);
+  function onSelectInstitutions(selections: MultiSelectOption[]) {
+    console.log("Changed D1: ", selections);
     setUserEdit((prev) => {
       return {
         ...prev,
-        institutionIDs: selections.map(({ value }) => value),
+        institutionIds: selections.map(({ value }) => value),
       };
     });
   }
@@ -312,10 +304,12 @@ export default function UserView({ params }: { params: any }) {
         if (res_?.ok) {
           return await res_.json();
         } else {
-          setUIstate("OK");
-          console.log(`ERROR: ` + JSON.stringify(res_));
-          toast.error(httpCodes[res_?.status] ?? "Unknown error");
-          return;
+          const error_ =
+            (await res_.json()).message ||
+            `ERROR: ` + res_.status + "Unknown error";
+          console.error(error_);
+          setUIstate(error_);
+          return null;
         }
       }
     );
@@ -350,7 +344,7 @@ export default function UserView({ params }: { params: any }) {
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
         <CardTitle className="font-light">
-          <span>{selected?.name}</span>
+          <span>{selected?.names}</span>
           {
             <Button
               variant="ghost"
@@ -369,19 +363,19 @@ export default function UserView({ params }: { params: any }) {
       <CardContent>
         <form className=" flex flex-col gap-4">
           <div id="nameWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="userName" className="opacity-75">
+            <Label htmlFor="names" className="opacity-75">
               Name *
             </Label>
             <Input
               type="text"
-              id="userName"
+              id="names"
               placeholder="user's Name"
               className="placeholder:italic"
-              value={userEdit.name || selected?.name}
+              value={userEdit?.names || selected?.names}
               onChange={(e) =>
                 setUserEdit((prev) => ({
                   ...prev,
-                  name: e.target.value,
+                  names: e.target.value,
                 }))
               }
             />
@@ -404,34 +398,6 @@ export default function UserView({ params }: { params: any }) {
               }
             />
           </div>
-          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="role" className="opacity-75">
-              Role *
-            </Label>
-            <Select
-              name="role"
-              value={userEdit.role || selected?.role}
-              onValueChange={(value) => {
-                setUserEdit((prev) => ({
-                  ...prev,
-                  role: value,
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select user's role" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* <SelectItem value="admin">Administrator</SelectItem> */}
-                {/* <SelectItem value="lawyer">Lawyer</SelectItem> */}
-                {Object.keys(userRoles).map((key) => (
-                  <SelectItem key={key} value={key}>
-                    {roleLabels[key]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div id="telWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="tel" className="opacity-75">
               Phone No.
@@ -441,7 +407,7 @@ export default function UserView({ params }: { params: any }) {
               id="tel"
               placeholder="user's Phone No."
               className="placeholder:italic"
-              value={userEdit.tel || (selected?.tel as string)}
+              value={userEdit.tel || selected?.tel || ""}
               onChange={(e) =>
                 setUserEdit((prev) => ({
                   ...prev,
@@ -455,33 +421,38 @@ export default function UserView({ params }: { params: any }) {
               Institutions *
             </Label>
             <MultipleSelector
-              value={userEdit.institutionIDs.map((_id: string) => ({
-                value: _id,
-                label: institutions.find(({ id }: { id: string }) => id === _id)
-                  ?.name,
-              }))}
-              onChange={(newVals) => updateNewUserInstits(newVals)}
-              //
-              defaultOptions={institutions.map(
-                ({ id, name }: { id: string; name: string }) => ({
-                  value: id,
-                  label: name,
-                })
-              )}
-              //
-              placeholder="Select Institutions..."
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  no results found.
-                </p>
+              value={
+                userEdit.institutionIDs?.forEach((_id: string) => {
+                  const inst = institutions?.find(
+                    ({ id }: { id: string }) => id === _id
+                  );
+                  if (inst && inst.id && inst.name)
+                    return {
+                      value: inst.id,
+                      label: inst.name,
+                    };
+                }) || []
               }
+              onChange={(newVals) => onSelectInstitutions(newVals)}
+              defaultOptions={
+                institutions?.map(
+                  ({ id, name }: { id: string; name: string }) => ({
+                    value: id,
+                    label: name,
+                  })
+                ) || []
+              }
+              placeholder="Select Institutions..."
             />
           </div>
           <div id="dpWrapper" className="py-4">
             <InputImage
               _photo={selected?.photoUrl ?? ""}
               setPhoto={async (_imageFile: File | null) => {
-                setUserEdit((prev_) => ({ ...prev_, photoFile: _imageFile }));
+                setUserEdit((prev_) => ({
+                  ...prev_,
+                  photoFile: _imageFile || undefined,
+                }));
               }}
             />
           </div>
@@ -501,7 +472,7 @@ export default function UserView({ params }: { params: any }) {
             <Button
               variant="destructive"
               onClick={handleDeleteUser}
-              disabled={!selected?.id || selected?.role === "admin"}
+              disabled={!selected?.id}
             >
               Delete User
             </Button>

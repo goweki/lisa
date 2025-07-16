@@ -59,12 +59,15 @@ export function ReqDemoModal({ handleCloseModal }) {
           if (res_.ok) {
             return await res_.json();
           } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            setUIstate(httpCodes[res_.status]);
+            const error_ =
+              (await res_.json()) || "Unknown error, try again later";
+            console.error("Error in sending reset password link:", error_);
+            toast.error(error_.message || error_);
+            return null;
           }
         }
       );
-      if (response?.success) {
+      if (!response) {
         console.log(
           "SUCCESS: info sent\n > " +
             JSON.stringify(response.success) +

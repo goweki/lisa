@@ -22,7 +22,7 @@ import { Loader1 } from "@/components/atoms/loader";
 import {
   Package as PackageType,
   PackageName as PackageNameType,
-} from "@/types/package";
+} from "@/types/transactions";
 
 const packages: PackageType[] = [
   { name: "Basic", index: 0 },
@@ -101,6 +101,7 @@ export default function RegisterPage() {
             `ERROR: ` + res_.status + "Unknown error";
           console.error(error_);
           setUIstate(error_);
+          return null;
         }
       }
     );

@@ -2,57 +2,65 @@
  * HINTS:
  *
  * 1.
- * withAuthAdmin (& withAuthGeneral) are HOFs that wrap
- * the routes to authenticate and leave the route a
- * gift: a user object:{id,name,institutions...}
- *
- * 2.
+ * HOFs that wrap the routes to authenticate and
+ * leave the route a gift: a user
+ * object:{id,name,institutions...}
  *
  */
 
 import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
-import { User } from "@/lib/prisma/types";
 import { NextRequest } from "next/server";
+import { SessionUser } from "@/types/next-auth";
+import { Institution, InstitutionUser } from "@prisma/client";
 
 // create institution
 async function postHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: SessionUser,
+  institutionUser: InstitutionUser | null
 ) {
-  if (user.role !== "system_admin") {
+  if (user.role !== "system") {
     return Response.json("You do not have permission to create institution", {
       status: 403,
     });
   }
 
   try {
-    const doc = await request.json();
-    console.log("POST REQUEST: new institution: ", doc);
-
-    const newInst = await prisma.institution.create({ data: doc });
-    if (!newInst) {
-      console.error("FAILED: didn't save new institution.\n > ", doc);
-      return Response.json({ failed: "Failed saving new institution" });
+    const doc: Partial<Institution> = await request.json();
+    const { name, ...doc_ } = doc;
+    if (!name) {
+      return Response.json("No institution name provided", {
+        status: 403,
+      });
     }
 
-    console.log(" > SUCCESS: institution inserted.\n > ", newInst, "\n...");
-    return Response.json({ success: newInst });
+    const newInst = await prisma.institution.create({
+      data: { name, ...doc_ },
+    });
+    if (!newInst) {
+      console.error("FAILED: didn't save new institution.\n > ", doc);
+      return Response.json("Failed to save new institution", { status: 500 });
+    }
+
+    console.log(" > SUCCESS: institution saved.\n > ", newInst, "\n...");
+    return Response.json({ ...newInst });
   } catch (err) {
     console.error(
       "ERROR: institution insertion failed - route: /api/dashboard/institution POST\n >> error:",
       err
     );
-    return Response.json({ failed: "Server error" });
+    return Response.json("Server error", { status: 500 });
   }
 }
 
 // update institution
 async function patchHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: SessionUser,
+  institutionUser: InstitutionUser | null
 ) {
-  if (user.role !== "system_admin") {
+  if (user.role !== "system") {
     return Response.json("You do not have permission to update institution", {
       status: 403,
     });
@@ -62,30 +70,29 @@ async function patchHandler(
     const doc = await request.json();
     const { id, ...doc_ } = doc;
 
-    // console.log("PUT REQUEST: update institution: ", id);
-
     const updatedInst = await prisma.institution.update({
       where: { id },
       data: { ...doc_ },
     });
 
     console.log(` > SUCCESS: institution updated\n...`);
-    return Response.json({ success: updatedInst });
+    return Response.json({ data: updatedInst });
   } catch (err) {
     console.error(
       `ERROR: institution update failed - route: /api/dashboard/institution PUT\n >> error:`,
       err
     );
-    return Response.json({ error: "Server error" });
+    return Response.json("Server error", { status: 500 });
   }
 }
 
 // delete institution
 async function deleteHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: SessionUser,
+  institutionUser: InstitutionUser | null
 ) {
-  if (user.role !== "system_admin") {
+  if (user.role !== "system") {
     return Response.json("You do not have permission to delete institution", {
       status: 403,
     });
@@ -100,12 +107,19 @@ async function deleteHandler(
 
     console.log(` > SUCCESS: institution deleted\n...`);
     return Response.json({ success: deletedInst });
-  } catch (err) {
-    console.error(
-      `ERROR: institution deletion failed - route: /api/dashboard/institution DELETE\n >> `,
-      err
-    );
-    return Response.json({ error: "Server error" });
+  } catch (err: any) {
+    let errMessage = "";
+    if (err.code === "P2003") {
+      console.error("Foreign key constraint error:", err.meta);
+      errMessage = `Foreign key constraint error: ${err.meta.field_name}`;
+    } else {
+      console.error(
+        `ERROR: institution deletion failed - route: /api/dashboard/institution DELETE\n >> `,
+        err
+      );
+      errMessage = `SERVER ERROR`;
+    }
+    return Response.json(errMessage, { status: 500 });
   }
 }
 

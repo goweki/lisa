@@ -3,9 +3,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "./prisma/prisma";
 import { InstitutionUser } from "@prisma/client";
+import { SessionUser } from "@/types/next-auth";
 
 export function withAuthGeneral(
-  handler: (req: Request | NextRequest, user: any) => Promise<Response>
+  handler: (req: Request | NextRequest, user: SessionUser) => Promise<Response>
 ) {
   return async function (req: Request | NextRequest) {
     const session = await getServerSession(authOptions);
@@ -18,14 +19,17 @@ export function withAuthGeneral(
       );
     }
 
-    return handler(req, user);
+    return handler(req, {
+      ...user,
+      role: user.role || "user",
+    });
   };
 }
 
 export function withAuthAdmin(
   handler: (
     req: Request | NextRequest,
-    user: any,
+    user: SessionUser,
     institutionUser: InstitutionUser | null
   ) => Promise<Response>
 ) {
@@ -57,11 +61,25 @@ export function withAuthAdmin(
     });
 
     if (user.systemAdmin) {
-      return handler(req, user, institutionUser);
+      return handler(
+        req,
+        {
+          ...user,
+          role: user.role || "user",
+        },
+        institutionUser
+      );
     }
 
     if (institutionUser && institutionUser.role === "admin") {
-      return handler(req, user, institutionUser);
+      return handler(
+        req,
+        {
+          ...user,
+          role: user.role || "user",
+        },
+        institutionUser
+      );
     }
 
     return Response.json(

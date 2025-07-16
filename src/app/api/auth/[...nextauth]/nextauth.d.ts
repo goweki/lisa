@@ -11,11 +11,12 @@ declare module "next-auth" {
   interface User extends DefaultUser {
     id: string;
     email: string;
-    names: string;
+    name: string;
+    names?: string;
     systemAdmin: boolean;
     photoUrl: string | null;
     tel: string;
-    role: string;
+    role?: "system" | "admin" | "user";
   }
 }
 

@@ -59,6 +59,7 @@ export default function ResetPassword({
               (await res_.json()) || "Unknown error, try again later";
             console.error("Error in sending reset password link:", error_);
             toast.error(error_.message || error_);
+            return null;
           }
         });
 
@@ -114,6 +115,7 @@ export default function ResetPassword({
             "Unknown error, try again later";
           console.error(error_);
           toast.error(error_);
+          return null;
         }
       });
 

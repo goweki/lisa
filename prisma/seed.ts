@@ -64,7 +64,6 @@ async function main() {
     data: {
       name: "LexLaw LLP",
       location: "Nairobi",
-      tel: "+254700000001",
       status: "ACTIVE",
     },
   });

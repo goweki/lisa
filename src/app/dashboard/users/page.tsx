@@ -34,9 +34,8 @@ import { httpCodes, roleLabels } from "@/lib/configs";
 import MultiSelect, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
-import { TemplateObj } from "@/lib/types";
+import { TemplateObj } from "@/types/custom";
 import { userRole as userRoles } from "@prisma/client";
-import { Institution as InstitutionType } from "@/lib/prisma/types";
 
 type newUserType = {
   name: TemplateObj;
@@ -65,8 +64,8 @@ export default function UsersPage() {
   const [UIstate, setUIstate] = useState("");
   const [newUser, setNewUser] = useState(_defaultUser);
 
-  //
-  function updateNewUserInstits(selections: MultiSelectOption[]) {
+  // handle Institutions edits
+  function updateSelectionUserInstits(selections: MultiSelectOption[]) {
     // console.log("Changed D1: ", selections);
     setNewUser((prev) => {
       return {
@@ -122,13 +121,15 @@ export default function UsersPage() {
       // API call, using fetch
       const response = await fetch("/api/dashboard/user", fetchOptions).then(
         async (res_) => {
-          if (res_?.status === 200) {
+          if (res_?.ok) {
             return await res_.json();
           } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_?.status] ?? "Unknown error");
-            setUIstate("OK");
-            return;
+            const error_ =
+              (await res_.json()).message ||
+              `ERROR: ` + res_.status + "Unknown error";
+            console.error(error_);
+            setUIstate(error_);
+            return null;
           }
         }
       );
@@ -262,9 +263,9 @@ export default function UsersPage() {
             <MultiSelect
               // value={instOptions}
 
-              onChange={updateNewUserInstits}
+              onChange={updateSelectionUserInstits}
               //
-              defaultOptions={institutions.map(
+              defaultOptions={institutions?.map(
                 ({ id, name }: { id: string; name: string }) => ({
                   value: id,
                   label: name,
@@ -272,11 +273,6 @@ export default function UsersPage() {
               )}
               //
               placeholder="Select Institutions..."
-              emptyIndicator={
-                <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                  no results found.
-                </p>
-              }
             />
           </div>
         </form>

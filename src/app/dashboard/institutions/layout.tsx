@@ -1,15 +1,3 @@
-// import { redirect } from "next/navigation";
-// import { getServerSession } from "next-auth/next";
-// import { authOptions } from "@/app/api/auth/[...nextauth]/options";
-
-// export default async function InstitutionsLayout({ children }) {
-//   const session = await getServerSession(authOptions);
-//   if (session?.user?.role === "admin") {
-//     // user is admin
-//     return children;
-//   } else redirect(`/dashboard`);
-// }
-
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -61,7 +49,7 @@ export default function InstitutionsPage({
     refreshData,
   } = useContext(DataContext);
 
-  const [UIstate, setUIstate] = useState("");
+  const [UIstate, setUIstate] = useState("loading");
   const [filtInstitutions, setFiltInstitutions] = useState<Institution[]>([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [newInstitution, setNewInstitution] = useState(_defaultInstitution);
@@ -141,7 +129,9 @@ export default function InstitutionsPage({
           <div className="flex flex-col space-y-1">
             <Link
               className={`p-2 rounded ${
-                !instId ? "bg-primary/20" : "hover:bg-primary/10"
+                !instId
+                  ? "bg-primary/20 border border-1 border-primary"
+                  : "hover:bg-primary/10"
               }`}
               href="/dashboard/institutions"
             >
@@ -151,13 +141,10 @@ export default function InstitutionsPage({
               filtInstitutions.map(({ id, name }) => (
                 <Link
                   key={id}
-                  // className={`p-2 ${
-                  //   instId === id
-                  //     ? "bg-primary text-primary-foreground"
-                  //     : "hover:bg-primary/75 hover:text-primary-foreground/75"
-                  // }`}
                   className={`p-2 rounded ${
-                    instId === id ? "bg-primary/20" : "hover:bg-primary/10"
+                    instId === id
+                      ? "bg-primary/20 border border-1 border-primary"
+                      : "hover:bg-primary/10"
                   }`}
                   href={`/dashboard/institutions/${id}`}
                 >

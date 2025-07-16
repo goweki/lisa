@@ -27,9 +27,9 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
-import { User, Institution } from "@/lib/prisma/types";
+import { User, Institution } from "@/types/models";
 import { isKeyOf } from "@/lib/utils";
-import { TemplateObj } from "@/lib/types";
+import { TemplateObj } from "@/types/custom";
 import {
   Card,
   CardContent,
@@ -41,15 +41,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { InputImage } from "./_components/inputs";
+import { InputImage } from "@/components/atoms/inputs";
 import { status } from "@prisma/client";
 
 interface InstitutionEdit {
   name: string;
-  email: string;
-  tel: string;
   location: string;
-  imageFile: File | null;
+  logoFile: File | null;
 }
 
 export default function InstitutionView({ params }: { params: any }) {
@@ -65,10 +63,8 @@ export default function InstitutionView({ params }: { params: any }) {
   const [selected, setSelected] = useState<Institution>();
   const [instEdit, setInstEdit] = useState<InstitutionEdit>({
     name: "",
-    email: "",
-    tel: "",
     location: "",
-    imageFile: null,
+    logoFile: null,
   });
   const [instIsUpdated, setInstIsUpdated] = useState(false);
   const [UIstate, setUIstate] = useState("");
@@ -76,47 +72,38 @@ export default function InstitutionView({ params }: { params: any }) {
   // get institution by instID
   useEffect(() => {
     if (instID) {
-      setSelected(institutions.find(({ id }: { id: string }) => id === instID));
-    } else {
-      setUIstate("OK");
+      const selectedInst_ = institutions?.find(
+        ({ id }: { id: string }) => id === instID
+      );
+      if (!selectedInst_) return router.push("/dashboard/institutions");
+      else setSelected(selectedInst_);
     }
-  }, [institutions, instID]);
-
-  // UIstate OK after updating selected
-  useEffect(() => {
-    if (selected) {
-      setUIstate("OK");
-    }
-  }, [selected]);
-
-  // UIstate OK on UI error
-  useEffect(() => {
-    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
-      toast.error(UIstate);
-      setUIstate("OK");
-    }
-  }, [UIstate]);
+    setUIstate("OK");
+  }, [instID, institutions]);
 
   //check if any edits to institution
   useEffect(() => {
     if (selected) {
-      //&& Object.keys(instEdit).length > 0
+      // console.log(`Inspecting change...`);
       const userIsUpdated = ((selected_: Institution, editObj: TemplateObj) => {
         // if no values in editObj
         if (Object.values(instEdit).filter(Boolean).length === 0) return false;
-        if (instEdit.imageFile) return true;
+        if (instEdit.logoFile) {
+          // console.log(`logo image upload exists...`);
+          return true;
+        }
+
         for (const key in editObj) {
           if (selected_.hasOwnProperty(key)) {
-            // console.log("Updates");
-            if (isKeyOf<Institution>(key, selected_ as Institution)) {
+            if (isKeyOf<Institution>(key, selected_)) {
               if (
                 editObj[key] &&
                 selected_.hasOwnProperty(key) &&
                 selected_[key] !== editObj[key]
               ) {
-                // console.log(
-                //   `${key} has changed from ${selected_[key]} to ${editObj[key]}`
-                // );
+                console.log(
+                  `${key} has changed from ${selected_[key]} to ${editObj[key]}`
+                );
                 return true;
               }
             }
@@ -124,7 +111,7 @@ export default function InstitutionView({ params }: { params: any }) {
         }
         // console.log("NO updates");
         return false;
-      })(selected as Institution, instEdit);
+      })(selected, instEdit);
       setInstIsUpdated(userIsUpdated);
     }
   }, [selected, instEdit]);
@@ -135,26 +122,17 @@ export default function InstitutionView({ params }: { params: any }) {
 
     if (!selected) {
       toast.error("No institution selected");
-      return;
+      return router.push("/dashboard/institutions");
     }
 
     //if input error
-
     const inputErrors = {
       nameError_: "",
-      emailError_: "",
       locationError_: "",
-      telError_: "",
     };
 
     if (instEdit.name) {
       inputErrors.nameError_ = nameValidator(instEdit.name);
-    }
-    if (instEdit.email) {
-      inputErrors.emailError_ = emailValidator(instEdit.email);
-    }
-    if (instEdit.tel) {
-      inputErrors.telError_ = telValidator(instEdit.tel);
     }
     if (instEdit.location) {
       inputErrors.locationError_ = nameValidator(instEdit.location);
@@ -170,14 +148,27 @@ export default function InstitutionView({ params }: { params: any }) {
 
     setUIstate("loading");
 
-    // api call
+    // API CALL
     try {
       console.log("editing institution: ", instEdit);
-
       //upload image and retain url
       let logoUrl_: string | null = null;
-      if (instEdit.imageFile) {
-        // console.log("New logo to be uploaded");
+      if (instEdit.logoFile) {
+        const uploadOptions: { replaceTargetUrl: string } | undefined =
+          !selected.logoUrl
+            ? undefined
+            : {
+                replaceTargetUrl: selected.logoUrl,
+              };
+
+        const logoEdgeUpload = await edgestore.publicFiles.upload({
+          file: instEdit.logoFile,
+          options: uploadOptions,
+          // onProgressChange: (progress) => {
+          //   // you can use this to show a progress bar
+          //   console.log(progress);
+          // },
+        });
 
         // upload file using edgestore- edgestore returns:
         // const res: {
@@ -188,26 +179,11 @@ export default function InstitutionView({ params }: { params: any }) {
         //   path: Record<string, never>;
         //   pathOrder: string[];
         // }
-        const uploadOptions: { replaceTargetUrl: string } | undefined =
-          !selected.logoUrl
-            ? undefined
-            : {
-                replaceTargetUrl: selected.logoUrl,
-              };
-
-        const logoEdgeUpload = await edgestore.publicFiles.upload({
-          file: instEdit.imageFile,
-          options: uploadOptions,
-          // onProgressChange: (progress) => {
-          //   // you can use this to show a progress bar
-          //   console.log(progress);
-          // },
-        });
 
         // console.log("edge File - ", logoEdgeUpload);
         logoUrl_ = logoEdgeUpload.url;
         setInstEdit((prev) => {
-          return { ...prev, imageFile: null };
+          return { ...prev, logoFile: null };
         });
         if (!logoUrl_) console.error("image upload failed");
       }
@@ -215,10 +191,8 @@ export default function InstitutionView({ params }: { params: any }) {
       const _fetchBody = {
         id: selected.id,
         name: instEdit.name || undefined,
-        email: instEdit.email || undefined,
         location: instEdit.location || undefined,
         logoUrl: logoUrl_ || undefined,
-        tel: instEdit.tel || undefined,
       };
 
       const fetchBody = Object.fromEntries(
@@ -230,45 +204,33 @@ export default function InstitutionView({ params }: { params: any }) {
         body: JSON.stringify(fetchBody),
       };
 
-      // PUT request using fetch
+      // PATCH request using fetch
       const res = await fetch("/api/dashboard/institution", fetchOptions).then(
         async (res_) => {
           if (res_?.ok) {
             return await res_.json();
           } else {
-            setUIstate("OK");
+            const error_ = `Error ${res_.status}: ${await res_.json()}`;
             console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_?.status] ?? "Unknown error");
-            return;
+            return toast.error(error_);
           }
         }
       );
       if (!res) return;
       //res is truthy
-      if (res.success) {
-        console.log(
-          "SUCCESS: Institution updated\n > ",
-          res.success,
-          "\n.............."
-        );
-        toast.success("Institution updated");
-        await refreshData();
-      } else {
-        console.log(
-          "FAILED: Institution not updated\n > ",
-          res,
-          "\n.............."
-        );
-        toast.error(res.failed ?? res.error ?? "Unknown error");
-      }
+      console.log(
+        "SUCCESS: Institution updated\n > ",
+        res.data,
+        "\n.............."
+      );
+      toast.success("Institution updated");
+      await refreshData();
+    } catch (error: any) {
+      const error_ = `Error 6bg: ${error.message || error}`;
+      console.log(error_);
+      toast.error("Error: Institution NOT updated");
+    } finally {
       setUIstate("OK");
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log("fetch failed:", error.message);
-      } else {
-        console.log("fetch failed:", error);
-      }
-      setUIstate("Error: Institution NOT updated");
     }
   }
 
@@ -284,58 +246,42 @@ export default function InstitutionView({ params }: { params: any }) {
 
     // api call
     try {
-      console.log("INFO: toggling institution");
-
+      console.log("INFO: toggling status of institution");
       const newStatus = selected.status === "INACTIVE" ? "ACTIVE" : "INACTIVE";
       const fetchBody = {
         id: selected.id,
         status: newStatus,
       };
-
       const fetchOptions = {
         method: "PATCH",
         body: JSON.stringify(fetchBody),
       };
-
       // PATCH request using fetch
       const res = await fetch("/api/dashboard/institution", fetchOptions).then(
         async (res_) => {
           if (res_?.ok) {
             return await res_.json();
           } else {
-            setUIstate("OK");
+            const error_ = `Error ${res_.status}: ${await res_.json()}`;
             console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_?.status] ?? "Unknown error");
-            return;
+            return toast.error(error_);
           }
         }
       );
       if (!res) return;
       //res is truthy
-      if (res.success) {
-        console.log(
-          "SUCCESS: Institution updated\n > ",
-          res.success,
-          "\n.............."
-        );
-        toast.success("Institution updated");
-        await refreshData();
-      } else {
-        console.log(
-          "FAILED: Institution not updated\n > ",
-          res,
-          "\n.............."
-        );
-        toast.error(res.failed ?? res.error ?? "Unknown error");
-      }
+      console.log(
+        "SUCCESS: Institution deactivated\n > ",
+        res,
+        "\n.............."
+      );
+      toast.success("Institution updated");
+      await refreshData();
+    } catch (error: any) {
+      const error_ = error.message || "Unknown error";
+      console.error("fetch failed: ", error_);
+    } finally {
       setUIstate("OK");
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log("fetch failed:", error.message);
-      } else {
-        console.log("fetch failed:", error);
-      }
-      setUIstate("Error: Institution NOT updated");
     }
   }
 
@@ -354,28 +300,26 @@ export default function InstitutionView({ params }: { params: any }) {
       }),
     };
     setUIstate("loading");
-    // DELETE api-call using fetch
-    const res = await fetch("/api/dashboard/institution", fetchOptions).then(
-      async (res_) => {
-        if (res_?.ok) {
-          return await res_.json();
-        } else {
-          setUIstate("OK");
-          console.log(`ERROR: ` + JSON.stringify(res_));
-          toast.error(httpCodes[res_?.status] ?? "Unknown error");
-          return;
+    try {
+      // DELETE api-call using fetch
+      const res = await fetch("/api/dashboard/institution", fetchOptions).then(
+        async (res_) => {
+          if (res_?.ok) {
+            return await res_.json();
+          } else {
+            const error_ = `Error ${res_.status}: ${await res_.json()}`;
+            console.log(`ERROR: `, JSON.stringify(res_));
+            toast.error(error_);
+            return null;
+          }
         }
-      }
-    );
-
-    if (!res) return;
-
-    if (res.success) {
-      console.log(
-        "SUCCESS: Institution deleted\n > ",
-        res.success,
-        "\n.............."
       );
+
+      if (!res) return;
+
+      console.log("RESPONSE", res);
+
+      console.log("SUCCESS: Institution deleted\n > ", res, "\n..............");
 
       //if had a logo
       if (selected.logoUrl) {
@@ -386,15 +330,13 @@ export default function InstitutionView({ params }: { params: any }) {
       toast.success("Institution deleted");
       await refreshData();
       router.replace(`/dashboard/institutions/`);
-    } else {
-      console.log(
-        "FAILED: Institution not deleted\n > ",
-        res,
-        "\n.............."
-      );
-      toast.error(res.failed ?? res.error ?? "Unknown error");
+    } catch (err: any) {
+      const error_ = `Error 8bh: ${err.message || err}`;
+      console.error(error_);
+      toast.error("Error: Institution NOT updated");
+    } finally {
+      setUIstate("OK");
     }
-    setUIstate("OK");
   }
 
   //render
@@ -403,7 +345,7 @@ export default function InstitutionView({ params }: { params: any }) {
       <CardHeader>
         <CardTitle className="font-light">
           <span>{selected?.name}</span>
-          {userSession?.user?.role === "system_admin" && (
+          {userSession?.user?.role === "system" && (
             <Button
               variant="ghost"
               className={`ml-4 ${
@@ -417,9 +359,10 @@ export default function InstitutionView({ params }: { params: any }) {
             </Button>
           )}
         </CardTitle>
-        {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
-          {selected?.name}
-        </CardDescription> */}
+
+        <CardDescription className="text-lg text-muted-foreground font-semibold">
+          Details of the New Institution
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form className=" flex flex-col gap-4">
@@ -437,24 +380,6 @@ export default function InstitutionView({ params }: { params: any }) {
                 setInstEdit((prev) => ({
                   ...prev,
                   name: e.target.value,
-                }))
-              }
-            />
-          </div>
-          <div id="emailWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
-              Email *
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="official email"
-              className="placeholder:italic"
-              value={instEdit.email || selected?.email}
-              onChange={(e) =>
-                setInstEdit((prev) => ({
-                  ...prev,
-                  email: e.target.value,
                 }))
               }
             />
@@ -480,29 +405,11 @@ export default function InstitutionView({ params }: { params: any }) {
               }
             />
           </div>
-          <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="institutionnName" className="opacity-75">
-              Phone No.
-            </Label>
-            <Input
-              type="phone"
-              id="phone"
-              placeholder="official Phone No."
-              className="placeholder:italic"
-              value={instEdit.tel || (selected?.tel as string)}
-              onChange={(e) =>
-                setInstEdit((prev) => ({
-                  ...prev,
-                  tel: e.target.value,
-                }))
-              }
-            />
-          </div>
           <div id="dpWrapper" className="py-4">
             <InputImage
               _photo={selected?.logoUrl ?? ""}
               setPhoto={async (_imageFile: File | null) => {
-                setInstEdit((prev_) => ({ ...prev_, imageFile: _imageFile }));
+                setInstEdit((prev_) => ({ ...prev_, logoFile: _imageFile }));
               }}
             />
           </div>
@@ -522,13 +429,7 @@ export default function InstitutionView({ params }: { params: any }) {
             <Button
               variant="destructive"
               onClick={handleDeleteInstit}
-              disabled={
-                !selected ||
-                !institutions.some(
-                  (inst: Institution) => inst.name === "Lisa"
-                ) ||
-                selected?.name === "Lisa"
-              }
+              disabled={!selected}
             >
               Delete Institution
             </Button>

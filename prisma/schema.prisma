@@ -17,7 +17,6 @@ model Institution {
   id       String  @id @default(uuid())
   name     String  @unique
   location String?
-  tel      String?
   logoUrl  String?
   status   status  @default(DORMANT)
 

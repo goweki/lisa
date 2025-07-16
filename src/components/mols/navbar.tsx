@@ -23,10 +23,9 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
+import { SessionUser } from "@/types/next-auth";
 
-export default function Navbar(props: {
-  user?: { name: string; systemAdmin: boolean; role: string };
-}) {
+export default function Navbar(props: { user?: SessionUser }) {
   const pathname = usePathname();
   return (
     <nav
@@ -143,9 +142,7 @@ const menuItemsOptions: { [key: string]: any } = {
 };
 
 // Nav Menu
-function NavigationMenuComponent(props: {
-  user?: { name: string; systemAdmin: boolean; role: string };
-}) {
+function NavigationMenuComponent(props: { user?: SessionUser }) {
   //
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean); // Remove empty strings

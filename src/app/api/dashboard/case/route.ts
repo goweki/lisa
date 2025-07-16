@@ -1,28 +1,25 @@
 import prisma from "@/lib/prisma/prisma";
 import { withAuthAdmin, withAuthGeneral } from "@/lib/authRouteWrappers";
-import { UserType } from "@/types/models";
 import { NextRequest } from "next/server";
-import { User } from "@/lib/prisma/types";
+import { User } from "@/types/models";
+import { SessionUser } from "@/types/next-auth";
 
 export const POST = withAuthGeneral(postHandler);
 export const PUT = withAuthAdmin(putHandler);
 export const DELETE = withAuthAdmin(deleteHandler);
 
-async function postHandler(
-  request: Request | NextRequest,
-  user: Partial<User>
-) {
+async function postHandler(request: Request | NextRequest, user: SessionUser) {
   // request body
   const doc = await request.json();
   console.log("POST - api/dashboard/case: ", doc);
 
   const { institutionID, ...doc_ } = doc;
 
-  // if (user.role !== "system_admin") {
-  //   return Response.json("You do not have permission to update institution", {
-  //     status: 403,
-  //   });
-  // }
+  if (user.role !== "system") {
+    return Response.json("You do not have permission to update institution", {
+      status: 403,
+    });
+  }
 
   try {
     // insert doc
@@ -43,7 +40,7 @@ async function postHandler(
   }
 }
 
-async function putHandler(request: Request | NextRequest, user: Partial<User>) {
+async function putHandler(request: Request | NextRequest, user: SessionUser) {
   try {
     // request body
     const doc = await request.json();
@@ -70,7 +67,7 @@ async function putHandler(request: Request | NextRequest, user: Partial<User>) {
 
 async function deleteHandler(
   request: Request | NextRequest,
-  user: Partial<User>
+  user: SessionUser
 ) {
   const doc = await request.json();
   const { id } = doc;

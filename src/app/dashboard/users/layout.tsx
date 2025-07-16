@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
-import { User as UserType } from "@/lib/prisma/types";
+import { User } from "@/types/models";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader1 } from "@/components/atoms/loader";
 import toast from "react-hot-toast";
@@ -48,7 +48,7 @@ export default function UsersLayout({
   } = useContext(DataContext);
 
   const [UIstate, setUIstate] = useState("");
-  const [filtUsers, setFiltUsers] = useState<UserType[]>([]);
+  const [filtUsers, setFiltUsers] = useState<User[]>([]);
   const [searchPhrase, setSearchPhrase] = useState({ value: "", error: "" });
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -63,17 +63,23 @@ export default function UsersLayout({
 
   //filter users by searchPhrase
   useEffect(() => {
-    setFiltUsers(
-      users?.filter(
-        ({ name, email }: { name: string; email: string }) =>
-          name.toLowerCase().includes(searchPhrase.value?.toLowerCase()) ||
-          email?.toLowerCase().includes(searchPhrase.value?.toLowerCase())
-      )
-    );
+    setFiltUsers(() => {
+      const insts_ = users?.filter(({ names, email }) => {
+        const search = searchPhrase.value?.toLowerCase() ?? "";
+        return (
+          names.toLowerCase().includes(search) ||
+          (email?.toLowerCase()?.includes(search) ?? false)
+        );
+      });
+      return insts_ || [];
+    });
   }, [searchPhrase, users]);
 
   //if not admin, re-route to dashboard
-  if (!userSession?.user?.role.includes("admin")) {
+  if (
+    userSession?.user?.role !== "system" &&
+    userSession?.user?.role !== "admin"
+  ) {
     return router.push("/dashboard");
   }
 
@@ -103,14 +109,16 @@ export default function UsersLayout({
           <div className="flex flex-col space-y-1">
             <Link
               className={`p-2 rounded ${
-                !userId ? "bg-primary/20" : "hover:bg-primary/10"
+                !userId
+                  ? "bg-primary/20 border border-1 border-primary"
+                  : "hover:bg-primary/10"
               }`}
               href="/dashboard/users"
             >
               + create
             </Link>
             {filtUsers.length > 0 &&
-              filtUsers.map(({ id, name, role, institutions }) => (
+              filtUsers.map(({ id, names, status, institutions }) => (
                 // <Link
                 //   key={id}
                 //   // className="p-2 hover:bg-muted/25"
@@ -125,13 +133,15 @@ export default function UsersLayout({
                   //   userId === id ? "bg-primary" : ""
                   // }`}
                   className={`p-2 rounded ${
-                    userId === id ? "bg-primary/20" : "hover:bg-primary/10"
+                    userId === id
+                      ? "bg-primary/20 border border-1 border-primary"
+                      : "hover:bg-primary/10"
                   }`}
                   href={`/dashboard/users/${id}`}
                 >
-                  <div>{name}</div>
+                  <div>{names}</div>
                   <div className={`hidden text-sm md:inline-block`}>
-                    {role} -
+                    {status} -
                     <span className="ml-2 italic">
                       {institutions?.map(({ name }) => name).join(", ")}
                     </span>

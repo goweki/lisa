@@ -29,9 +29,9 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
-import { User, Institution, Case } from "@/lib/prisma/types";
+import { User, Institution, Case } from "@/types/models";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
-import { TemplateObj } from "@/lib/types";
+import { TemplateObj } from "@/types/custom";
 import {
   Card,
   CardTitle,
@@ -43,10 +43,24 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { InputImage } from "./_components/inputs";
+import { InputImage } from "@/components/atoms/inputs";
 import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
+
+interface Assets {
+  caseTypes: TemplateObj[];
+  institutions: TemplateObj[];
+  clientParties: string[];
+  assignees: TemplateObj[];
+}
+
+const default_Assets: Assets = {
+  caseTypes: [],
+  institutions: [],
+  clientParties: [],
+  assignees: [],
+};
 
 export default function TaskView({ params }: { params: any }) {
   const { caseID } = params;
@@ -60,17 +74,7 @@ export default function TaskView({ params }: { params: any }) {
   const [selected, setSelected] = useState<Case>();
   const [caseEdit, setCaseEdit] = useState<Partial<Case>>({});
   const [caseIsUpdated, setCaseIsUpdated] = useState(false);
-  const [options, setOptions] = useState<{
-    caseTypes: TemplateObj[];
-    institutions: TemplateObj[];
-    clientParties: string[];
-    assignees: TemplateObj[];
-  }>({
-    caseTypes: [],
-    institutions: [],
-    clientParties: [],
-    assignees: [],
-  });
+  const [options, setOptions] = useState<Assets>(default_Assets);
   const [UIstate, setUIstate] = useState("");
 
   // setSelected, get case by caseID and update selected
@@ -97,9 +101,11 @@ export default function TaskView({ params }: { params: any }) {
 
   // update Institutions options
   useEffect(() => {
+    if (!institutions || !institutions.length || institutions.length < 1)
+      return;
     setOptions((prev) => ({
       ...prev,
-      institutions: institutions.map(
+      institutions: institutions?.map(
         ({ id, name }: { id: string; name: string }) => ({
           value: id,
           label: name,
@@ -112,10 +118,13 @@ export default function TaskView({ params }: { params: any }) {
   useEffect(() => {
     if (!(caseEdit.caseTypeID || selected?.caseTypeID)) return;
     // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
-    const { primaryParty, secondaryParty } = caseTypes.find(
+    const foundCaseType_ = caseTypes.find(
       ({ id }: { id: string }) =>
         id === (caseEdit.caseTypeID || selected?.caseTypeID)
     );
+
+    if (!foundCaseType_) return;
+    const { primaryParty, secondaryParty } = foundCaseType_;
 
     setOptions((prev) => ({
       ...prev,
@@ -125,14 +134,16 @@ export default function TaskView({ params }: { params: any }) {
 
   // update assignees options
   useEffect(() => {
+    if (!users || users.length < 1) return;
+    const users_ = users.map(
+      ({ id, names }: { id: string; names: string }) => ({
+        value: id,
+        label: `${names}`,
+      })
+    );
     setOptions((prev) => ({
       ...prev,
-      assignees: users.map(
-        ({ id, name, role }: { id: string; name: string; role: string }) => ({
-          value: id,
-          label: `${role}: ${name}`,
-        })
-      ),
+      assignees: users_,
     }));
   }, [users]);
 
@@ -276,8 +287,12 @@ export default function TaskView({ params }: { params: any }) {
           if (res_.ok) {
             return await res_.json();
           } else {
-            console.log(`ERROR: ` + JSON.stringify(res_));
-            toast.error("OOPS: case not updated");
+            const error_ =
+              (await res_.json()).message ||
+              `ERROR: ` + res_.status + "Unknown error";
+            console.error(error_);
+            setUIstate(error_);
+            return null;
           }
         }
       );
@@ -334,10 +349,12 @@ export default function TaskView({ params }: { params: any }) {
         if (res_?.ok) {
           return await res_.json();
         } else {
-          setUIstate("OK");
-          console.log(`ERROR: ` + JSON.stringify(res_));
-          toast.error(httpCodes[res_?.status] ?? "Unknown error");
-          return;
+          const error_ =
+            (await res_.json()).message ||
+            `ERROR: ` + res_.status + "Unknown error";
+          console.error(error_);
+          setUIstate(error_);
+          return null;
         }
       }
     );
