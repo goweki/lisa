@@ -46,7 +46,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InputImage } from "@/components/atoms/inputs";
-import MultipleSelector, {
+import MultiSelect, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
 
@@ -272,9 +272,9 @@ export default function UserView({ params }: { params: any }) {
     }
   }
 
-  // handle onSelect Institutions
-  function onSelectInstitutions(selections: MultiSelectOption[]) {
-    console.log("Changed D1: ", selections);
+  // handle Institutions edits
+  function updateSelectionUserInstits(selections: MultiSelectOption[]) {
+    // console.log("Changed D1: ", selections);
     setUserEdit((prev) => {
       return {
         ...prev,
@@ -420,28 +420,17 @@ export default function UserView({ params }: { params: any }) {
             <Label htmlFor="roleWrapper" className="opacity-75">
               Institutions *
             </Label>
-            <MultipleSelector
-              value={
-                userEdit.institutionIDs?.forEach((_id: string) => {
-                  const inst = institutions?.find(
-                    ({ id }: { id: string }) => id === _id
-                  );
-                  if (inst && inst.id && inst.name)
-                    return {
-                      value: inst.id,
-                      label: inst.name,
-                    };
-                }) || []
-              }
-              onChange={(newVals) => onSelectInstitutions(newVals)}
-              defaultOptions={
-                institutions?.map(
-                  ({ id, name }: { id: string; name: string }) => ({
-                    value: id,
-                    label: name,
-                  })
-                ) || []
-              }
+            <MultiSelect
+              // value={instOptions}
+              onChange={updateSelectionUserInstits}
+              //
+              defaultOptions={institutions?.map(
+                ({ id, name }: { id: string; name: string }) => ({
+                  value: id,
+                  label: name,
+                })
+              )}
+              //
               placeholder="Select Institutions..."
             />
           </div>
