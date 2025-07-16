@@ -3,10 +3,11 @@ import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
 import { User } from "@/types/models";
 import { Prisma } from "@prisma/client";
+import { SessionUser } from "@/types/next-auth";
 
 export const revalidate = 6;
 
-async function getHandler(req: Request, user: Partial<User>) {
+async function getHandler(req: Request, user: SessionUser) {
   try {
     const isSysAdmin = !!user.systemAdmin;
 

@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "@/app/dashboard/providers";
-import { Case } from "@/lib/prisma/types";
+import { Case } from "@/types/models";
 import { ComboboxSearchable } from "@/components/atoms/inputs";
 import { httpCodes } from "@/lib/configs";
 import { DateTimePicker } from "@/components/ui/datetime-picker";

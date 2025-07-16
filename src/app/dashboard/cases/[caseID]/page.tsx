@@ -29,9 +29,9 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
-import { User, Institution, Case, Task } from "@/lib/prisma/types";
+import { User, Institution, Case, Task } from "@/types/models";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
-import { TemplateObj } from "@/lib/types";
+import { TemplateObj } from "@/types/custom";
 import {
   Card,
   CardTitle,
@@ -52,7 +52,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { InputImage } from "./_components/inputs";
+import { InputImage } from "@/components/atoms/inputs";
 import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
@@ -74,11 +74,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import TaskModal from "@/components/mols/taskModals";
-import { Task as TaskType } from "@/lib/prisma/types";
+import { Task as TaskType } from "@/types/models";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import AssignmentRequestComponent from "./_components/assigneeComponent";
 import { stat } from "fs";
 import { handleTaskCreation } from "../../tasks/_actions/add-task";
+import { AssigneeRequest } from "@prisma/client";
 
 export default function CaseView({ params }: { params: { caseID: string } }) {
   const { caseID } = params;
@@ -130,14 +131,15 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
 
   // update Institutions options
   useEffect(() => {
+    const institutionsOptions =
+      institutions?.map(({ id, name }: { id: string; name: string }) => ({
+        value: id,
+        label: name,
+      })) || [];
+
     setOptions((prev) => ({
       ...prev,
-      institutions: institutions.map(
-        ({ id, name }: { id: string; name: string }) => ({
-          value: id,
-          label: name,
-        })
-      ),
+      institutions: institutionsOptions,
     }));
   }, [institutions]);
 
@@ -145,10 +147,15 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
   useEffect(() => {
     if (!(caseEdit.caseTypeID || selected?.caseTypeID)) return;
     // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
-    const { primaryParty, secondaryParty } = caseTypes.find(
+
+    const foundCaseType = caseTypes.find(
       ({ id }: { id: string }) =>
         id === (caseEdit.caseTypeID || selected?.caseTypeID)
     );
+
+    if (!foundCaseType) return;
+
+    const { primaryParty, secondaryParty } = foundCaseType;
 
     setOptions((prev) => ({
       ...prev,
@@ -158,14 +165,16 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
 
   // update staff options
   useEffect(() => {
+    const usersOptions = users.map(
+      ({ id, email, names }: { id: string; email: string; names: string }) => ({
+        value: id,
+        label: `${names}: ${email}`,
+      })
+    );
+
     setOptions((prev) => ({
       ...prev,
-      staff: users.map(
-        ({ id, name, role }: { id: string; name: string; role: string }) => ({
-          value: id,
-          label: `${role}: ${name}`,
-        })
-      ),
+      staff: usersOptions,
     }));
   }, [users]);
 
@@ -551,7 +560,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
             <Label htmlFor="assignee" className="opacity-75">
               Assignee
             </Label>
-            {session?.user?.role.includes("admin") ? (
+            {session?.user?.role?.includes("admin") ? (
               <Select
                 name="assignee"
                 value={caseEdit.userID || (selected.userID as string) || ""}
@@ -576,8 +585,8 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
             ) : (
               <AssignmentRequestComponent
                 assigneeID={selected.userID}
-                pendingRequest={assignmentRequests.find(
-                  (req: Record<string, string>) =>
+                pendingRequest={assignmentRequests?.find(
+                  (req: AssigneeRequest) =>
                     req.caseID === selected.id &&
                     req.assigneeID === session?.user?.id &&
                     req.status === "pending"
@@ -958,8 +967,8 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
                                     task.completedByID
                                       ? "border-emerald-500"
                                       : isDatePassed(task.dueDate)
-                                      ? "border-destructive"
-                                      : "border-border"
+                                        ? "border-destructive"
+                                        : "border-border"
                                   }`}
                                   variant="outline"
                                 >
@@ -1025,7 +1034,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
           </Accordion>
         </form>
       </CardContent>
-      {(session?.user?.role.includes("admin") ||
+      {(session?.user?.role?.includes("admin") ||
         selected.userID === session?.user?.id) && (
         <CardFooter className="border-t px-6 py-4 min-h-20">
           {UIstate === "loading" ? (

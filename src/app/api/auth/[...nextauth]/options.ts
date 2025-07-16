@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
         // Persist role to the token right after signIn
         console.log("user obj - ", user);
         token.id = user.id;
-        token.name = user.names.split(" ")[0];
+        token.name = user.names?.split(" ")[0];
         token.systemAdmin = user.systemAdmin;
         token.photoUrl = user.photoUrl;
         // embed role in token
@@ -118,7 +118,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.systemAdmin = token.systemAdmin as boolean;
         session.user.photoUrl = token.photoUrl as string;
-        session.user.role = token.role as string;
+        session.user.role = token.role as "user" | "system" | "admin";
       }
       // console.log("session here: ", session);
       return session;

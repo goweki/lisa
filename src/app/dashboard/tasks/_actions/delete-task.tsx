@@ -1,5 +1,5 @@
 import { httpCodes } from "@/lib/configs";
-import { Task } from "@/lib/prisma/types";
+import { Task } from "@/types/models";
 
 export const handleTaskDeletion = async (
   _task: Partial<Task>

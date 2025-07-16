@@ -11,7 +11,7 @@ import { CalendarTask, Mode } from "./_components/calendar/calendar-types";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
 import { taskType as taskTypeOptions } from "@prisma/client";
-import { Task } from "@/lib/prisma/types";
+import { Task } from "@/types/models";
 import { handleTaskCreation } from "./_actions/add-task";
 import { handleTaskDeletion } from "./_actions/delete-task";
 import { handleTaskUpdate } from "./_actions/update-task";
@@ -126,7 +126,7 @@ export default function TasksView() {
 
   return (
     <Calendar
-      events={tasks}
+      events={tasks.map((task) => ({ ...task, reminders: [] }))} //CHECKPOINT
       addEvent={addTask}
       updateEvent={updateTask}
       deleteEvent={deleteTask}

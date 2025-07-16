@@ -1,4 +1,5 @@
-import { Task } from "@/lib/prisma/types";
+import { Task } from "@/types/models";
+import { Prisma } from "@prisma/client";
 
 export type CalendarProps = {
   events: CalendarTask[];
@@ -26,7 +27,10 @@ export type CalendarContextType = CalendarProps & {
   selectedTask: CalendarTask | null;
   setSelectedTask: (event: CalendarTask | null) => void;
 };
-export type CalendarTask = Task;
+
+export type CalendarTask = Prisma.TaskGetPayload<{
+  include: { reminders: true };
+}>;
 
 export const calendarModes = ["day", "week", "month"] as const;
 export type Mode = (typeof calendarModes)[number];

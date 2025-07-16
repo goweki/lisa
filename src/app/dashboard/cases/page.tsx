@@ -35,7 +35,7 @@ import { httpCodes } from "@/lib/configs";
 import MultiSelect, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
-import { TemplateObj } from "@/lib/types";
+import { TemplateObj } from "@/types/custom";
 import { Institution } from "@/types/models";
 
 type newCaseType = {

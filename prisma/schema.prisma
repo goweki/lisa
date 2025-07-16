@@ -207,17 +207,18 @@ model AssigneeRequest {
 }
 
 model Task {
-  id            String     @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
   type          taskType
   dueDate       DateTime
   description   String?
-  reminders     Reminder[]
-  documents     Document[]
   completedByID String?
-  completedBy   User?      @relation(fields: [completedByID], references: [id])
+  completedBy   User?    @relation(fields: [completedByID], references: [id])
   caseID        String
-  case          Case       @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  case          Case     @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  reminders Reminder[]
+  documents Document[]
 
   @@map("tasks")
 }

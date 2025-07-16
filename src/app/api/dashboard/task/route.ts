@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma/prisma";
 import { httpCodes } from "@/lib/configs";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
-import { User } from "@/lib/prisma/types";
+import { SessionUser } from "@/types/next-auth";
 
-async function postHandler(request: Request, user: Partial<User>) {
+async function postHandler(request: Request, user: SessionUser) {
   const { caseID, dueDate, ...doc } = await request.json();
   console.log("POST REQUEST: new task: ", doc.name);
   try {
@@ -39,7 +39,7 @@ async function postHandler(request: Request, user: Partial<User>) {
   }
 }
 
-async function patchHandler(request: Request, user: Partial<User>) {
+async function patchHandler(request: Request, user: SessionUser) {
   try {
     // request body
     const { id, ...doc } = await request.json();
@@ -61,7 +61,7 @@ async function patchHandler(request: Request, user: Partial<User>) {
   }
 }
 
-async function deleteHandler(request: Request, user: Partial<User>) {
+async function deleteHandler(request: Request, user: SessionUser) {
   // request body
   const doc = await request.json();
   const { caseID, id } = doc;

@@ -6,10 +6,11 @@ import { NextRequest } from "next/server";
 import { welcomeEmail } from "@/lib/emailRenderer";
 import { InstitutionUser } from "@prisma/client";
 import { User } from "@/types/models";
+import { SessionUser } from "@/types/next-auth";
 
 async function postHandler(
   request: Request | NextRequest,
-  user: Partial<User>,
+  user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
   try {
@@ -92,7 +93,7 @@ async function postHandler(
 
 async function getHandler(
   request: Request | NextRequest,
-  user: Partial<User>,
+  user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
   const url = new URL(request.url);
@@ -129,7 +130,7 @@ async function getHandler(
 
 async function putHandler(
   request: Request | NextRequest,
-  user: Partial<User>,
+  user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
   try {
@@ -160,7 +161,7 @@ async function putHandler(
 
 async function deleteHandler(
   request: Request | NextRequest,
-  user: Partial<User>,
+  user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
   const doc = await request.json();
