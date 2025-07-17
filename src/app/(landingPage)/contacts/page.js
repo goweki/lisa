@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader2 } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 
 export default function ContactsPage() {
@@ -72,7 +72,7 @@ export default function ContactsPage() {
   //render
   return UIstate === "loading" ? (
     <div className="flex flex-col min-h-screen justify-center">
-      <Loader1 />
+      <Loader2 />
     </div>
   ) : (
     <div className="container my-24 mx-auto md:px-6">

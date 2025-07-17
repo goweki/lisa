@@ -30,7 +30,7 @@ export async function createUser(userData: {
         },
       });
       if (_institutionIds.length !== _institutions.length) {
-        throw new Error("You may not be authorized to assign Institution");
+        throw new Error("Invalid institutions found");
       }
       institutionIds = _institutionIds;
     } else if (institutionName) {

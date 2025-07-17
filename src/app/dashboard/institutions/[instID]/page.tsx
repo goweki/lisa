@@ -20,7 +20,7 @@ import {
 import { InputText } from "@/components/atoms/inputs";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import {
   emailValidator,
   locationValidator,
@@ -44,6 +44,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InputImage } from "@/components/atoms/inputs";
 import { status } from "@prisma/client";
+import { Switch } from "@/components/ui/switch";
 
 interface InstitutionEdit {
   name: string;
@@ -242,9 +243,7 @@ export default function InstitutionView({ params }: { params: any }) {
   }
 
   //handleUpdateInstitution
-  async function toggleInstitutionStatus(e: React.MouseEvent<HTMLElement>) {
-    e.preventDefault();
-
+  async function toggleInstitutionStatus(e: boolean) {
     if (!selected) {
       toast.error("No institution selected");
       return;
@@ -271,18 +270,19 @@ export default function InstitutionView({ params }: { params: any }) {
           } else {
             const error_ = `Error ${res_.status}: ${await res_.json()}`;
             console.log(`ERROR: ` + JSON.stringify(res_));
-            return toast.error(error_);
+            toast.error(error_);
+            return;
           }
         }
       );
       if (!res) return;
       //res is truthy
       console.log(
-        "SUCCESS: Institution deactivated\n > ",
+        "SUCCESS: Institution status updated\n > ",
         res,
         "\n.............."
       );
-      toast.success("Institution updated");
+      toast.success("Institution status updated");
       await refreshData();
     } catch (error: any) {
       const error_ = error.message || "Unknown error";
@@ -300,27 +300,27 @@ export default function InstitutionView({ params }: { params: any }) {
     }
     console.log("Deleting inst: \n > ", selected.id);
 
-    //delete logo first
-    try {
-      if (selected.logoUrl) {
-        await edgestore.publicFiles.delete({
-          url: selected.logoUrl,
-        });
-      }
-    } catch (error) {
-      console.error("couldn't delete logo: ", error);
-      throw new Error("failed deleting logo from edgestore");
-    }
-
-    let fetchOptions = {
-      method: "DELETE",
-      body: JSON.stringify({
-        id: selected.id,
-      }),
-    };
     setUIstate("loading");
     try {
+      //delete logo first
+      try {
+        if (selected.logoUrl) {
+          await edgestore.publicFiles.delete({
+            url: selected.logoUrl,
+          });
+        }
+      } catch (error) {
+        console.error("couldn't delete logo: ", error);
+        throw { code: 500 };
+      }
+
       // DELETE api-call using fetch
+      let fetchOptions = {
+        method: "DELETE",
+        body: JSON.stringify({
+          id: selected.id,
+        }),
+      };
       const res = await fetch("/api/dashboard/institution", fetchOptions).then(
         async (res_) => {
           if (res_?.ok) {
@@ -344,9 +344,13 @@ export default function InstitutionView({ params }: { params: any }) {
       await refreshData();
       router.replace(`/dashboard/institutions/`);
     } catch (err: any) {
-      const error_ = `Error 8bh: ${err.message || err}`;
-      console.error(error_);
-      toast.error("Error: Institution NOT updated");
+      console.error("failed to delete institution", err);
+      if (err.code === 500) {
+        toast.error("Server error. try again later");
+      } else {
+        const error_ = `Error 8bh: ${err.message || err}`;
+        toast.error("Error: Institution NOT updated");
+      }
     } finally {
       setUIstate("OK");
     }
@@ -356,20 +360,19 @@ export default function InstitutionView({ params }: { params: any }) {
   return UIstate && selected ? (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        <CardTitle className="font-light">
+        <CardTitle className="font-light flex flex-row">
           <span>{selected?.name}</span>
           {userSession?.user?.role === "system" && (
-            <Button
-              variant="ghost"
-              className={`ml-4 ${
-                selected.status !== "INACTIVE"
-                  ? "text-red-500"
-                  : "text-emerald-500"
-              }`}
-              onClick={toggleInstitutionStatus}
-            >
-              {selected.status === "INACTIVE" ? "activate" : "inactivate"}
-            </Button>
+            <div className="ml-4 px-4 w-fit">
+              {UIstate === "loading" ? (
+                <Loader />
+              ) : (
+                <Switch
+                  checked={selected.status === "ACTIVE"}
+                  onCheckedChange={toggleInstitutionStatus}
+                />
+              )}
+            </div>
           )}
         </CardTitle>
 
@@ -430,7 +433,7 @@ export default function InstitutionView({ params }: { params: any }) {
       </CardContent>
       <CardFooter className="border-t px-6 py-4 min-h-20">
         {UIstate === "loading" ? (
-          <Loader1 />
+          <Loader />
         ) : (
           <div
             className="flex flex-row justify-between w-full items-center"

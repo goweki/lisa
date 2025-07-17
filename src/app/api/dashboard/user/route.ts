@@ -125,7 +125,7 @@ async function getHandler(
   }
 }
 
-async function putHandler(
+async function patchHandler(
   request: Request | NextRequest,
   user: SessionUser,
   institutionUser: InstitutionUser | null
@@ -133,21 +133,36 @@ async function putHandler(
   try {
     // request body
     const doc = await request.json();
-    const { id: userID, ...doc_ } = doc;
-
-    // console.log("PUT REQUEST: updating institution ",id);
-    console.log(`PUT - /api/dashboard/user\n`, doc);
-    return Response.json("TESTING PASSED");
+    console.log(`PATCH - /api/dashboard/user\n`, doc);
     // update doc
+    const { id, institutionIDs: _institutionIds, ...doc_ } = doc;
+    if (_institutionIds) {
+      const _institutions = await prisma.institution.findMany({
+        where: {
+          id: {
+            in: _institutionIds,
+          },
+        },
+      });
+      if (_institutionIds.length !== _institutions.length) {
+        throw new Error("Invalid institutions found");
+      }
+    }
     const updatedUser = await prisma.user.update({
-      where: { id: userID },
+      where: { id },
       data: {
         ...doc_,
+        institutions: {
+          deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
+          create: _institutionIds.map((institutionId: string) => ({
+            institution: { connect: { id: institutionId } },
+          })),
+        },
       },
     });
     console.log(`SUCCESS: user updated`, updatedUser);
     // HTTP response
-    return Response.json("User Updated");
+    return Response.json(updatedUser);
   } catch (err) {
     console.error(`ERROR: user not updated`, err);
     return Response.json("Server error", { status: 500 });
@@ -191,6 +206,6 @@ async function deleteHandler(
 }
 
 export const POST = withAuthAdmin(postHandler);
-export const PUT = withAuthAdmin(putHandler);
+export const PATCH = withAuthAdmin(patchHandler);
 export const DELETE = withAuthAdmin(deleteHandler);
 export const GET = withAuthAdmin(getHandler);

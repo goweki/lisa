@@ -6,7 +6,7 @@ import { createContext, useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { EdgeStoreProvider } from "@/lib/edgestore";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 import { Case, Institution, User } from "@/types/models";
 import { AssigneeRequest, CaseType, Task } from "@prisma/client";
@@ -92,7 +92,7 @@ export default function UserProviders({
   //render
   return UIstate === "loading" || status === "loading" ? (
     <div className="flex flex-col sm:h-[200px] md:h-[300px] lg:h-[400px] justify-center">
-      <Loader1 />
+      <Loader />
     </div>
   ) : UIstate !== "OK" ? (
     <div className="mt-12">

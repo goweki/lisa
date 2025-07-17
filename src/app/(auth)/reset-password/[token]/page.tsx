@@ -10,7 +10,7 @@ import {
   passwordValidator,
 } from "@/helpers/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import { strsMatch } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
 
@@ -131,7 +131,7 @@ export default function ResetPassword({
   }
   // Render
   return !UIstate ? (
-    <Loader1 />
+    <Loader />
   ) : (
     <div className="flex flex-1 flex-col w-full items-center">
       <div className="w-full max-w-md p-4 m-auto divide-y space-y-3 divide-emerald-800">

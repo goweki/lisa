@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import toast from "react-hot-toast";
 import {
   emailValidator,

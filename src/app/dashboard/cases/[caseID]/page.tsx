@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/accordion";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import {
   emailValidator,
   nameValidator,
@@ -1038,7 +1038,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
         selected.userID === session?.user?.id) && (
         <CardFooter className="border-t px-6 py-4 min-h-20">
           {UIstate === "loading" ? (
-            <Loader1 />
+            <Loader />
           ) : (
             <div
               className="flex flex-row justify-between w-full items-center"

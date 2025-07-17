@@ -20,7 +20,7 @@ import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
 import { Case as CaseType, Task } from "@/types/models";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import toast from "react-hot-toast";
 import {
   emailValidator,

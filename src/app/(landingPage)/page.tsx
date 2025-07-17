@@ -6,7 +6,7 @@ import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import { SVGlogoAnimation1 } from "@/components/atoms/svgs";
 import { ReqDemoModal } from "./compo";
 import { useDate } from "@/lib/dateTime";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 
 export default function LandingPage() {
   // states
@@ -23,7 +23,7 @@ export default function LandingPage() {
           </div>
         </div>
         {status === "loading" ? (
-          <Loader1 />
+          <Loader />
         ) : !session ? (
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">

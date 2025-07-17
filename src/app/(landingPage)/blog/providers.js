@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { createContext, useState, useEffect } from "react";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 export const BlogContext = createContext();
 
@@ -34,7 +34,7 @@ export default function BlogProvider({ children }) {
   }, []);
   //render
   return !blogposts ? (
-    <Loader1 />
+    <Loader />
   ) : typeof blogposts == "string" ? (
     <div className="text-center my-auto">
       <p className="text-center">

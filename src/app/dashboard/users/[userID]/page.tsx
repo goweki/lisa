@@ -23,7 +23,7 @@ import {
 } from "@/components/atoms/svgs";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import {
   emailValidator,
   nameValidator,
@@ -57,7 +57,7 @@ interface SelectedEditUser {
   names: string;
   email: string;
   tel: string | null;
-  status?: string;
+  status?: status;
   photoUrl: string | null;
   photoFile?: File | undefined;
 }
@@ -103,10 +103,7 @@ export default function UserView({ params }: { params: any }) {
         " and ",
         newInstIDS_
       );
-      if (
-        newInstIDS_?.length &&
-        !deepEqual(selected?.institutionIDs, newInstIDS_)
-      ) {
+      if (!deepEqual(selected?.institutionIDs, newInstIDS_)) {
         console.log(
           "comparing - ",
           selected?.institutionIDs,
@@ -148,20 +145,26 @@ export default function UserView({ params }: { params: any }) {
         return;
       }
 
-      setSelected({
+      const mapSelectedUser_toState = {
         id: foundUser_.id,
         names: foundUser_.names,
         photoUrl: foundUser_.photoUrl,
         email: foundUser_.email,
         tel: foundUser_.tel,
         status: foundUser_.status,
-        institutionIDs: foundUser_.institutions?.map(({ id }) => id) || [],
-      });
+        institutionIDs:
+          foundUser_.institutions?.map(({ institutionId }) => institutionId) ||
+          [],
+      };
 
+      console.log("found user - ", foundUser_);
+      setSelected(mapSelectedUser_toState);
+
+      // selected?.institutionIDs
       const seletedsInsts = foundUser_.institutions?.map(
         ({ institutionId: institutionId_found }) => {
           const _institution = institutions?.find(
-            ({ id }) => (institutionId_found = id)
+            ({ id }) => institutionId_found === id
           );
           return {
             value: _institution?.id,
@@ -173,7 +176,7 @@ export default function UserView({ params }: { params: any }) {
       setUserInstitutions(seletedsInsts);
     }
     setUIstate("OK");
-  }, [userID]);
+  }, [userID, users]);
 
   //handleUpdateUser
   async function handleUpdateUser(e: React.MouseEvent<HTMLElement>) {
@@ -210,8 +213,6 @@ export default function UserView({ params }: { params: any }) {
 
     // api call
     try {
-      console.log("EDITS: ", userEdit);
-
       // const { email, location, name, photoFile_ } = instEdit;
       //upload image and retain url
       let photoUrl_: string | null = null;
@@ -254,20 +255,19 @@ export default function UserView({ params }: { params: any }) {
       //Updated User
       const updatedUserObj = {
         id: selected.id,
-        name: userEdit.names || selected.names,
-        email: userEdit.email || selected.email,
-        tel: userEdit.tel || selected.tel,
-        institutionIDs: userInstitutions?.map(({ id }) => id),
-        photoUrl: photoUrl_ || selected.photoUrl,
+        name: userEdit.names || undefined,
+        email: userEdit.email || undefined,
+        tel: userEdit.tel || undefined,
+        institutionIDs: userInstitutions?.map(({ value }) => value),
+        photoUrl: photoUrl_ || undefined,
       };
-      console.log("Updated User: ", updatedUserObj);
 
       const fetchOptions = {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(updatedUserObj),
       };
 
-      // PUT request using fetch
+      // PATCH request using fetch
       const res = await fetch("/api/dashboard/user", fetchOptions).then(
         async (res_) => {
           if (res_?.ok) {
@@ -284,27 +284,63 @@ export default function UserView({ params }: { params: any }) {
       );
       if (!res) return;
       //res is truthy
-      if (res.success) {
-        console.log(
-          "SUCCESS: User updated\n > ",
-          res.success,
-          "\n.............."
-        );
-        toast.success("user updated");
-        setUserEdit(default_UserEdit);
-        await refreshData();
-      } else {
-        console.log("FAILED: User not updated\n > ", res, "\n..............");
-        toast.error(res.failed ?? res.error ?? "Unknown error");
-      }
-      setUIstate("OK");
+      console.log("SUCCESS: User updated\n > ", res, "\n..............");
+      toast.success("user updated");
+      setUserEdit(default_UserEdit);
+      await refreshData();
     } catch (error) {
-      if (error instanceof Error) {
-        console.log("fetch failed:", error.message);
-      } else {
-        console.log("fetch failed:", error);
-      }
-      setUIstate("Error: User NOT updated");
+      console.error("fetch failed:", error);
+      toast.error("FAILED to update user. Try again later");
+    } finally {
+      setUIstate("OK");
+    }
+  }
+
+  //handleUpdateInstitution
+  async function toggleUserStatus(e: React.MouseEvent<HTMLElement>) {
+    e.preventDefault();
+
+    if (!selected) {
+      toast.error("No user selected");
+      return;
+    }
+    setUIstate("loading");
+
+    // api call
+    try {
+      console.log("INFO: toggling status of user");
+      const newStatus = selected.status === "INACTIVE" ? "ACTIVE" : "INACTIVE";
+      const fetchBody = {
+        id: selected.id,
+        status: newStatus,
+      };
+      const fetchOptions = {
+        method: "PATCH",
+        body: JSON.stringify(fetchBody),
+      };
+      // PATCH request using fetch
+      const res = await fetch("/api/dashboard/user", fetchOptions).then(
+        async (res_) => {
+          if (res_?.ok) {
+            return await res_.json();
+          } else {
+            const error_ = `Error ${res_.status}: ${await res_.json()}`;
+            console.log(`ERROR: ` + JSON.stringify(res_));
+            toast.error(error_);
+            return null;
+          }
+        }
+      );
+      if (!res) return;
+      //res is truthy
+      console.log("SUCCESS: user status toggled\n > ", res, "\n..............");
+      toast.success("Status updated");
+      await refreshData();
+    } catch (error: any) {
+      const error_ = error.message || "Unknown error";
+      console.error("fetch failed: ", error_);
+    } finally {
+      setUIstate("OK");
     }
   }
 
@@ -365,9 +401,9 @@ export default function UserView({ params }: { params: any }) {
                   ? "text-red-500"
                   : "text-emerald-500"
               }`}
-              onClick={() => null}
+              onClick={toggleUserStatus}
             >
-              inactivate
+              {selected?.status === "INACTIVE" ? "activate" : "deactivate"}
             </Button>
           }
         </CardTitle>
@@ -461,7 +497,7 @@ export default function UserView({ params }: { params: any }) {
       </CardContent>
       <CardFooter className="border-t px-6 py-4 min-h-20">
         {UIstate === "loading" ? (
-          <Loader1 />
+          <Loader />
         ) : (
           <div
             className="flex flex-row justify-between w-full items-center"

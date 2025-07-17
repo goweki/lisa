@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import { SessionProvider } from "next-auth/react";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <SessionProvider>
           {UIstate === "loading" ? (
             <div className="flex flex-col min-h-screen justify-center">
-              <Loader1 />
+              <Loader />
             </div>
           ) : (
             children

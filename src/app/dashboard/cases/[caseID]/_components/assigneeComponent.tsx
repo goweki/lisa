@@ -1,4 +1,3 @@
-import { Loader1 } from "@/components/atoms/loader";
 import { Button } from "@/components/ui/button";
 import { httpCodes } from "@/lib/configs";
 import toast from "react-hot-toast";

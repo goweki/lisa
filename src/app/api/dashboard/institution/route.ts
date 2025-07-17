@@ -60,6 +60,10 @@ async function patchHandler(
   user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
+  const doc = await request.json();
+  console.log("REQUEST: Patch institution", doc);
+  const { id, ...doc_ } = doc;
+
   if (user.role !== "system") {
     return Response.json("You do not have permission to update institution", {
       status: 403,
@@ -67,9 +71,6 @@ async function patchHandler(
   }
 
   try {
-    const doc = await request.json();
-    const { id, ...doc_ } = doc;
-
     const updatedInst = await prisma.institution.update({
       where: { id },
       data: { ...doc_ },
