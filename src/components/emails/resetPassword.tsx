@@ -29,7 +29,7 @@ const ResetPasswordHtml = ({
         <Preview>Reset Password - Lisa</Preview>
         <Container style={container}>
           <Img
-            src={`${BASE_URL}/logo_onLight.svg`}
+            src={`${BASE_URL}/banner_onLight.png`}
             width="235"
             height="100"
             alt="Lisa"
