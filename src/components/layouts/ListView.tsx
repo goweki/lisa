@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader1 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -244,7 +244,7 @@ export default function InstitutionsPage() {
           </CardContent>
           <CardFooter className="border-t px-6 py-4">
             {UIstate === "loading" ? (
-              <Loader1 />
+              <Loader />
             ) : (
               <Button onClick={initializeInstitution}>
                 Create Institution

@@ -148,16 +148,21 @@ async function patchHandler(
         throw new Error("Invalid institutions found");
       }
     }
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: {
-        ...doc_,
-        institutions: {
+
+    const userInstitutionsJoin_ = _institutionIds
+      ? {
           deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
           create: _institutionIds.map((institutionId: string) => ({
             institution: { connect: { id: institutionId } },
           })),
-        },
+        }
+      : undefined;
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        ...doc_,
+        institutions: userInstitutionsJoin_,
       },
     });
     console.log(`SUCCESS: user updated`, updatedUser);

@@ -76,9 +76,15 @@ export default function UserHome() {
       email: user_.email,
       name: user_.names,
       role: user_.email,
-      institutions: user_.institutions
-        ? user_.institutions.map((inst) => inst.name).join(", ")
-        : [],
+      institutions:
+        user_.institutions
+          ?.map((instUser) => {
+            const institution_ = institutions?.find(
+              ({ id }) => id === instUser.institutionId
+            );
+            return institution_?.name;
+          })
+          .join(", ") || [],
     }));
     // casetypes
     const caseTypesBrief = caseTypes.map((_type) => ({

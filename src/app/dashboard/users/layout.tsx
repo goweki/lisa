@@ -37,13 +37,12 @@ export default function UsersLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { data: userSession, status: authStatus } = useSession();
-
   // if (status === "authenticated") {
   //   return <p>Signed in as {session.user.email}</p>;
   // }
 
   const {
-    data: { users },
+    data: { institutions, users },
     refreshData,
   } = useContext(DataContext);
 
@@ -118,36 +117,34 @@ export default function UsersLayout({
               + create
             </Link>
             {filtUsers.length > 0 &&
-              filtUsers.map(({ id, names, status, institutions }) => (
-                // <Link
-                //   key={id}
-                //   // className="p-2 hover:bg-muted/25"
-                //   className={`p-2 ${userId === id ? "bg-muted/50" : ""}`}
-                //   href={`/dashboard/users/${id}`}
-                // >
-                //   {name}
-                // </Link>
-                <Link
-                  key={id}
-                  // className={`p-2 hover:bg-primary ${
-                  //   userId === id ? "bg-primary" : ""
-                  // }`}
-                  className={`p-2 rounded ${
-                    userId === id
-                      ? "bg-primary/20 border border-1 border-primary"
-                      : "hover:bg-primary/10"
-                  }`}
-                  href={`/dashboard/users/${id}`}
-                >
-                  <div>{names}</div>
-                  <div className={`hidden text-sm md:inline-block`}>
-                    {status} -
-                    <span className="ml-2 italic">
-                      {institutions?.map(({ name }) => name).join(", ")}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+              filtUsers.map(
+                ({ id, names, status, institutions: userInsts }) => (
+                  <Link
+                    key={id}
+                    className={`p-2 rounded ${
+                      userId === id
+                        ? "bg-primary/20 border border-1 border-primary"
+                        : "hover:bg-primary/10"
+                    }`}
+                    href={`/dashboard/users/${id}`}
+                  >
+                    <div>{names}</div>
+                    <div className={`hidden text-sm md:inline-block`}>
+                      {status} -
+                      <span className="ml-2 italic">
+                        {userInsts
+                          ?.map(({ institutionId }) => {
+                            const institution_ = institutions?.find(
+                              ({ id }) => id === institutionId
+                            );
+                            return institution_?.name;
+                          })
+                          .join(", ")}
+                      </span>
+                    </div>
+                  </Link>
+                )
+              )}
           </div>
         </nav>
 

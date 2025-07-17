@@ -51,6 +51,7 @@ import MultiSelect, {
   Option,
 } from "@/components/atoms/multiSelect";
 import { deepEqual } from "@/helpers/dataHandlers";
+import { Switch } from "@/components/ui/switch";
 
 interface SelectedEditUser {
   id?: string;
@@ -78,6 +79,8 @@ export default function UserView({ params }: { params: any }) {
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
+  const { data: userSession, status: authStatus } = useSession();
+
   const [selected, setSelected] = useState<
     SelectedEditUser & { institutionIDs: string[] }
   >();
@@ -297,9 +300,7 @@ export default function UserView({ params }: { params: any }) {
   }
 
   //handleUpdateInstitution
-  async function toggleUserStatus(e: React.MouseEvent<HTMLElement>) {
-    e.preventDefault();
-
+  async function toggleUserStatus(e: boolean) {
     if (!selected) {
       toast.error("No user selected");
       return;
@@ -334,7 +335,7 @@ export default function UserView({ params }: { params: any }) {
       if (!res) return;
       //res is truthy
       console.log("SUCCESS: user status toggled\n > ", res, "\n..............");
-      toast.success("Status updated");
+      toast.success("User Status updated");
       await refreshData();
     } catch (error: any) {
       const error_ = error.message || "Unknown error";
@@ -391,21 +392,20 @@ export default function UserView({ params }: { params: any }) {
   return !UIstate ? null : (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        <CardTitle className="font-light">
+        <CardTitle className="font-light flex flex-row">
           <span>{selected?.names}</span>
-          {
-            <Button
-              variant="ghost"
-              className={`ml-4 ${
-                selected?.status !== "INACTIVE"
-                  ? "text-red-500"
-                  : "text-emerald-500"
-              }`}
-              onClick={toggleUserStatus}
-            >
-              {selected?.status === "INACTIVE" ? "activate" : "deactivate"}
-            </Button>
-          }
+          {userSession?.user?.role === "system" && (
+            <div className="ml-4 px-4 w-fit">
+              {UIstate === "loading" ? (
+                <Loader />
+              ) : (
+                <Switch
+                  checked={selected?.status === "ACTIVE"}
+                  onCheckedChange={toggleUserStatus}
+                />
+              )}
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>

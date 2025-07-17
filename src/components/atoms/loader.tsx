@@ -13,7 +13,6 @@ export function Loader({ className }: { className?: string }) {
         ${className || ""}
       `}
     >
-      {/* Individual dots with animation delays */}
       <div className="animate-[loader_0.6s_infinite_alternate]"></div>
       <div className="animate-[loader_0.6s_infinite_alternate] delay-100"></div>
       <div className="animate-[loader_0.6s_infinite_alternate] delay-300"></div>
