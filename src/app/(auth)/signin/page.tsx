@@ -22,7 +22,7 @@ export default function SigninPage() {
   const [UIstate, setUIstate] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   // onMount
   useEffect(() => {
     if (searchParams.has("error")) {
