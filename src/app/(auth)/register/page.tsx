@@ -14,6 +14,7 @@ import {
 import { ComboboxSearchable, InputText } from "@/components/atoms/inputs";
 import {
   emailValidator,
+  firmNameValidator,
   nameValidator,
   passwordValidator,
 } from "@/helpers/inputValidators";
@@ -63,7 +64,7 @@ export default function RegisterPage() {
     // validate inputs: email & password
     const emailError_ = emailValidator(email.value);
     const namesError_ = nameValidator(names.value);
-    const instNameError_ = nameValidator(firm.value);
+    const instNameError_ = firmNameValidator(firm.value);
 
     if (emailError_ || namesError_ || instNameError_) {
       if (emailError_) setEmail({ ...email, error: emailError_ });
@@ -96,10 +97,10 @@ export default function RegisterPage() {
           return await res_.json();
         } else {
           const error_ =
-            (await res_.json()).message ||
-            `ERROR: ` + res_.status + "Unknown error";
-          console.error(error_);
-          setUIstate(error_);
+            (await res_.json()) ||
+            `error` + res_.status + " - Unknown error (A7B)";
+          toast.error(error_);
+          setUIstate("OK");
           return null;
         }
       }

@@ -16,15 +16,12 @@ export async function POST(request: Request) {
       where: { email: newUser.email },
     });
     if (emailExists)
-      return Response.json({ message: "User already exists" }, { status: 409 });
+      return Response.json("Email already in use", { status: 409 });
     const institutionExists = await prisma.institution.findUnique({
       where: { name: newUser.institutionName },
     });
     if (institutionExists)
-      return Response.json(
-        { message: "Institution already exists" },
-        { status: 409 }
-      );
+      return Response.json("Institution Name already exists", { status: 409 });
 
     //add to db
     const newRegistration = await createUser({
@@ -58,12 +55,12 @@ export async function POST(request: Request) {
     }
 
     console.log("Registration successful");
-    return Response.json({
-      message: "Registration successful. Check email for activation link",
-    });
+    return Response.json(
+      "Registration successful. Check email for activation link"
+    );
   } catch (err: any) {
     console.error("ERROR in route: /api/auth/register >", err);
-    return Response.json({ message: "Registration failed" }, { status: 500 });
+    return Response.json("Registration failed", { status: 500 });
   }
 }
 

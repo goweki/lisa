@@ -80,3 +80,47 @@ export function telValidator(tel: string): string {
     return "Sorry, we only support KENYAN phone numbers";
   return "";
 }
+
+/**
+ * Validates a law firm name.
+ * A valid law firm name must:
+ * - Not be empty
+ * - Have more than one word (contain at least one space)
+ * - Contain only letters, spaces, periods, ampersands, and commas
+ *
+ * @param {string} name - The law firm name string to validate.
+ * @returns {string} - An error message if invalid, otherwise an empty string.
+ *
+ * @example
+ * lawFirmNameValidator("Smith & Jones Law"); // ""
+ * lawFirmNameValidator("Legal Inc.");       // ""
+ * lawFirmNameValidator("Solo");             // "Law firm name must contain more than one word"
+ * lawFirmNameValidator("Smith@Law");        // "Law firm name contains invalid characters"
+ * lawFirmNameValidator("   ");              // "Law firm name can't be empty"
+ */
+export function firmNameValidator(name: string): string {
+  // Regular expression to allow letters, spaces, periods (.), ampersands (&), and commas (,)
+  // The regex also implicitly handles the "more than one word" by checking for allowed characters
+  // and we'll explicitly check for spaces to ensure multiple words.
+  const NAME_REGEX = /^[a-zA-Z0-9\s.,&'-]+$/; // Added 0-9 for numbers, and hyphen/apostrophe for flexibility
+
+  const trimmedName = name.trim();
+
+  // 1. Check if the name is empty
+  if (!trimmedName) {
+    return "Law firm name can't be empty";
+  }
+
+  // 2. Check if the name has more than one word (contains at least one space)
+  // This is a direct interpretation of "more than one word".
+  if (!trimmedName.includes(" ")) {
+    return "Law firm name must contain more than one word";
+  }
+
+  // 3. Check for allowed characters
+  if (!NAME_REGEX.test(trimmedName)) {
+    return "Law firm name contains invalid characters";
+  }
+
+  return ""; // Name is valid
+}
