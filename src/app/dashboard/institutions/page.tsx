@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   emailValidator,
+  locationValidator,
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
@@ -57,6 +58,8 @@ export default function InstitutionsPage() {
   async function initializeInstitution(e: React.MouseEvent<HTMLElement>) {
     e.preventDefault();
 
+    console.log(`new institution - 1`, newInstitution.name.value);
+
     const nameError_ = nameValidator(newInstitution.name.value);
     if (nameError_) {
       setNewInstitution((prev) => ({
@@ -69,7 +72,8 @@ export default function InstitutionsPage() {
       toast.error(nameError_);
       return;
     }
-    const locationError_ = nameValidator(newInstitution.location.value);
+    console.log(`new institution - 2: `, newInstitution.location.value);
+    const locationError_ = locationValidator(newInstitution.location.value);
     if (locationError_) {
       setNewInstitution((prev) => ({
         ...prev,
@@ -82,7 +86,7 @@ export default function InstitutionsPage() {
       return;
     }
 
-    console.log("editing institution: ", newInstitution);
+    console.log("initializing institution: ", newInstitution);
     setUIstate("loading");
 
     try {

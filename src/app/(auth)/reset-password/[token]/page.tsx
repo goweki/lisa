@@ -87,7 +87,8 @@ export default function ResetPassword({
           error: "Passwords dont match",
         }));
       }
-      return;
+
+      return setUIstate("OK");
     }
     // if valid fields
     try {

@@ -36,9 +36,10 @@ import MultiSelect, {
 } from "@/components/atoms/multiSelect";
 import { TemplateObj } from "@/types/custom";
 import { userRole as userRoles } from "@prisma/client";
+import parsePhoneNumber from "libphonenumber-js";
 
 type newUserType = {
-  name: TemplateObj;
+  names: TemplateObj;
   email: TemplateObj;
   role: string;
   tel: TemplateObj;
@@ -46,7 +47,7 @@ type newUserType = {
 };
 
 const _defaultUser: newUserType = {
-  name: { value: "", error: "" },
+  names: { value: "", error: "" },
   email: { value: "", error: "" },
   role: "lawyer",
   tel: { value: "", error: "" },
@@ -66,7 +67,7 @@ export default function UsersPage() {
 
   // handle Institutions edits
   function updateSelectionUserInstits(selections: MultiSelectOption[]) {
-    // console.log("Changed D1: ", selections);
+    // console.log("Changed selection: ", selections);
     setNewUser((prev) => {
       return {
         ...prev,
@@ -77,34 +78,40 @@ export default function UsersPage() {
 
   //handle user initialization
   async function initializeUser(e: React.MouseEvent<HTMLElement>) {
-    // validate
-    // if (session.user.role !== "admin") {
-    //   toast.error("User validation failed");
-    //   return;
-    // }
-    const inputErrors_ = {
-      tel: telValidator(newUser.tel.value),
-      email: emailValidator(newUser.email.value),
-      name: nameValidator(newUser.name.value),
-    };
-    //
-    const errors_ = Object.values(inputErrors_).filter(Boolean);
-    if (errors_.length > 0) {
-      errors_.forEach((error) => {
-        toast.error(error);
-      });
+    const nameError_ = nameValidator(newUser.names.value);
+    if (nameError_) {
+      setNewUser((prev) => ({
+        ...prev,
+        names: {
+          ...prev.names,
+          error: nameError_,
+        },
+      }));
+      toast.error(nameError_);
       return;
     }
-    //
+
+    const emailError_ = emailValidator(newUser.email.value);
+    if (emailError_) {
+      setNewUser((prev) => ({
+        ...prev,
+        email: {
+          ...prev.email,
+          error: emailError_,
+        },
+      }));
+      toast.error(emailError_);
+      return;
+    }
+
     if (newUser.institutionIds.length === 0) {
       toast.error("No institution assigned!");
       return;
     }
     //new user obj
     const body_ = {
-      name: newUser.name.value,
+      names: newUser.names.value,
       email: newUser.email.value,
-      role: newUser.role || null,
       tel: newUser.tel.value || null,
       institutionIds: newUser.institutionIds,
     };
@@ -125,42 +132,32 @@ export default function UsersPage() {
             return await res_.json();
           } else {
             const error_ =
-              (await res_.json()).message ||
-              `ERROR: ` + res_.status + "Unknown error";
+              (await res_.json()) || `ERROR: ` + res_.status + "-Unknown error";
             console.error(error_);
-            setUIstate(error_);
+            toast.error(error_);
             return null;
           }
         }
       );
-      if (!response) return;
-      // response is truthy
-      if (response.success) {
-        console.log(
-          "SUCCESS: user created\n > ",
-          response.success.email,
-          "\n.............."
-        );
-        toast.success("User created!");
-        await refreshData();
-        return router.push(`/dashboard/users/${response.success.id}`);
-      } else {
-        console.log(
-          "FAILED: User not created\n > ",
-          response,
-          "\n.............."
-        );
-        toast.error(response.failed ?? response.error ?? "Unknown error");
+      if (!response) {
         setUIstate("OK");
+        return;
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("User initialization failed:", error.message);
-      } else {
-        console.error("User initialization failed:", error);
-      }
-      // setUIstate("Error: Institution was not initialized");
-      toast.error("User NOT initialized");
+      // response is truthy
+
+      console.log(
+        "SUCCESS: user created\n > ",
+        response.email,
+        "\n.............."
+      );
+      toast.success("User created!", response);
+      await refreshData();
+      router.push(`/dashboard/users/${response.id}`);
+    } catch (error: any) {
+      const error_ = error.message;
+      console.error("error creating user - ", error_);
+      toast.error("User NOT initialized, try again later.");
+      setUIstate("OK");
     }
   }
 
@@ -183,11 +180,11 @@ export default function UsersPage() {
               id="name"
               placeholder="user's Names"
               className="placeholder:italic"
-              value={newUser.name.value}
+              value={newUser.names.value}
               onChange={(e) =>
                 setNewUser((prev) => ({
                   ...prev,
-                  name: { error: "", value: e.target.value },
+                  names: { error: "", value: e.target.value },
                 }))
               }
             />
@@ -210,52 +207,7 @@ export default function UsersPage() {
               }
             />
           </div>
-          <div id="roleWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="role" className="opacity-75">
-              Role *
-            </Label>
-            <Select
-              name="role"
-              value={newUser.role}
-              onValueChange={(value) => {
-                setNewUser((prev) => ({
-                  ...prev,
-                  role: value,
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select user's role" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="lawyer">Lawyer</SelectItem> */}
-                {Object.entries(userRoles).map(([key, value]) => (
-                  <SelectItem key={key} value={key}>
-                    {roleLabels[key]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div id="phoneWrapper" className="grid w-full items-center gap-1.5">
-            <Label htmlFor="tel" className="opacity-75">
-              Phone No.
-            </Label>
-            <Input
-              type="tel"
-              id="tel"
-              placeholder="user's Phone No."
-              className="placeholder:italic"
-              value={newUser.tel.value}
-              onChange={(e) =>
-                setNewUser((prev) => ({
-                  ...prev,
-                  tel: { error: "", value: e.target.value },
-                }))
-              }
-            />
-          </div>
+
           <div id="instWrapper" className="grid w-full items-center gap-1.5">
             <Label htmlFor="roleWrapper" className="opacity-75">
               Institutions *

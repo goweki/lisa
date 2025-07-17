@@ -40,6 +40,33 @@ export function nameValidator(name: string): string {
 }
 
 /**
+ * Validates a location string.
+ * A valid location must:
+ * - Not be empty
+ * - Be at least 3 characters long
+ * - Contain only letters, spaces, commas, hyphens, and apostrophes
+ *
+ * @param {string} location - The location string to validate.
+ * @returns {string} - An error message if invalid, otherwise an empty string.
+ *
+ * @example
+ * locationValidator("Nairobi, Kenya"); // ""
+ * locationValidator("Na");             // "Location name too short"
+ * locationValidator("New York@");      // "Location contains invalid characters"
+ */
+export function locationValidator(location: string): string {
+  const LOCATION_REGEX = /^[a-zA-Z\s,'-]{3,}$/;
+
+  if (!location.trim()) return "Location field can't be empty";
+  if (location.trim().length < 3) return "Location name too short";
+  if (!LOCATION_REGEX.test(location.trim())) {
+    return "Location contains invalid characters";
+  }
+
+  return "";
+}
+
+/**
  * Validates a Kenyan phone number (starting with +254 or 0 and followed by 9 digits).
  *
  * @param {string} tel - The phone number string to validate.

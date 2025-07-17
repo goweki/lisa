@@ -7,40 +7,42 @@ export async function createUser(userData: {
   names: string;
   email: string;
   institutionName?: string;
-  institutionId?: string;
+  institutionIds?: string[];
 }) {
   const {
     names,
     email,
-    institutionId: _institutionId,
+    institutionIds: _institutionIds,
     institutionName,
   } = userData;
-  if (!_institutionId && !institutionName) {
+  if (!_institutionIds && !institutionName) {
     throw new Error("Institution ID or Name is required");
   }
 
   try {
-    // 1. Ensure Institution
-    let institutionId: string | null = null;
-    if (userData.institutionId) {
-      const institution = await prisma.institution.findUnique({
-        where: { id: userData.institutionId },
+    let institutionIds: string[] = [];
+    if (_institutionIds) {
+      const _institutions = await prisma.institution.findMany({
+        where: {
+          id: {
+            in: _institutionIds,
+          },
+        },
       });
-      if (!institution) {
-        throw new Error("Institution not found");
+      if (_institutionIds.length !== _institutions.length) {
+        throw new Error("You may not be authorized to assign Institution");
       }
-      institutionId = institution.id;
+      institutionIds = _institutionIds;
     } else if (institutionName) {
       const newInstitution = await prisma.institution.create({
         data: {
           name: institutionName,
         },
       });
-      institutionId = newInstitution.id;
-    }
-
-    if (!institutionId) {
-      throw new Error("Failed to create or find institution");
+      if (!newInstitution.id) {
+        throw new Error("Failed to create institution");
+      }
+      institutionIds = [newInstitution.id];
     }
 
     // 2. Create the new User
@@ -54,29 +56,26 @@ export async function createUser(userData: {
         email,
         resetToken: hashedResetToken,
         resetTokenExpiry: passwordResetExpires,
+        institutions: {
+          create: institutionIds.map((institutionId) => ({
+            institution: {
+              connect: { id: institutionId },
+            },
+          })),
+        },
       },
     });
 
     console.log("Created User:", newUser);
 
-    // 3. Link the new User to the new Institution via the InstitutionUser join table
-    const institutionUserLink = await prisma.institutionUser.create({
-      data: {
-        institutionId,
-        userId: newUser.id,
-        role: userRole.admin,
-      },
-    });
-
-    console.log("Linked User to Institution and role:", institutionUserLink);
-
     // 4. send reset password URL
     const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${newUser.email}`;
 
     return {
+      id: newUser.id,
       name: newUser.names,
       email: newUser.email,
-      institutionId,
+      institutionIds,
       onboardingURL: resetURL,
     };
   } catch (error: any) {

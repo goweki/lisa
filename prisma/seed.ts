@@ -72,7 +72,7 @@ async function main() {
   const user1 = await prisma.user.create({
     data: {
       names: "User1 Lisa",
-      email: "test1-lisa@goweki.com",
+      email: "lisa1@goweki.com",
       systemAdmin: true,
       tel: "+254711111111",
       status: "ACTIVE",
@@ -80,7 +80,7 @@ async function main() {
       institutions: {
         create: {
           institutionId: institution.id,
-          role: "admin",
+          role: "lawyer",
         },
       },
     },
@@ -89,7 +89,7 @@ async function main() {
   const user2 = await prisma.user.create({
     data: {
       names: "User2 Lisa",
-      email: "test2-lisa@goweki.com",
+      email: "lisa2@goweki.com",
       tel: "+254722222222",
       password: "hashed_password",
       status: "ACTIVE",

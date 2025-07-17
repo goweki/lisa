@@ -71,3 +71,64 @@ export function arraysHaveSameElements<T>(a: T[], b: T[]): boolean {
   // All counts should be zero, map should be empty
   return counts.size === 0;
 }
+
+/**
+ * Checks if all elements in `arr1` exist in `arr2`.
+ *
+ * @param {string[]} arr1 - The array of strings to verify.
+ * @param {string[]} arr2 - The reference array to check against.
+ * @returns {boolean} - Returns `true` if all elements in `arr1` are present in `arr2`, otherwise `false`.
+ *
+ * @example
+ * includesAll(['a', 'b'], ['a', 'b', 'c']); // true
+ * includesAll(['a', 'd'], ['a', 'b', 'c']); // false
+ */
+export function includesAll(arr1: string[], arr2: string[]): boolean {
+  const set2 = new Set(arr2);
+  return arr1.every((item) => set2.has(item));
+}
+
+/**
+ * Performs a deep comparison between two values (including arrays and objects)
+ * to determine if they are equal.
+ *
+ * @param a - First value to compare.
+ * @param b - Second value to compare.
+ * @returns `true` if the values are deeply equal, `false` otherwise.
+ */
+export function deepEqual(a: any, b: any): boolean {
+  if (a === b) return true;
+
+  if (
+    typeof a === "object" &&
+    a !== null &&
+    typeof b === "object" &&
+    b !== null
+  ) {
+    // Handle arrays
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) {
+        if (!deepEqual(a[i], b[i])) return false;
+      }
+      return true;
+    }
+
+    // One is array and the other is not
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+    // Handle plain objects
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) return false;
+
+    for (const key of keysA) {
+      if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
+      if (!deepEqual(a[key], b[key])) return false;
+    }
+
+    return true;
+  }
+
+  return false;
+}

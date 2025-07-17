@@ -23,6 +23,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { Loader1 } from "@/components/atoms/loader";
 import {
   emailValidator,
+  locationValidator,
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
@@ -135,7 +136,7 @@ export default function InstitutionView({ params }: { params: any }) {
       inputErrors.nameError_ = nameValidator(instEdit.name);
     }
     if (instEdit.location) {
-      inputErrors.locationError_ = nameValidator(instEdit.location);
+      inputErrors.locationError_ = locationValidator(instEdit.location);
     }
 
     if (Object.values(inputErrors).filter(Boolean).length !== 0) {

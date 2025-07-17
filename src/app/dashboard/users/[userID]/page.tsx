@@ -48,7 +48,9 @@ import { Button } from "@/components/ui/button";
 import { InputImage } from "@/components/atoms/inputs";
 import MultiSelect, {
   Option as MultiSelectOption,
+  Option,
 } from "@/components/atoms/multiSelect";
+import { deepEqual } from "@/helpers/dataHandlers";
 
 interface SelectedEditUser {
   id?: string;
@@ -56,7 +58,6 @@ interface SelectedEditUser {
   email: string;
   tel: string | null;
   status?: string;
-  institutionIDs?: string[];
   photoUrl: string | null;
   photoFile?: File | undefined;
 }
@@ -77,18 +78,38 @@ export default function UserView({ params }: { params: any }) {
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
-  const [selected, setSelected] = useState<SelectedEditUser>();
+  const [selected, setSelected] = useState<
+    SelectedEditUser & { institutionIDs: string[] }
+  >();
   const [userEdit, setUserEdit] = useState<SelectedEditUser>(default_UserEdit);
   const [userIsUpdated, setUserIsUpdated] = useState(false);
+  const [userInstitutions, setUserInstitutions] = useState<Option[]>();
   const [UIstate, setUIstate] = useState("");
 
   // check form edits
   useEffect(() => {
-    if (!selected || !userEdit) return;
+    if (!selected) {
+      return;
+    }
+
     const userIsUpdated = (
       selected_: SelectedEditUser,
       editObj: SelectedEditUser
     ): boolean => {
+      const newInstIDS_ = userInstitutions?.map(({ id }) => id);
+
+      console.log(
+        "comparing - ",
+        selected?.institutionIDs,
+        " and ",
+        newInstIDS_
+      );
+      if (
+        newInstIDS_?.length &&
+        !deepEqual(selected?.institutionIDs, newInstIDS_)
+      )
+        return true;
+
       // ditObj has no values
       const hasAnyChanges = Object.values(editObj).some((val) => Boolean(val));
       if (!hasAnyChanges) return false;
@@ -101,19 +122,14 @@ export default function UserView({ params }: { params: any }) {
           console.log(
             `${selected_[typedKey]} has changed to ${editObj[typedKey]}`
           );
+          return true;
         }
-        // const newValue = editObj[typedKey];
-        // const oldValue = selected_[typedKey];
-
-        // if (newValue !== undefined && oldValue !== newValue) {
-        //   console.log(`${key} has changed from ${oldValue} to ${newValue}`);
-        //   return true;
-        // }
       }
+
       return false;
     };
     setUserIsUpdated(userIsUpdated(selected, userEdit));
-  }, [selected, userEdit]);
+  }, [selected, userEdit, userInstitutions]);
 
   // setSelected, get user by userID and update selected
   useEffect(() => {
@@ -135,6 +151,20 @@ export default function UserView({ params }: { params: any }) {
         status: foundUser_.status,
         institutionIDs: foundUser_.institutions?.map(({ id }) => id) || [],
       });
+
+      const optionsInst = foundUser_.institutions?.map(
+        ({ institutionId: institutionId_ }) => {
+          const institution_ = institutions?.find(
+            ({ id }) => (institutionId_ = id)
+          );
+          return {
+            value: institution_?.id,
+            label: institution_?.name,
+          } as Option;
+        }
+      );
+
+      setUserInstitutions(optionsInst);
     }
     setUIstate("OK");
   }, [userID]);
@@ -221,7 +251,7 @@ export default function UserView({ params }: { params: any }) {
         name: userEdit.names || selected.names,
         email: userEdit.email || selected.email,
         tel: userEdit.tel || selected.tel,
-        institutionIDs: userEdit.institutionIDs,
+        institutionIDs: userInstitutions?.map(({ id }) => id),
         photoUrl: photoUrl_ || selected.photoUrl,
       };
       console.log("Updated User: ", updatedUserObj);
@@ -272,41 +302,29 @@ export default function UserView({ params }: { params: any }) {
     }
   }
 
-  // handle Institutions edits
-  function updateSelectionUserInstits(selections: MultiSelectOption[]) {
-    // console.log("Changed D1: ", selections);
-    setUserEdit((prev) => {
-      return {
-        ...prev,
-        institutionIds: selections.map(({ value }) => value),
-      };
-    });
-  }
-
   //func to Delete Case
   async function handleDeleteUser() {
-    if (!selected?.id) {
-      toast.error("Sorry, user not found");
-      return;
+    if (!selected || !selected?.id) {
+      toast.error("Sorry, no user selected");
+      return router.push("/dashboard/users");
     }
-    // console.log("Deleting user: \n > ", selected.id);
-    // fetch options
+
+    setUIstate("loading");
+    // DELETE api-call using fetch
     let fetchOptions = {
       method: "DELETE",
       body: JSON.stringify({
         id: selected.id,
       }),
     };
-    setUIstate("loading");
-    // DELETE api-call using fetch
+
     const res = await fetch("/api/dashboard/user", fetchOptions).then(
       async (res_) => {
         if (res_?.ok) {
           return await res_.json();
         } else {
           const error_ =
-            (await res_.json()).message ||
-            `ERROR: ` + res_.status + "Unknown error";
+            (await res_.json()) || `ERROR: ` + res_.status + "Unknown error";
           console.error(error_);
           setUIstate(error_);
           return null;
@@ -316,27 +334,15 @@ export default function UserView({ params }: { params: any }) {
 
     if (!res) return;
 
-    if (res.success) {
-      console.log(
-        "SUCCESS: user deleted\n > ",
-        res.success,
-        "\n.............."
-      );
-
-      //if had a logo
-      if (selected.photoUrl) {
-        await edgestore.publicFiles.delete({
-          url: selected.photoUrl,
-        });
-      }
-      toast.success("user deleted");
-      await refreshData();
-      router.replace(`/dashboard/users/`);
-    } else {
-      console.log("FAILED: user not deleted\n > ", res, "\n..............");
-      toast.error(res.failed ?? res.error ?? "Unknown error");
+    //if had a logo
+    if (selected.photoUrl) {
+      await edgestore.publicFiles.delete({
+        url: selected.photoUrl,
+      });
     }
-    setUIstate("OK");
+    toast.success("user deleted");
+    await refreshData();
+    router.replace(`/dashboard/users/`);
   }
 
   //render
@@ -421,10 +427,10 @@ export default function UserView({ params }: { params: any }) {
               Institutions *
             </Label>
             <MultiSelect
-              // value={instOptions}
-              onChange={updateSelectionUserInstits}
+              value={userInstitutions}
+              onChange={setUserInstitutions}
               //
-              defaultOptions={institutions?.map(
+              options={institutions?.map(
                 ({ id, name }: { id: string; name: string }) => ({
                   value: id,
                   label: name,

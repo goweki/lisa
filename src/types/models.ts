@@ -5,6 +5,7 @@ import {
   CaseType as _CaseType,
   Task as _Task,
   Document as _Document,
+  InstitutionUser as _InstitutionUser,
 } from "@prisma/client";
 
 export interface Institution extends _Institution {
@@ -28,7 +29,7 @@ export function isInstitution(obj: any): obj is Institution {
 }
 
 export interface User extends _User {
-  institutions?: _Institution[];
+  institutions?: _InstitutionUser[];
   cases?: _Case[];
 }
 
