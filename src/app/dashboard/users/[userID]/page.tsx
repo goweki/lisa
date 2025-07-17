@@ -96,8 +96,7 @@ export default function UserView({ params }: { params: any }) {
       selected_: SelectedEditUser,
       editObj: SelectedEditUser
     ): boolean => {
-      const newInstIDS_ = userInstitutions?.map(({ id }) => id);
-
+      const newInstIDS_ = userInstitutions?.map(({ value }) => value);
       console.log(
         "comparing - ",
         selected?.institutionIDs,
@@ -107,8 +106,15 @@ export default function UserView({ params }: { params: any }) {
       if (
         newInstIDS_?.length &&
         !deepEqual(selected?.institutionIDs, newInstIDS_)
-      )
+      ) {
+        console.log(
+          "comparing - ",
+          selected?.institutionIDs,
+          " and ",
+          newInstIDS_
+        );
         return true;
+      }
 
       // ditObj has no values
       const hasAnyChanges = Object.values(editObj).some((val) => Boolean(val));
@@ -152,19 +158,19 @@ export default function UserView({ params }: { params: any }) {
         institutionIDs: foundUser_.institutions?.map(({ id }) => id) || [],
       });
 
-      const optionsInst = foundUser_.institutions?.map(
-        ({ institutionId: institutionId_ }) => {
-          const institution_ = institutions?.find(
-            ({ id }) => (institutionId_ = id)
+      const seletedsInsts = foundUser_.institutions?.map(
+        ({ institutionId: institutionId_found }) => {
+          const _institution = institutions?.find(
+            ({ id }) => (institutionId_found = id)
           );
           return {
-            value: institution_?.id,
-            label: institution_?.name,
+            value: _institution?.id,
+            label: _institution?.name,
           } as Option;
         }
       );
 
-      setUserInstitutions(optionsInst);
+      setUserInstitutions(seletedsInsts);
     }
     setUIstate("OK");
   }, [userID]);

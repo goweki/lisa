@@ -94,28 +94,25 @@ export default function InstitutionsPage() {
       let logoUrl_: string | null = null;
       if (newInstitution.photoFile) {
         console.log("New logo to be uploaded");
+        try {
+          const logoEdgeUpload = await edgestore.publicFiles.upload({
+            file: newInstitution.photoFile,
+            // options: uploadOptions,
+            // onProgressChange: (progress) => {
+            //   // you can use this to show a progress bar
+            //   console.log(progress);
+            // },
+          });
+          logoUrl_ = logoEdgeUpload.url;
+        } catch (error) {
+          console.error("logo not uploaded:", error);
+          toast.custom(
+            <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
+              Logo not saved
+            </div>
+          );
+        }
 
-        const logoEdgeUpload = await edgestore.publicFiles.upload({
-          file: newInstitution.photoFile,
-          // options: uploadOptions,
-          // onProgressChange: (progress) => {
-          //   // you can use this to show a progress bar
-          //   console.log(progress);
-          // },
-        });
-
-        // upload file using edgestore- edgestore returns:
-        // const res: {
-        //   url: string;
-        //   size: number;
-        //   uploadedAt: Date;
-        //   metadata: Record<string, never>;
-        //   path: Record<string, never>;
-        //   pathOrder: string[];
-        // }
-
-        // console.log("edge File - ", logoEdgeUpload);
-        logoUrl_ = logoEdgeUpload.url;
         setNewInstitution((prev) => {
           return { ...prev, photoFile: null };
         });

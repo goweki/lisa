@@ -153,40 +153,45 @@ export default function InstitutionView({ params }: { params: any }) {
     try {
       console.log("editing institution: ", instEdit);
       //upload image and retain url
-      let logoUrl_: string | null = null;
-      if (instEdit.logoFile) {
-        const uploadOptions: { replaceTargetUrl: string } | undefined =
-          !selected.logoUrl
-            ? undefined
-            : {
-                replaceTargetUrl: selected.logoUrl,
-              };
+      let logoUrl_: string | undefined = undefined;
+      try {
+        if (instEdit.logoFile) {
+          const uploadOptions: { replaceTargetUrl: string } | undefined =
+            !selected.logoUrl
+              ? undefined
+              : {
+                  replaceTargetUrl: selected.logoUrl,
+                };
 
-        const logoEdgeUpload = await edgestore.publicFiles.upload({
-          file: instEdit.logoFile,
-          options: uploadOptions,
-          // onProgressChange: (progress) => {
-          //   // you can use this to show a progress bar
-          //   console.log(progress);
-          // },
-        });
+          const logoEdgeUpload = await edgestore.publicFiles.upload({
+            file: instEdit.logoFile,
+            options: uploadOptions,
+            // onProgressChange: (progress) => {
+            //   // you can use this to show a progress bar
+            //   console.log(progress);
+            // },
+          });
 
-        // upload file using edgestore- edgestore returns:
-        // const res: {
-        //   url: string;
-        //   size: number;
-        //   uploadedAt: Date;
-        //   metadata: Record<string, never>;
-        //   path: Record<string, never>;
-        //   pathOrder: string[];
-        // }
+          // upload file using edgestore- edgestore returns:
+          // const res: {
+          //   url: string;
+          //   size: number;
+          //   uploadedAt: Date;
+          //   metadata: Record<string, never>;
+          //   path: Record<string, never>;
+          //   pathOrder: string[];
+          // }
 
-        // console.log("edge File - ", logoEdgeUpload);
-        logoUrl_ = logoEdgeUpload.url;
-        setInstEdit((prev) => {
-          return { ...prev, logoFile: null };
-        });
-        if (!logoUrl_) console.error("image upload failed");
+          // console.log("edge File - ", logoEdgeUpload);
+          logoUrl_ = logoEdgeUpload.url;
+          setInstEdit((prev) => {
+            return { ...prev, logoFile: null };
+          });
+          if (!logoUrl_) console.error("image upload failed");
+        }
+      } catch (error) {
+        console.error("couldnt upload logo: ", error);
+        if (!instEdit.name || !instEdit.location) throw { code: 500 };
       }
 
       const _fetchBody = {
@@ -229,7 +234,8 @@ export default function InstitutionView({ params }: { params: any }) {
     } catch (error: any) {
       const error_ = `Error 6bg: ${error.message || error}`;
       console.log(error_);
-      toast.error("Error: Institution NOT updated");
+      if (error.code === 500) toast.error("SERVER ERROR: Try again later");
+      else toast.error("Error: Institution NOT updated");
     } finally {
       setUIstate("OK");
     }
@@ -293,7 +299,19 @@ export default function InstitutionView({ params }: { params: any }) {
       return;
     }
     console.log("Deleting inst: \n > ", selected.id);
-    // fetch options
+
+    //delete logo first
+    try {
+      if (selected.logoUrl) {
+        await edgestore.publicFiles.delete({
+          url: selected.logoUrl,
+        });
+      }
+    } catch (error) {
+      console.error("couldn't delete logo: ", error);
+      throw new Error("failed deleting logo from edgestore");
+    }
+
     let fetchOptions = {
       method: "DELETE",
       body: JSON.stringify({
@@ -322,12 +340,6 @@ export default function InstitutionView({ params }: { params: any }) {
 
       console.log("SUCCESS: Institution deleted\n > ", res, "\n..............");
 
-      //if had a logo
-      if (selected.logoUrl) {
-        await edgestore.publicFiles.delete({
-          url: selected.logoUrl,
-        });
-      }
       toast.success("Institution deleted");
       await refreshData();
       router.replace(`/dashboard/institutions/`);

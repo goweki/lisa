@@ -63,8 +63,13 @@ async function postHandler(
       }),
     });
 
+    let message_: string | undefined = undefined;
     if (!emailerRes.ok) {
-      throw new Error("Failed to send email");
+      console.warn(
+        "Failed to send onboarding email to - ",
+        newRegistration.email
+      );
+      message_ = "Failed to send onboarding email";
     }
 
     console.log("User created successfully");
@@ -72,10 +77,11 @@ async function postHandler(
       id: newRegistration.id,
       name: newRegistration.name,
       email: newRegistration.email,
+      message: message_,
     });
   } catch (err) {
     console.error(
-      "ERROR: user insertion failed -route:/api/dashboard/user POST\n >> error:",
+      "ERROR occurred during user creation -route:/api/dashboard/user POST\n >> error:",
       err
     );
     return Response.json("SERVER ERROR ", { status: 500 });
@@ -129,11 +135,9 @@ async function putHandler(
     const doc = await request.json();
     const { id: userID, ...doc_ } = doc;
 
-    // ***test
-    // return Response.json({ success: doc });
-
     // console.log("PUT REQUEST: updating institution ",id);
-    console.log(`PUT - /api/dashboard/user\n >:`, doc);
+    console.log(`PUT - /api/dashboard/user\n`, doc);
+    return Response.json("TESTING PASSED");
     // update doc
     const updatedUser = await prisma.user.update({
       where: { id: userID },

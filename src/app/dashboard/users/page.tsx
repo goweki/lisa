@@ -145,14 +145,22 @@ export default function UsersPage() {
         return;
       }
       // response is truthy
+      if (response.message)
+        toast.custom(
+          <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
+            {response.message}
+          </div>
+        );
 
       console.log(
         "SUCCESS: user created\n > ",
         response.email,
         "\n.............."
       );
-      toast.success("User created!", response);
+
+      toast.success("User created!");
       await refreshData();
+
       router.push(`/dashboard/users/${response.id}`);
     } catch (error: any) {
       const error_ = error.message;
