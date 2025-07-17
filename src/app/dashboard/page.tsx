@@ -71,21 +71,30 @@ export default function UserHome() {
         status: _case.status,
       }));
     // users
-    const usersBrief = users.map((user_) => ({
-      id: user_.id,
-      email: user_.email,
-      name: user_.names,
-      role: user_.email,
-      institutions:
-        user_.institutions
-          ?.map((instUser) => {
-            const institution_ = institutions?.find(
-              ({ id }) => id === instUser.institutionId
-            );
-            return institution_?.name;
-          })
-          .join(", ") || [],
-    }));
+
+    const usersBrief = users.map((user_) => {
+      const institutions_roles = user_.institutions?.map((instUser) => {
+        const institution_ = institutions?.find(
+          ({ id }) => id === instUser.institutionId
+        );
+        return { name: institution_?.name, role: instUser.role };
+      });
+      const roles_: string[] =
+        (institutions_roles?.map(({ role }) => role) as string[]) || [];
+      const user_institutions_str =
+        institutions_roles?.map(({ name }) => name).join(", ") || "";
+      return {
+        id: user_.id,
+        email: user_.email,
+        name: user_.names,
+        role: user_.systemAdmin
+          ? "system"
+          : roles_.includes("admin")
+            ? "admin"
+            : "user",
+        institutions: user_institutions_str,
+      };
+    });
     // casetypes
     const caseTypesBrief = caseTypes.map((_type) => ({
       id: _type.id,

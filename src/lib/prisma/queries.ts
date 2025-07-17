@@ -15,8 +15,11 @@ export async function createUser(userData: {
     institutionIds: _institutionIds,
     institutionName,
   } = userData;
-  if (!_institutionIds && !institutionName) {
-    throw new Error("Institution ID or Name is required");
+  if (
+    (!_institutionIds && !institutionName) ||
+    (_institutionIds && institutionName)
+  ) {
+    throw new Error("Institution ID -OR- Name is required");
   }
 
   try {
@@ -61,6 +64,7 @@ export async function createUser(userData: {
             institution: {
               connect: { id: institutionId },
             },
+            role: institutionName ? userRole.admin : undefined,
           })),
         },
       },

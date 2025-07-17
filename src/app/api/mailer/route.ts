@@ -25,10 +25,9 @@ export async function POST(request: Request) {
           "FAILED: route /mailer POST: >> Missing required fields in email request",
           body
         );
-        return Response.json(
-          { error: "Missing required fields in email request" },
-          { status: 400 }
-        );
+        return Response.json("Missing required fields in email request", {
+          status: 400,
+        });
       }
       const mailSent_ = await sendEmail({ to, subject, html, text, cc });
       if (mailSent_) {
@@ -45,10 +44,9 @@ export async function POST(request: Request) {
           "FAILED: route /mailer POST: >> Missing required fields in SMS request",
           body
         );
-        return Response.json(
-          { error: "Missing required fields in SMS request" },
-          { status: 400 }
-        );
+        return Response.json("Missing required fields in SMS request", {
+          status: 400,
+        });
       }
       const smsSent = await sendSMS({ to, subject, text });
       if (smsSent) {
@@ -63,16 +61,16 @@ export async function POST(request: Request) {
         "SUCCESS-WRAP: message sent - route /mailer POST: >> ",
         mailerRes
       );
-      return Response.json({ message: "Message sent" });
+      return Response.json("Message sent");
     } else {
       console.error("FAILED:  route /mailer POST: >> ", mailerRes);
-      return Response.json({ message: "Message NOT sent" }, { status: 500 });
+      return Response.json("Message NOT sent", { status: 500 });
     }
   } catch (error) {
     // handle ERROR if caught
     console.log(
       `ERROR: error caught in route /mailer POST\n >> ${error}\n.........................`
     );
-    return Response.json({ message: "Message NOT sent" }, { status: 500 });
+    return Response.json("Message NOT sent", { status: 500 });
   }
 }

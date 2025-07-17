@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, userRole } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function clearDatabase() {
@@ -97,6 +97,22 @@ async function main() {
         create: {
           institutionId: institution.id,
           role: "admin",
+        },
+      },
+    },
+  });
+
+  const user3 = await prisma.user.create({
+    data: {
+      names: "User3 Lisa",
+      email: "lisa3@goweki.com",
+      tel: "+25473333333333333",
+      password: "hashed_password",
+      status: "ACTIVE",
+      institutions: {
+        create: {
+          institutionId: institution.id,
+          role: userRole.advocate,
         },
       },
     },

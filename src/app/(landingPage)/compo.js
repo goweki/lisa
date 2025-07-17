@@ -61,8 +61,8 @@ export function ReqDemoModal({ handleCloseModal }) {
           } else {
             const error_ =
               (await res_.json()) || "Unknown error, try again later";
-            console.error("Error in sending reset password link:", error_);
-            toast.error(error_.message || error_);
+            console.error("Error in sending email", error_);
+            toast.error(error_);
             return null;
           }
         }
