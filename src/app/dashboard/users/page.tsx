@@ -132,7 +132,8 @@ export default function UsersPage() {
             return await res_.json();
           } else {
             const error_ =
-              (await res_.json()) || `ERROR: ` + res_.status + "-Unknown error";
+              (await res_.json()) ||
+              `ERROR: ` + res_.status + " - Unknown error";
             console.error(error_);
             toast.error(error_);
             return null;
