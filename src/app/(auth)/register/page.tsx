@@ -35,7 +35,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState({ value: "", error: "" });
   const [names, setNames] = useState({ value: "", error: "" });
   const [firm, setFirm] = useState({ value: "", error: "" });
-  const [packag, setPackage] = useState<PackageNameType>("Basic");
   const [UIstate, setUIstate] = useState<"OK" | "loading" | string>("loading");
   type UIStateType = typeof UIstate;
   const router = useRouter();
@@ -66,7 +65,7 @@ export default function RegisterPage() {
     const namesError_ = nameValidator(names.value);
     const instNameError_ = nameValidator(firm.value);
 
-    if (emailError_ || namesError_ || instNameError_ || !packag) {
+    if (emailError_ || namesError_ || instNameError_) {
       if (emailError_) setEmail({ ...email, error: emailError_ });
       if (namesError_) setNames({ ...names, error: namesError_ });
       if (instNameError_) setFirm({ ...firm, error: instNameError_ });
@@ -127,27 +126,6 @@ export default function RegisterPage() {
           className="rounded space-y-6 md:space-y-6 p-8 shadow dark:shadow-dark"
         >
           {/* INPUT FIELDS */}
-          <div className="flex flex-wrap space-x-4 space-y-4">
-            <div className="flex pt-4">
-              <span
-                className={`${
-                  !packag ? "text-red-500 text-bold" : ""
-                } block m-auto text-xs`}
-              >
-                Package *
-              </span>
-            </div>
-            <ComboboxSearchable
-              options={packages.map((package_) => ({
-                label: package_.name,
-                value: package_.name,
-              }))}
-              label="Package"
-              setValue={setPackage}
-              value={packag}
-              // error={packag?.error}
-            />
-          </div>
           <div className="space-y-4">
             <InputText
               label="Names *"

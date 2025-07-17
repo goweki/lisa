@@ -31,7 +31,7 @@ model Institution {
 
 model User {
   id               String    @id @default(uuid())
-  names            String    @unique
+  names            String
   email            String    @unique
   systemAdmin      Boolean   @default(false)
   tel              String?

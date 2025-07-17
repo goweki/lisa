@@ -13,7 +13,7 @@ import {
   passwordValidator,
 } from "@/helpers/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader2 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 
 export default function SigninPage() {
   // states
@@ -27,24 +27,10 @@ export default function SigninPage() {
   useEffect(() => {
     if (searchParams.has("error")) {
       const error_ = searchParams.get("error");
-      setUIstate(qParamsErrors[error_]);
-    } else setUIstate("OK");
+      toast.error(qParamsErrors[error_ as keyof typeof qParamsErrors]);
+    }
+    setUIstate("OK");
   }, [searchParams]);
-  // Notify on UIstate-error
-  useEffect(() => {
-    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
-      toast.error(UIstate);
-      setUIstate("OK");
-    }
-  }, [UIstate]);
-  // Notify on input-Error
-  useEffect(() => {
-    if (email.error || password.error) {
-      setUIstate("OK");
-      if (email.error) toast.error(email.error);
-      if (password.error) toast.error(password.error);
-    }
-  }, [email.error, password.error]);
   // handle SignIn
   async function handleSubmit() {
     if (!email.value || !password.value) {
@@ -57,6 +43,7 @@ export default function SigninPage() {
     if (emailError_ || passwordError_) {
       if (emailError_) setEmail({ ...email, error: emailError_ });
       if (passwordError_) setPassword({ ...password, error: passwordError_ });
+      setUIstate("OK");
       return;
     }
     //sign in
@@ -68,20 +55,23 @@ export default function SigninPage() {
       password: password.value,
       redirect: false,
     });
-    if (res.ok && !res.error) {
-      router.push("/dashboard");
+
+    if (res?.ok) {
+      router.push(callbackUrl);
     } else {
+      if (res?.error)
+        toast.error(qParamsErrors[res.error as keyof typeof qParamsErrors]);
+      else toast.error("Sign in failed. Try again later.");
       console.log(
-        `........................\n > FAILED: user not validated\n > ${JSON.stringify(
-          res
-        )}\n`
+        `........................\n > FAILED: user not validated\n >`,
+        res
       );
-      setUIstate(qParamsErrors[res.error] || "Unknown error, try again later.");
+      setUIstate("OK");
     }
   }
   // Render
   return !UIstate ? (
-    <Loader2 />
+    <Loader />
   ) : (
     <div className="flex flex-1 flex-col w-full items-center">
       <div className="w-full max-w-md p-4 m-auto divide-y space-y-3 divide-primary">
@@ -96,7 +86,7 @@ export default function SigninPage() {
           <div className="space-y-4">
             <InputText
               label="Email"
-              name={email}
+              name="email"
               type="email"
               placeholder="Enter your email address"
               icon={SVGemail}
