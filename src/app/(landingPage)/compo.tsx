@@ -6,42 +6,47 @@ import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
 
-export function ReqDemoModal({ handleCloseModal }) {
-  const [firstName, setFirstName] = useState({ value: "", error: "" });
-  const [email, setEmail] = useState({ value: "", error: "" });
-  const [tel, setTel] = useState({ value: "", error: "" });
+interface Input {
+  value: string;
+  error: string;
+}
+
+const def_Input: Input = {
+  value: "",
+  error: "",
+};
+
+export function ReqDemoModal({
+  handleCloseModal,
+}: {
+  handleCloseModal: () => void;
+}) {
+  const [firstName, setFirstName] = useState(def_Input);
+  const [email, setEmail] = useState(def_Input);
+  const [tel, setTel] = useState(def_Input);
   const [UIstate, setUIstate] = useState("");
   //onMount-component
   useEffect(() => {
     setUIstate("OK");
   }, []);
-  //onError-component
-  useEffect(() => {
-    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
-      toast.error(UIstate);
-      setUIstate("OK");
-    }
-  }, [UIstate]);
   //handle sending message
   async function handleSend() {
+    if (!firstName.value || !email.value) {
+      setUIstate(`Please provide your ${!firstName.value ? "name" : "email"}`);
+      return;
+    }
+    const emailError = emailValidator(email.value);
+    const nameError = nameValidator(firstName.value);
+    if (!!emailError || !!nameError) {
+      setEmail({ ...email, error: emailError });
+      setFirstName({ ...firstName, error: nameError });
+      setUIstate(`Invalid ${emailError ? "email" : "name"}`);
+      console.log(` >> Invalid ${emailError ? "email" : "name"}`);
+      return;
+    }
+
+    setUIstate("loading");
     try {
-      setUIstate("loading");
-      // validate inputs
-      if (!firstName.value || !email.value) {
-        setUIstate(
-          `Please provide your ${!firstName.value ? "name" : "email"}`
-        );
-        return;
-      }
-      const emailError = emailValidator(email.value);
-      const nameError = nameValidator(firstName.value);
-      if (!!emailError || !!nameError) {
-        setEmail({ ...email, error: emailError });
-        setFirstName({ ...firstName, error: nameError });
-        setUIstate(`Invalid ${emailError ? "email" : "name"}`);
-        console.log(` >> Invalid ${emailError ? "email" : "name"}`);
-        return;
-      }
       const body = {
         subject: "INTEREST IN LISA",
         text: `The below user has expressed interest in Lisa via website \nName: ${
@@ -68,33 +73,27 @@ export function ReqDemoModal({ handleCloseModal }) {
         }
       );
       if (!response) {
-        console.log(
-          "SUCCESS: info sent\n > " +
-            JSON.stringify(response.success) +
-            "\n.............."
-        );
-        toast.success("Info submitted!");
-        setFirstName("");
-        setEmail("");
-        setTel("");
-        handleCloseModal();
-      } else {
-        console.error(
-          "ERROR: failed sending info at contacts /page\n > " +
-            JSON.stringify(response) +
-            "\n.............."
-        );
-        setUIstate(response?.error ?? "No Response, check internet connection");
+        return;
       }
+      console.log(
+        "SUCCESS: info sent\n > " +
+          JSON.stringify(response) +
+          "\n.............."
+      );
+      toast.success(response);
+      setFirstName(def_Input);
+      setEmail(def_Input);
+      setTel(def_Input);
+      handleCloseModal();
     } catch (err) {
-      setUIstate("Sending info failed: consider emailing lisa@goweki.com");
+      toast.error("Sending info failed: consider emailing lisa@goweki.com");
     }
   }
   //render UI
   return (
     <div
       id="requestDemoModal"
-      tabIndex="-1"
+      tabIndex={-1}
       aria-hidden="true"
       className={`fixed top-0 left-0 right-0 z-10 flex items-center justify-center h-full p-4 bg-background/80 backdrop-blur-xl`}
     >

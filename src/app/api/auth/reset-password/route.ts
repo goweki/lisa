@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       resetURL
     );
 
-    console.log("renderedEmail:\n", renderedEmail);
+    // console.log("renderedEmail:\n", renderedEmail);
 
     const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
       method: "POST",
@@ -62,14 +62,16 @@ export async function POST(request: Request) {
     });
 
     if (!emailerRes.ok) {
-      throw new Error("Failed to send password reset link");
+      throw new Error("Failed to send password reset link. Try again later");
     }
 
     console.log("Password reset email sent successfully");
-    return Response.json({ message: "Check email for the reset link" });
+    return Response.json("Check you email for the reset link");
   } catch (err: any) {
     console.log("ERROR in route: > /api/auth/reset-password", err);
-    return Response.json({ message: err.message }, { status: 500 });
+    const error_ =
+      err.message || "ERROR generating password-reset link and emailing user";
+    return Response.json(error_, { status: 500 });
   }
 }
 

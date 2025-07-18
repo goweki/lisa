@@ -4,25 +4,45 @@ import { excludeFields } from "@/helpers/dataHandlers";
 import { User } from "@/types/models";
 import { Prisma } from "@prisma/client";
 import { SessionUser } from "@/types/next-auth";
+import { hasActiveSubscription } from "@/lib/prisma/queries";
 
 export const revalidate = 6;
 
 async function getHandler(req: Request, user: SessionUser) {
-  try {
-    const isSysAdmin = !!user.systemAdmin;
+  const isSysAdmin = !!user.systemAdmin;
 
+  try {
     const instUsers = await prisma.institutionUser.findMany({
       where: { userId: user.id },
       select: { institutionId: true },
     });
 
-    const instIDs = instUsers.map((i) => i.institutionId);
+    console.log(
+      "All INSTITUTIONS - ",
+      instUsers.map(({ institutionId }) => institutionId)
+    );
+
+    let instIDs_activeSub: string[] = [];
+
+    for (const instUser_ of instUsers) {
+      const instId = instUser_.institutionId;
+      if (await hasActiveSubscription(instId)) {
+        instIDs_activeSub.push(instUser_.institutionId);
+      }
+    }
+
+    console.log("ACTIVE INSTITUTIONS - ", instIDs_activeSub);
+
+    if (!isSysAdmin && instIDs_activeSub.length === 0) {
+      console.log("");
+      return Response.json("Payment required", { status: 402 });
+    }
 
     // Run institution, users, cases, caseTypes, assignmentRequests in parallel
     const [institutions, rawUsers, cases, caseTypes, assignmentRequests] =
       await Promise.all([
         prisma.institution.findMany({
-          where: isSysAdmin ? {} : { id: { in: instIDs } },
+          where: isSysAdmin ? {} : { id: { in: instIDs_activeSub } },
           include: {
             cases: true,
             users: true,
@@ -37,12 +57,12 @@ async function getHandler(req: Request, user: SessionUser) {
                 completedTasks: true,
               },
             })
-          : instIDs.length > 0
+          : instIDs_activeSub.length > 0
             ? prisma.user.findMany({
                 where: {
                   institutions: {
                     some: {
-                      institutionId: { in: instIDs },
+                      institutionId: { in: instIDs_activeSub },
                     },
                   },
                 },
@@ -57,7 +77,7 @@ async function getHandler(req: Request, user: SessionUser) {
             : [],
 
         prisma.case.findMany({
-          where: isSysAdmin ? {} : { institutionID: { in: instIDs } },
+          where: isSysAdmin ? {} : { institutionID: { in: instIDs_activeSub } },
           include: {
             caseType: true,
             institution: true,
@@ -68,7 +88,10 @@ async function getHandler(req: Request, user: SessionUser) {
 
         prisma.caseType.findMany({
           where: {
-            OR: [{ institutionId: null }, { institutionId: { in: instIDs } }],
+            OR: [
+              { institutionId: null },
+              { institutionId: { in: instIDs_activeSub } },
+            ],
           },
           include: {
             institution: true,

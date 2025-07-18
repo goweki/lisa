@@ -135,7 +135,9 @@ export async function createUser(userData: {
  *   console.log("Institution has no active subscription");
  * }
  */
-async function hasActiveSubscription(institutionId: string): Promise<boolean> {
+export async function hasActiveSubscription(
+  institutionId: string
+): Promise<boolean> {
   const now = new Date();
 
   const subscription = await prisma.subscription.findFirst({

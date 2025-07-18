@@ -1,202 +1,61 @@
-import { PrismaClient, userRole } from "@prisma/client";
-const prisma = new PrismaClient();
+import { seedPlans } from "./seeds/seedPlans";
+import { seedFeatures } from "./seeds/seedFeatures";
+import { seedInstitutions } from "./seeds/seedInstitutions";
+import { seedUsers } from "./seeds/seedUsers";
+import { seedInstitutionUsers } from "./seeds/seedInstitutionUsers";
+import { seedSubscriptions } from "./seeds/seedSubscriptions";
+import { seedCaseTypes } from "./seeds/seedCaseTypes";
+import { seedCases } from "./seeds/seedCases";
+import { seedTasks } from "./seeds/seedTasks";
+import { seedReminders } from "./seeds/seedReminders";
+import { seedDocuments } from "./seeds/seedDocuments";
 
-async function clearDatabase() {
-  console.log("🧹 Clearing database...");
-
-  // Delete children first to avoid FK constraint errors
-  await prisma.reminder.deleteMany();
-  await prisma.document.deleteMany();
-  await prisma.task.deleteMany();
-  await prisma.assigneeRequest.deleteMany();
-  await prisma.case.deleteMany();
-  await prisma.caseType.deleteMany();
-
-  await prisma.paymentTransaction.deleteMany();
-  await prisma.subscription.deleteMany();
-  await prisma.planFeature.deleteMany();
-  await prisma.feature.deleteMany();
-  await prisma.plan.deleteMany();
-
-  await prisma.institutionUser.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.institution.deleteMany();
-
-  console.log("✅ Database cleared.");
-}
+import prisma from "../src/lib/prisma/prisma";
+import { clearTables } from "./seeds/reset";
 
 async function main() {
-  await clearDatabase();
+  if (process.env.NODE_ENV !== "production") {
+    console.log("♻️ Clearing existing data...");
+    await clearTables();
+    console.log("✅ Tables cleared");
+  }
 
-  console.log("🌱 Seeding: Features...");
-  const feature1 = await prisma.feature.create({
-    data: {
-      name: "Unlimited Cases",
-      description: "Create unlimited cases for your institution",
-    },
-  });
+  console.log("🌱 Starting database seeding...");
 
-  const feature2 = await prisma.feature.create({
-    data: {
-      name: "Advanced Reporting",
-      description: "Access detailed analytics and reports",
-    },
-  });
+  await seedPlans();
+  console.log("✅ Seeded plans");
 
-  console.log("🌱 Seeding: Plan with features...");
-  const plan = await prisma.plan.create({
-    data: {
-      name: "Pro Plan",
-      description: "Best for growing law firms",
-      price: 5000,
-      priceMonthly: 5000,
-      priceAnnual: 50000,
-      currency: "KES",
-      trialDays: 14,
-      planFeatures: {
-        create: [{ featureId: feature1.id }, { featureId: feature2.id }],
-      },
-    },
-  });
+  await seedFeatures();
+  console.log("✅ Seeded features and plan-feature relations");
 
-  console.log("🌱 Seeding: Institution...");
-  const institution = await prisma.institution.create({
-    data: {
-      name: "LexLaw LLP",
-      location: "Nairobi",
-      status: "ACTIVE",
-    },
-  });
+  await seedInstitutions();
+  console.log("✅ Seeded institutions");
 
-  console.log("🌱 Seeding: Users...");
-  const user1 = await prisma.user.create({
-    data: {
-      names: "User1 Lisa",
-      email: "lisa1@goweki.com",
-      systemAdmin: true,
-      tel: "+254711111111",
-      status: "ACTIVE",
-      password: "hashed_password",
-      institutions: {
-        create: {
-          institutionId: institution.id,
-          role: "lawyer",
-        },
-      },
-    },
-  });
+  await seedUsers();
+  console.log("✅ Seeded users");
 
-  const user2 = await prisma.user.create({
-    data: {
-      names: "User2 Lisa",
-      email: "lisa2@goweki.com",
-      tel: "+254722222222",
-      password: "hashed_password",
-      status: "ACTIVE",
-      institutions: {
-        create: {
-          institutionId: institution.id,
-          role: "admin",
-        },
-      },
-    },
-  });
+  await seedInstitutionUsers();
+  console.log("✅ Linked users to institutions");
 
-  const user3 = await prisma.user.create({
-    data: {
-      names: "User3 Lisa",
-      email: "lisa3@goweki.com",
-      tel: "+25473333333333333",
-      password: "hashed_password",
-      status: "ACTIVE",
-      institutions: {
-        create: {
-          institutionId: institution.id,
-          role: userRole.advocate,
-        },
-      },
-    },
-  });
+  await seedSubscriptions();
+  console.log("✅ Seeded subscriptions");
 
-  console.log("🌱 Seeding: Subscription...");
-  const subscription = await prisma.subscription.create({
-    data: {
-      institutionId: institution.id,
-      planId: plan.id,
-      status: "ACTIVE",
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(
-        new Date().setMonth(new Date().getMonth() + 1)
-      ),
-    },
-  });
+  await seedCaseTypes();
+  console.log("✅ Seeded case types");
 
-  console.log("🌱 Seeding: PaymentTransaction...");
-  await prisma.paymentTransaction.create({
-    data: {
-      institutionId: institution.id,
-      subscriptionId: subscription.id,
-      paymentMethod: "MPESA",
-      amount: 5000,
-      providerTransactionId: "MPESA123ABC",
-      status: "SUCCEEDED",
-    },
-  });
+  await seedCases();
+  console.log("✅ Seeded cases");
 
-  console.log("🌱 Seeding: CaseType...");
-  const caseType = await prisma.caseType.create({
-    data: {
-      name: "Civil Litigation",
-      primaryParty: "Plaintiff",
-      secondaryParty: "Defendant",
-      institutionId: institution.id,
-    },
-  });
+  await seedTasks();
+  console.log("✅ Seeded tasks");
 
-  console.log("🌱 Seeding: Case...");
-  const courtCase = await prisma.case.create({
-    data: {
-      name: "Alice vs City Council",
-      caseTypeID: caseType.id,
-      institutionID: institution.id,
-      userID: user2.id,
-      clientParty: "Plaintiff",
-      clientName: "Alice Mwangi",
-      clientTel: "+254711111111",
-      court: "High Court of Kenya",
-    },
-  });
+  await seedReminders();
+  console.log("✅ Seeded reminders");
 
-  console.log("🌱 Seeding: Task...");
-  const task = await prisma.task.create({
-    data: {
-      name: "File Response",
-      type: "document",
-      dueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
-      caseID: courtCase.id,
-    },
-  });
+  await seedDocuments();
+  console.log("✅ Seeded documents");
 
-  console.log("🌱 Seeding: Document...");
-  await prisma.document.create({
-    data: {
-      name: "Response Document",
-      link: "https://example.com/docs/response.pdf",
-      taskID: task.id,
-    },
-  });
-
-  console.log("🌱 Seeding: Reminder...");
-  await prisma.reminder.create({
-    data: {
-      regime: "days",
-      count: 2,
-      channel: "email",
-      taskId: task.id,
-    },
-  });
-
-  console.log("✅ Seeding complete!");
+  console.log("🌱 Database seeding complete.");
 }
 
 main()

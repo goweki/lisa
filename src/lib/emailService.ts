@@ -44,13 +44,13 @@ export async function sendEmail({
       bcc: emailCC,
     };
 
-    // console.log("Sending email to:", to);
-    // console.log("Email subject:", subject);
-    // console.log("Email HTML content:", html);
     // console.log("...........\n \nMAILER:", mailOptions);
+    console.log("Sending email to:", mailOptions.to);
+    // console.log("Email subject:", mailOptions.subject);
+    // console.log("Email HTML content:", mailOptions.html);
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: %s", info.messageId);
+
     return true;
   } catch (error) {
     console.error("Error sending email:", error);

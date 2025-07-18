@@ -20,16 +20,6 @@ import {
 } from "@/helpers/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
-import {
-  Package as PackageType,
-  PackageName as PackageNameType,
-} from "@/types/transactions";
-
-const packages: PackageType[] = [
-  { name: "Basic", index: 0 },
-  { name: "Pro", index: 1 },
-  { name: "Enterprise", index: 2 },
-];
 
 export default function RegisterPage() {
   // states

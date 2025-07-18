@@ -1,3 +1,5 @@
+import React from "react";
+
 export const metadata = {
   robots: {
     index: true,
@@ -14,6 +16,10 @@ export const metadata = {
   },
 };
 
-export default function ContactsLayout({ children }) {
+export default function ContactsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return children;
 }

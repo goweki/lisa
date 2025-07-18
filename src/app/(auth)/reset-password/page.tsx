@@ -73,7 +73,7 @@ export default function ForgotPassword() {
     if (!response) {
       return setUIstate("OK");
     } else {
-      toast.success(response.message);
+      toast.success(response);
       router.push(`/`);
     }
   }

@@ -3,15 +3,16 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader2 } from "@/components/atoms/loader";
+import { Loader } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
+import { UIstate } from "@/types/custom";
 
 export default function ContactsPage() {
-  const [UIstate, setUIstate] = useState("OK");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [ccCheckbox, setCcCheckbox] = useState(false);
+  const [UIstate, setUIstate] = useState<UIstate>("OK");
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const [ccCheckbox, setCcCheckbox] = useState<boolean>(false);
   //onUIerror
   useEffect(() => {
     if (UIstate !== "OK" && UIstate !== "loading") {
@@ -23,7 +24,7 @@ export default function ContactsPage() {
   async function handleSend() {
     // confirm fields filled
     if (!name || !email) {
-      setUIstate(`Please provide your ${!name ? " name " : " email "}`);
+      toast.error(`Please provide your ${!name ? " name " : " email "}`);
       return;
     }
     // fetch options
@@ -45,15 +46,16 @@ export default function ContactsPage() {
       if (res_.ok) {
         return await res_.json();
       } else {
+        const error_ =
+          (await res_.json()) || `Error-${res_.status} sending mail`;
         console.log(`ERROR: ` + JSON.stringify(res_));
-        setUIstate(httpCodes[res_.status]);
+        toast.error(``);
+        setUIstate(error_);
       }
     });
     if (_res?.success) {
       console.log(
-        "SUCCESS: info sent\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
+        "SUCCESS: info sent\n > " + JSON.stringify(_res) + "\n.............."
       );
       toast.success("Info submitted!");
       setName("");
@@ -72,7 +74,7 @@ export default function ContactsPage() {
   //render
   return UIstate === "loading" ? (
     <div className="flex flex-col min-h-screen justify-center">
-      <Loader2 />
+      <Loader />
     </div>
   ) : (
     <div className="container my-24 mx-auto md:px-6">
@@ -91,7 +93,7 @@ export default function ContactsPage() {
                       className={`peer block min-h-[auto] w-full rounded border-0 border-b-2 border-l-2 border-font/50 dark:border-font-dark/50 focus:border-emerald-500 dark:focus:border-emerald-500 bg-transparent autofill:!bg-emerald-500 focus:ring-transparent py-2 px-3 outline-none transition-all duration-200 ease-linear peer-focus:text-emerald-500  dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
                       id="message"
                       value={message}
-                      rows="3"
+                      rows={3}
                       onChange={(e) => setMessage(e.target.value)}
                     />
                     <label
@@ -274,7 +276,12 @@ export default function ContactsPage() {
     // <!-- Container -->
   );
 }
-function renderInput(value, setValue, type = "text", name = "inputField") {
+function renderInput(
+  value: string,
+  setValue: (val: string) => void,
+  type = "text",
+  name = "inputField"
+) {
   return (
     <div className="relative mb-8">
       <input

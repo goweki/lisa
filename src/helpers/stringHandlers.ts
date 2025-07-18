@@ -39,3 +39,46 @@ export function strPascalCase(str: string): string {
 export function strsMatch(str1: string, str2: string): boolean {
   return str1 === str2;
 }
+
+/**
+ * Formats a number into a human-readable string with 'k' for thousands.
+ * Examples:
+ * 1000 => "1k"
+ * 300000 => "300k"
+ * 6000 => "6k"
+ * 1234 => "1.2k"
+ * 100 => "100" (numbers below 1000 are returned as is)
+ * 1000000 => "1000k" (or "1M" if you extend to millions)
+ *
+ * @param num The number to format.
+ * @param decimalPlaces (Optional) Number of decimal places for k-formatted numbers. Defaults to 1.
+ * @returns The formatted string.
+ */
+export function formatNumberToK(
+  num: number,
+  decimalPlaces: number = 1
+): string {
+  // Handle non-finite numbers (NaN, Infinity)
+  if (!Number.isFinite(num)) {
+    return String(num);
+  }
+
+  // Define the threshold for 'k'
+  const KILO = 1000;
+
+  // If the number is less than 1000, return it as is (no 'k' suffix)
+  if (num < KILO) {
+    return String(num);
+  }
+
+  // Calculate the value in thousands
+  const numInK = num / KILO;
+
+  // Format to the specified number of decimal places
+  // toFixed returns a string, so we need to convert it to a number first
+  // to remove trailing zeros if they are not significant, then back to string.
+  // Using parseFloat to strip trailing zeros and ensure correct rounding behavior
+  const formattedNum = parseFloat(numInK.toFixed(decimalPlaces));
+
+  return `${formattedNum}k`;
+}

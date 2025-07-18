@@ -10,6 +10,8 @@ import { Loader } from "@/components/atoms/loader";
 import { httpCodes } from "@/lib/configs";
 import { Case, Institution, User } from "@/types/models";
 import { AssigneeRequest, CaseType, Task } from "@prisma/client";
+import { UIstate } from "@/types/custom";
+import PaymentsPage from "@/components/payments";
 
 export interface UIDATA {
   users: User[];
@@ -49,35 +51,44 @@ export default function UserProviders({
 }) {
   const { data: session, status } = useSession();
   const [data, setData] = useState<UIDATA>(defaultDataContext.data);
-  const [UIstate, setUIstate] = useState("loading");
+  const [UIstate, setUIstate] = useState<UIstate>("loading");
 
+  // fetch UI data
   const fetchUIuserData = useCallback(async () => {
     try {
       const fetchOptions = {
         method: "GET",
       };
-
       const response = await fetch(`/api/dashboard/data`, fetchOptions).then(
         async (res_) => {
           if (res_.ok) {
             return await res_.json();
+          } else if (res_.status === 402) {
+            toast.custom(
+              <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
+                Payment required
+              </div>
+            );
+            setUIstate("payment-required");
           } else {
+            //CHECKPOINT
             const error_ = await res_.json();
-            console.log(`ERROR: ` + error_.message || "Unknown error");
-            toast.error(error_.message);
+            console.error(
+              `ERROR: ` + error_ || "Error fetching dashboard data"
+            );
+            toast.error(error_);
+            setUIstate("data-error");
           }
         }
       );
 
       if (!response) {
-        setUIstate("Couldnt fetch data from server");
-      } else {
-        console.log("UI data", response);
-        setData(response);
-        setUIstate("OK");
+        return;
       }
+      console.log("UI data", response);
+      setData(response);
     } catch (err) {
-      setUIstate("Could not fetch data from server");
+      setUIstate("data-error");
       console.error("ERROR: caught error\n > " + err);
     }
   }, [session]);
@@ -94,11 +105,25 @@ export default function UserProviders({
     <div className="flex flex-col sm:h-[200px] md:h-[300px] lg:h-[400px] justify-center">
       <Loader />
     </div>
-  ) : UIstate !== "OK" ? (
+  ) : UIstate === "data-error" ? (
+    <MessageLayout message="Couldn't fetch data. Try again later" />
+  ) : UIstate === "payment-required" ? (
+    <PaymentsPage />
+  ) : (
+    <EdgeStoreProvider>
+      <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
+        {children}
+      </DataContext.Provider>
+    </EdgeStoreProvider>
+  );
+}
+
+function MessageLayout({ message }: { message: string }) {
+  return (
     <div className="mt-12">
       <div className="flex flex-col gap-y-4">
         <p className="text-center m-auto max-w-4xl px-2 md:px-8">
-          There was an error loading the contents of this page. {UIstate}
+          There was an error loading the contents of this page. {message}
         </p>
         <p className="text-center">
           <Link href="/" className="text-red-800 dark:text-red-400 underline">
@@ -108,11 +133,5 @@ export default function UserProviders({
         </p>
       </div>
     </div>
-  ) : (
-    <EdgeStoreProvider>
-      <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
-        {children}
-      </DataContext.Provider>
-    </EdgeStoreProvider>
   );
 }

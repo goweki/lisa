@@ -1,3 +1,5 @@
+"use client";
+
 export function Loader({ className }: { className?: string }) {
   return (
     <div

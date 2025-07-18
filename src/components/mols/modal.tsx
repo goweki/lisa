@@ -17,17 +17,23 @@ export function Modal({
   trigger = "Trigger",
   title = "Title",
   Description,
+  className,
+  variant = "outline",
   children,
 }: {
   trigger?: string;
   title?: string;
   Description?: React.ReactNode;
+  className?: string;
+  variant?: "outline" | "default";
   children: React.ReactNode;
 }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">{trigger}</Button>
+        <Button variant={variant} className={className}>
+          {trigger}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

@@ -1,4 +1,4 @@
-export function SVGlogo({ className }) {
+export function SVGlogo({ className }: { className: string }) {
   return (
     <svg
       className={className}
@@ -41,7 +41,7 @@ export function SVGlogo({ className }) {
   );
 }
 
-export function SVGlogoSymbol({ className }) {
+export function SVGlogoSymbol({ className }: { className: string }) {
   return (
     <svg viewBox="0 0 143.5 143.5" className={className}>
       <g id="symbol">
@@ -62,7 +62,7 @@ export function SVGlogoSymbol({ className }) {
   );
 }
 
-export function SVGlogoAnimation1({ className }) {
+export function SVGlogoAnimation1({ className }: { className: string }) {
   return (
     <svg
       className={className}
@@ -97,7 +97,7 @@ export function SVGlogoAnimation1({ className }) {
   );
 }
 
-export function SVGlogoAnimation2({ className }) {
+export function SVGlogoAnimation2({ className }: { className: string }) {
   return (
     <svg
       className={className}
@@ -145,7 +145,7 @@ export function SVGlogoAnimation2({ className }) {
   );
 }
 
-export function SVGemail({ className }) {
+export function SVGemail({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -162,7 +162,7 @@ export function SVGemail({ className }) {
   );
 }
 
-export function SVGpassword({ className }) {
+export function SVGpassword({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -181,7 +181,7 @@ export function SVGpassword({ className }) {
   );
 }
 
-export function SVGuser({ className }) {
+export function SVGuser({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -200,7 +200,7 @@ export function SVGuser({ className }) {
   );
 }
 
-export function SVGhome({ className }) {
+export function SVGhome({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -219,7 +219,7 @@ export function SVGhome({ className }) {
   );
 }
 
-export function SVGback({ className }) {
+export function SVGback({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -238,7 +238,7 @@ export function SVGback({ className }) {
   );
 }
 
-export function SVGcell({ className }) {
+export function SVGcell({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -257,7 +257,7 @@ export function SVGcell({ className }) {
   );
 }
 
-export function SVGprofile({ className }) {
+export function SVGprofile({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -276,7 +276,7 @@ export function SVGprofile({ className }) {
   );
 }
 
-export function SVGlightTheme({ className }) {
+export function SVGlightTheme({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -295,7 +295,7 @@ export function SVGlightTheme({ className }) {
   );
 }
 
-export function SVGdarktTheme({ className }) {
+export function SVGdarktTheme({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +308,7 @@ export function SVGdarktTheme({ className }) {
   );
 }
 
-export function SVGtime({ className }) {
+export function SVGtime({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -327,7 +327,7 @@ export function SVGtime({ className }) {
   );
 }
 
-export function SVGhamburger({ className }) {
+export function SVGhamburger({ className }: { className: string }) {
   return (
     <svg
       className={className}
@@ -347,7 +347,7 @@ export function SVGhamburger({ className }) {
   );
 }
 
-export function SVGpenscilSquare({ className }) {
+export function SVGpenscilSquare({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -366,7 +366,7 @@ export function SVGpenscilSquare({ className }) {
   );
 }
 
-export function SVGbriefcase({ className }) {
+export function SVGbriefcase({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -385,7 +385,7 @@ export function SVGbriefcase({ className }) {
   );
 }
 
-export function SVGsearch({ className }) {
+export function SVGsearch({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -404,7 +404,7 @@ export function SVGsearch({ className }) {
   );
 }
 
-export function SVGfilter({ className }) {
+export function SVGfilter({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -423,7 +423,7 @@ export function SVGfilter({ className }) {
   );
 }
 
-export function SVGdoc({ className }) {
+export function SVGdoc({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -437,7 +437,7 @@ export function SVGdoc({ className }) {
   );
 }
 
-export function SVGbuilding({ className }) {
+export function SVGbuilding({ className }: { className: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
