@@ -6,8 +6,6 @@ import { Prisma } from "@prisma/client";
 import { SessionUser } from "@/types/next-auth";
 import { hasActiveSubscription } from "@/lib/prisma/queries";
 
-export const revalidate = 6;
-
 async function getHandler(req: Request, user: SessionUser) {
   const isSysAdmin = !!user.systemAdmin;
 

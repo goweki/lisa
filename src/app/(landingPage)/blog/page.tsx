@@ -4,9 +4,17 @@ import Image from "next/image";
 import { InputText } from "@/components/atoms/inputs";
 import { strTruncate } from "@/helpers/stringHandlers";
 import { BlogContext } from "./providers";
+import { def_Input } from "@/types/custom";
+import { Blog } from "@prisma/client";
 
-export default function BlogPage(params) {
-  const [searchPhrase, setSearchPhrase] = useState("");
+export default function BlogPage({
+  params,
+  searchParams,
+}: {
+  params: { post: string };
+  searchParams: { [key: string]: string };
+}) {
+  const [searchPhrase, setSearchPhrase] = useState(def_Input);
   const blogposts = useContext(BlogContext);
   //render
   return (
@@ -17,7 +25,7 @@ export default function BlogPage(params) {
           <div className="relative max-w-lg m-auto">
             <InputText
               name="searchPhrase"
-              value={searchPhrase}
+              valObj={searchPhrase}
               setValue={setSearchPhrase}
               placeholder="Search for blog-posts"
             />
@@ -27,7 +35,7 @@ export default function BlogPage(params) {
           {blogposts.length !== 0 ? (
             blogposts.map((v) => (
               <li
-                key={v._id}
+                key={v.id}
                 className="relative flex flex-col sm:flex-row xl:flex-col items-start"
               >
                 {renderCard(v)}
@@ -41,18 +49,19 @@ export default function BlogPage(params) {
     </main>
   );
 }
-function renderCard(post) {
+
+function renderCard(post: Blog) {
   return (
     <>
       <div className="order-1 sm:ml-6 xl:ml-0">
         <h3 className="mb-1 text-slate-900 font-semibold dark:text-slate-200">
           <span className="mb-1 block text-sm leading-6 text-purple-500">
-            {post.type}
+            {post.createdAt.toDateString()}
           </span>
           {post.title}
         </h3>
         <div className="prose prose-slate prose-sm text-slate-600 dark:prose-dark">
-          <p>{strTruncate(post.article, 100)}</p>
+          <p>{strTruncate(post.content, 100)}</p>
         </div>
         <a
           className="group inline-flex items-center h-9 rounded-full text-sm font-semibold whitespace-nowrap px-3 focus:outline-none focus:ring-2 bg-backg-surface text-slate-700 hover:bg-slate-200 hover:text-slate-900 focus:ring-slate-500 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-500 mt-2"
@@ -76,11 +85,11 @@ function renderCard(post) {
         </a>
       </div>
       <Image
-        src={post.image}
+        src={post.coverImage || "/banner_onDark.png"}
         alt=""
         className="mb-6 shadow-md rounded-lg bg-slate-50 w-full sm:w-[17rem] sm:mb-0 xl:mb-6 xl:w-full"
-        width="1216"
-        height="640"
+        width="1302"
+        height="715"
       />
     </>
   );

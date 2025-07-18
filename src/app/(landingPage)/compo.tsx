@@ -5,16 +5,7 @@ import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
 import { emailValidator, nameValidator } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
-
-interface Input {
-  value: string;
-  error: string;
-}
-
-const def_Input: Input = {
-  value: "",
-  error: "",
-};
+import { def_Input } from "@/types/custom";
 
 export function ReqDemoModal({
   handleCloseModal,

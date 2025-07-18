@@ -45,6 +45,7 @@ model User {
   cases            Case[]
   completedTasks   Task[]
   AssigneeRequests AssigneeRequest[]
+  Blog             Blog[]
 
   @@map("users")
 }
@@ -299,4 +300,26 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   PARTIALLY_REFUNDED
+}
+
+model Blog {
+  id         String        @id @default(cuid())
+  title      String
+  slug       String        @unique
+  content    String
+  excerpt    String?
+  coverImage String? // URL to cover image
+  published  Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  status     contentStatus @default(draft)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+}
+
+enum contentStatus {
+  draft
+  unpublished
+  published
 }

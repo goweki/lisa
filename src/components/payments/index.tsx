@@ -65,7 +65,7 @@ const plans: Record<string, Plan> = {
   },
 };
 
-export default function PaymentsPage() {
+export default function PaymentsSection() {
   const [regime, setRegime] = useState<Regime>("monthly");
 
   const toggleRegime = () =>

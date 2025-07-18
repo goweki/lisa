@@ -11,7 +11,7 @@ import { httpCodes } from "@/lib/configs";
 import { Case, Institution, User } from "@/types/models";
 import { AssigneeRequest, CaseType, Task } from "@prisma/client";
 import { UIstate } from "@/types/custom";
-import PaymentsPage from "@/components/payments";
+import PaymentsSection from "@/components/payments";
 
 export interface UIDATA {
   users: User[];
@@ -108,7 +108,7 @@ export default function UserProviders({
   ) : UIstate === "data-error" ? (
     <MessageLayout message="Couldn't fetch data. Try again later" />
   ) : UIstate === "payment-required" ? (
-    <PaymentsPage />
+    <PaymentsSection />
   ) : (
     <EdgeStoreProvider>
       <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
