@@ -87,6 +87,7 @@ export default function UserProviders({
       }
       console.log("UI data", response);
       setData(response);
+      setUIstate("OK");
     } catch (err) {
       setUIstate("data-error");
       console.error("ERROR: caught error\n > " + err);

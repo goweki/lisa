@@ -19,13 +19,13 @@ export async function POST(request: Request) {
       return Response.json({ message: "User NOT FOUND" }, { status: 404 });
     //user exists
     const resetToken = await generateRandom(20);
-    const hashedResetToken = await hash(resetToken);
+    console.log("reset token - ", resetToken);
     const passwordResetExpires = Date.now() + 3600000;
     //update db
     const updatedUser = await prisma.user.update({
       where: { id: userExists.id },
       data: {
-        resetToken: hashedResetToken,
+        resetToken: await hash(resetToken),
         resetTokenExpiry: new Date(passwordResetExpires),
       },
     });
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       );
     }
     console.log("Password Reset link SAVED: \n", updatedUser);
-    const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${userEmail}`;
+    const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${encodeURIComponent(userEmail)}`;
 
     // send email
     const renderedEmail = await resetPasswordEmailTemplate(
@@ -94,6 +94,8 @@ export async function GET(request: NextRequest) {
 
     if (!userExists) {
       return Response.json({ message: "Invalid link" }, { status: 400 });
+    } else {
+      console.log("User exists", userExists);
     }
 
     const _isTokenValid: boolean =

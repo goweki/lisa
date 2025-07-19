@@ -49,7 +49,7 @@ export default function ResetPassword({
         };
 
         const response = await fetch(
-          `/api/auth/reset-password?email=${email_}&token=${token}`,
+          `/api/auth/reset-password?email=${encodeURIComponent(email_)}&token=${token}`,
           fetchOptions
         ).then(async (res_) => {
           if (res_.ok) {
