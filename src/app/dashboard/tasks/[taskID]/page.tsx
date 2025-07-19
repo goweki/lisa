@@ -116,11 +116,11 @@ export default function TaskView({ params }: { params: any }) {
 
   // update clientParty options
   useEffect(() => {
-    if (!(caseEdit.caseTypeID || selected?.caseTypeID)) return;
+    if (!(caseEdit.caseTypeId || selected?.caseTypeId)) return;
     // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
     const foundCaseType_ = caseTypes.find(
       ({ id }: { id: string }) =>
-        id === (caseEdit.caseTypeID || selected?.caseTypeID)
+        id === (caseEdit.caseTypeId || selected?.caseTypeId)
     );
 
     if (!foundCaseType_) return;
@@ -130,7 +130,7 @@ export default function TaskView({ params }: { params: any }) {
       ...prev,
       clientParties: [primaryParty, secondaryParty],
     }));
-  }, [caseEdit.caseTypeID, selected?.caseTypeID, caseTypes]);
+  }, [caseEdit.caseTypeId, selected?.caseTypeId, caseTypes]);
 
   // update assignees options
   useEffect(() => {
@@ -257,7 +257,7 @@ export default function TaskView({ params }: { params: any }) {
       description: caseEdit.description || selected.description,
       // status: caseEdit.status || selected.status,
       court: caseEdit.court || selected.court,
-      userID: caseEdit.userID || selected.userID,
+      userID: caseEdit.userId || selected.userId,
       caseNumber: caseEdit.caseNumber || selected.caseNumber,
       clientParty: caseEdit.clientParty || selected.clientParty,
       clientTel: caseEdit.clientTel || selected.clientTel,
@@ -413,7 +413,7 @@ export default function TaskView({ params }: { params: any }) {
             </Label>
             <Select
               name="type"
-              value={caseEdit.caseTypeID || selected.caseTypeID}
+              value={caseEdit.caseTypeId || selected.caseTypeId}
               onValueChange={(value) => {
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -457,7 +457,7 @@ export default function TaskView({ params }: { params: any }) {
             </Label>
             <Select
               name="lawyer"
-              value={caseEdit.userID || (selected.userID as string) || ""}
+              value={caseEdit.userId || selected.userId || ""}
               onValueChange={(value) => {
                 setCaseEdit((prev) => ({
                   ...prev,

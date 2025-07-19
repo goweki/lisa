@@ -104,7 +104,7 @@ async function getHandler(
 
   if (
     !institutionUser ||
-    (institutionUser.role !== "admin" && !user.systemAdmin)
+    (institutionUser.role !== "ADMIN" && !user.systemAdmin)
   ) {
     return Response.json("You do not have permission to delete user", {
       status: 403,
@@ -193,7 +193,7 @@ async function deleteHandler(
     const del_institutionUser = await prisma.institutionUser.findFirst({
       where: { userId: id },
     });
-    if (!del_institutionUser || del_institutionUser.role === "admin") {
+    if (!del_institutionUser || del_institutionUser.role === "ADMIN") {
       return Response.json("You do not have permission to delete this user", {
         status: 403,
       });

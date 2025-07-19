@@ -5,7 +5,7 @@ import { InputText } from "@/components/atoms/inputs";
 import { strTruncate } from "@/helpers/stringHandlers";
 import { BlogContext } from "./providers";
 import { def_Input } from "@/types/custom";
-import { Blog } from "@prisma/client";
+import { Blogpost } from "@prisma/client";
 
 export default function BlogPage({
   params,
@@ -50,7 +50,7 @@ export default function BlogPage({
   );
 }
 
-function renderCard(post: Blog) {
+function renderCard(post: Blogpost) {
   return (
     <>
       <div className="order-1 sm:ml-6 xl:ml-0">

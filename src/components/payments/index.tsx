@@ -16,7 +16,7 @@ import { formatNumberToK } from "@/helpers/stringHandlers";
 import { CheckIcon, MinusIcon } from "lucide-react";
 import React, { useState } from "react";
 import { Modal } from "../mols/modal";
-import { InputForm } from "./inputForm";
+import InputArea from "./inputArea";
 import { signOut } from "next-auth/react";
 
 const publicKey = "pk_your_public_key_here";
@@ -254,13 +254,18 @@ function BuyButton({
   variant?: "outline" | "default";
 }) {
   return (
-    <Modal
-      trigger={label}
-      variant={variant}
-      className="w-full"
-      title={packag + " Package"}
-    >
-      <InputForm amount={amount} packag={packag} />
-    </Modal>
+    <>
+      <Modal
+        trigger={label}
+        variant={variant}
+        className="w-full"
+        title={packag + " Package"}
+      >
+        <>
+          <text>radar</text>
+          <InputArea amount={amount} packag={packag} />
+        </>
+      </Modal>
+    </>
   );
 }

@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { taskType as taskTypeOptions } from "@prisma/client";
+import { TaskType as taskTypeOptions } from "@prisma/client";
 import {
   Form,
   FormControl,

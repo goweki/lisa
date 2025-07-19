@@ -10,6 +10,7 @@ import { DataContext } from "./providers";
 import { isDatePassed } from "@/helpers/dateHandlers";
 import { useSession, signOut } from "next-auth/react";
 import { Case, Task } from "@/types/models";
+import { CaseStatus, EntityStatus } from "@prisma/client";
 
 interface UsersBrief {
   id: string;
@@ -42,7 +43,7 @@ export default function UserHome() {
           dueTasks: case_.tasks?.filter(
             (task_) =>
               // !task_.completedByID && isDatePassed(new Date(task_.dueDate))
-              !task_.completedByID
+              !task_.completedById
           ),
         };
       })
@@ -61,7 +62,7 @@ export default function UserHome() {
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
     const casesBrief = cases
-      .filter((_case) => _case.status === "open")
+      .filter((_case) => _case.status === CaseStatus.OPEN)
       .slice(0, 8)
       .map((_case) => ({
         id: _case.id,

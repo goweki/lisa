@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-import { taskType as taskTypeOptions } from "@prisma/client";
+import { TaskType as taskTypeOptions } from "@prisma/client";
 import {
   Form,
   FormControl,

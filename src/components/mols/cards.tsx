@@ -1,18 +1,39 @@
+import { TemplateObj } from "@/types/custom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, ElementType } from "react";
 
-export function CardInstitution({ item, icon }) {
+export function CardInstitution({
+  item,
+  icon,
+}: {
+  item: TemplateObj;
+  icon: ElementType;
+}) {
   return (
     <BaseCardBrief item={item} baseLink="/dashboard/institutions" icon={icon} />
   );
 }
 
-export function CardCase({ item, icon }) {
+export function CardCase({
+  item,
+  icon,
+}: {
+  item: TemplateObj;
+  icon: ElementType;
+}) {
   return <BaseCardBrief item={item} baseLink="/dashboard/cases" icon={icon} />;
 }
 
-export function CardItemsTable({ title, data, pageLink }) {
+export function CardItemsTable({
+  title,
+  data,
+  pageLink,
+}: {
+  title: string;
+  data: TemplateObj;
+  pageLink: string;
+}) {
   if (!data || data.length === 0) {
     return (
       <div className="m-auto card grid place-items-center max-w-lg">
@@ -49,7 +70,7 @@ export function CardItemsTable({ title, data, pageLink }) {
         </thead>
         <tbody className="overflow-y-auto">
           {data?.length > 0 &&
-            data.map((row, i) => (
+            data.map((row: TemplateObj, i: number) => (
               <tr
                 key={row.id}
                 className="border-b border-gray-300 dark:border-gray-800 hover:bg-backg-raised dark:hover:bg-backg-dark-raised"
@@ -88,7 +109,15 @@ export function CardItemsTable({ title, data, pageLink }) {
   );
 }
 
-function BaseCardBrief({ item, baseLink, icon: Icon }) {
+function BaseCardBrief({
+  item,
+  baseLink,
+  icon: Icon,
+}: {
+  item: TemplateObj;
+  baseLink: string;
+  icon: ElementType;
+}) {
   return (
     <Link
       href={`${baseLink}/${item.id}`}
@@ -106,14 +135,14 @@ function BaseCardBrief({ item, baseLink, icon: Icon }) {
               className={`bg-slate-500 h-2.5 rounded-full w-${
                 item.completedBy
                   ? "w-full"
-                  : item.tasks?.filter((v) => v.completedBy).length === 0 ||
-                    item.tasks?.length === 0
-                  ? "0"
-                  : item.tasks?.filter((v) => v.completedBy).length < 3
-                  ? "1/3"
-                  : item.tasks?.filter((v) => v.completedBy).length < 4
-                  ? "2/3"
-                  : "3/3"
+                  : item.tasks?.filter((v: any) => v.completedBy).length ===
+                        0 || item.tasks?.length === 0
+                    ? "0"
+                    : item.tasks?.filter((v: any) => v.completedBy).length < 3
+                      ? "1/3"
+                      : item.tasks?.filter((v: any) => v.completedBy).length < 4
+                        ? "2/3"
+                        : "3/3"
               }/`}
             ></div>
           </div>

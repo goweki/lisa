@@ -1,16 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { usePaystackPayment } from "react-paystack";
 import { InputText } from "../atoms/inputs";
 import { SVGcell, SVGemail, SVGprofile } from "../atoms/svgs";
@@ -20,13 +9,19 @@ import {
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
-import { HookConfig } from "react-paystack/dist/types";
-import { ExternalLinkIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Separator } from "../ui/separator";
+import { def_Input, Input, UIstate } from "@/types/custom";
+import dynamic from "next/dynamic";
+import { Loader } from "../atoms/loader";
 
-const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
+const CheckoutButton = dynamic(() => import("./checkoutButton"), {
+  ssr: false,
+  loading: () => <Loader />,
+});
+
+const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
 
 export interface PaymentConfig {
   reference: string;
@@ -35,14 +30,7 @@ export interface PaymentConfig {
   publicKey: string;
 }
 
-interface Input {
-  value: string;
-  error: string;
-}
-
-const def_Input = { value: "", error: "" };
-
-export function InputForm({
+export default function InputArea({
   packag,
   amount,
 }: {
@@ -52,13 +40,13 @@ export function InputForm({
   const [name, setName] = useState<Input>(def_Input);
   const [email, setEmail] = useState<Input>(def_Input);
 
-  const [payConfig, setPayConfig] = useState<HookConfig>({
+  const [payConfig, setPayConfig] = useState<PaymentConfig>({
     reference: `${packag}-${new Date().getTime().toString()}`,
     amount,
     email: "",
     publicKey: PAYSTACK_PUBLIC_KEY || "",
   });
-  const [UIstate, setUIstate] = useState<"loading" | "OK">("loading");
+  const [UIstate, setUIstate] = useState<UIstate>("loading");
   const router = useRouter();
 
   useEffect(() => {
@@ -81,10 +69,7 @@ export function InputForm({
   };
 
   return (
-    <form
-      id="signin"
-      className="rounded space-y-6 md:space-y-6 p-8 shadow dark:shadow-dark"
-    >
+    <>
       <div className="space-y-4">
         <InputText
           label="Preferred name (optional)"
@@ -133,43 +118,15 @@ export function InputForm({
       </div>
 
       {!PAYSTACK_PUBLIC_KEY ? (
-        <div className="text-red-600">
-          SERVER ERROR: Check paystack configuration key
-        </div>
+        <>ERROR: missing integration keys</>
+      ) : !payConfig.email ? (
+        <>Enter email to proceed</>
       ) : (
         <CheckoutButton
-          disabled={!!name.error || !!email.error}
+          disabled={!!name.error || !!email.error || !PAYSTACK_PUBLIC_KEY}
           config={payConfig}
         />
       )}
-    </form>
+    </>
   );
 }
-
-const CheckoutButton = ({
-  config,
-  disabled = false,
-  onClose = () => console.log("checkout closed"),
-  onSuccess = (ref_) => console.log("payment made", ref_),
-}: {
-  config: HookConfig;
-  disabled?: boolean;
-  onSuccess?: (ref: any) => void;
-  onClose?: () => void;
-}) => {
-  const initializePayment = usePaystackPayment(config);
-  return (
-    <div>
-      <Button
-        disabled={disabled}
-        className="w-full"
-        type="button"
-        onClick={() => {
-          initializePayment({ onSuccess, onClose });
-        }}
-      >
-        {disabled ? "Please fill email/name" : "BUY NOW"}
-      </Button>
-    </div>
-  );
-};

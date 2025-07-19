@@ -145,12 +145,12 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
 
   // update clientParty options
   useEffect(() => {
-    if (!(caseEdit.caseTypeID || selected?.caseTypeID)) return;
+    if (!(caseEdit.caseTypeId || selected?.caseTypeId)) return;
     // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
 
     const foundCaseType = caseTypes.find(
       ({ id }: { id: string }) =>
-        id === (caseEdit.caseTypeID || selected?.caseTypeID)
+        id === (caseEdit.caseTypeId || selected?.caseTypeId)
     );
 
     if (!foundCaseType) return;
@@ -161,7 +161,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
       ...prev,
       clientParties: [primaryParty, secondaryParty],
     }));
-  }, [caseEdit.caseTypeID, selected?.caseTypeID, caseTypes]);
+  }, [caseEdit.caseTypeId, selected?.caseTypeId, caseTypes]);
 
   // update staff options
   useEffect(() => {
@@ -288,7 +288,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
       description: caseEdit.description || selected.description,
       // status: caseEdit.status || selected.status,
       court: caseEdit.court || selected.court,
-      userID: caseEdit.userID || selected.userID,
+      userID: caseEdit.userId || selected.userId,
       caseNumber: caseEdit.caseNumber || selected.caseNumber,
       clientParty: caseEdit.clientParty || selected.clientParty,
       clientTel: caseEdit.clientTel || selected.clientTel,
@@ -465,7 +465,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
   const handleCreateTask = async (newTask: Partial<Task>) => {
     setUIstate("loading");
 
-    const { caseID, ...newTask_ } = newTask;
+    const { caseId, ...newTask_ } = newTask;
 
     if (!caseID && !newTask_.name) {
       console.error(" > Missing task attributes - ", newTask);
@@ -513,7 +513,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
             </Label>
             <Select
               name="type"
-              value={caseEdit.caseTypeID || selected.caseTypeID}
+              value={caseEdit.caseTypeId || selected.caseTypeId}
               onValueChange={(value) => {
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -563,7 +563,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
             {session?.user?.role?.includes("admin") ? (
               <Select
                 name="assignee"
-                value={caseEdit.userID || (selected.userID as string) || ""}
+                value={caseEdit.userId || (selected.userId as string) || ""}
                 onValueChange={(value) => {
                   setCaseEdit((prev) => ({
                     ...prev,
@@ -584,12 +584,12 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
               </Select>
             ) : (
               <AssignmentRequestComponent
-                assigneeID={selected.userID}
+                assigneeID={selected.userId}
                 pendingRequest={assignmentRequests?.find(
                   (req: AssigneeRequest) =>
-                    req.caseID === selected.id &&
-                    req.assigneeID === session?.user?.id &&
-                    req.status === "pending"
+                    req.caseId === selected.id &&
+                    req.assigneeId === session?.user?.id &&
+                    req.status === "PENDING"
                 )}
                 uiState={UIstate}
                 setUIstate={setUIstate}
@@ -964,7 +964,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
                               <TableCell className="hidden sm:table-cell">
                                 <Badge
                                   className={`text-xs ${
-                                    task.completedByID
+                                    task.completedById
                                       ? "border-emerald-500"
                                       : isDatePassed(task.dueDate)
                                         ? "border-destructive"
@@ -972,7 +972,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
                                   }`}
                                   variant="outline"
                                 >
-                                  {task.completedByID
+                                  {task.completedById
                                     ? "complete"
                                     : "incomplete"}
                                 </Badge>
@@ -1035,7 +1035,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
         </form>
       </CardContent>
       {(session?.user?.role?.includes("admin") ||
-        selected.userID === session?.user?.id) && (
+        selected.userId === session?.user?.id) && (
         <CardFooter className="border-t px-6 py-4 min-h-20">
           {UIstate === "loading" ? (
             <Loader />

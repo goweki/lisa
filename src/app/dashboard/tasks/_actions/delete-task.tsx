@@ -4,8 +4,8 @@ import { Task } from "@/types/models";
 export const handleTaskDeletion = async (
   _task: Partial<Task>
 ): Promise<{ status: number; message: string }> => {
-  if (!_task.id && !_task.caseID) {
-    console.error(" > FAILED: Missing id or caseID - ", _task);
+  if (!_task.id && !_task.caseId) {
+    console.error(" > FAILED: Missing id or caseId - ", _task);
   }
 
   try {

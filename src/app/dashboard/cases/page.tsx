@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardTitle,
-  CardDescription,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
@@ -17,26 +16,16 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  emailValidator,
-  nameValidator,
-  telValidator,
-} from "@/helpers/inputValidators";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { nameValidator, telValidator } from "@/helpers/inputValidators";
+import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
 import { httpCodes } from "@/lib/configs";
-import MultiSelect, {
-  Option as MultiSelectOption,
-} from "@/components/atoms/multiSelect";
 import { TemplateObj } from "@/types/custom";
-import { Institution } from "@/types/models";
 
 type newCaseType = {
   name: TemplateObj;

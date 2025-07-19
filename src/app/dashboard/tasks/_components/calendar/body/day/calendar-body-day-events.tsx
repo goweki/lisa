@@ -22,7 +22,7 @@ export default function CalendarBodyDayEvents() {
             <div className="flex items-center gap-2">
               <div
                 className={`size-2 rounded-full bg-${
-                  event.completedByID ? "emerald" : "slate"
+                  event.completedById ? "emerald" : "slate"
                 }-500`}
               />
               <p className="text-muted-foreground text-sm font-medium">

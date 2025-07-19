@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     let data;
     switch (model_) {
       case "blog":
-        data = await prisma.blog.findMany();
+        data = await prisma.blogpost.findMany();
         break;
       default:
         return Response.json("Unauthorized", { status: 401 });

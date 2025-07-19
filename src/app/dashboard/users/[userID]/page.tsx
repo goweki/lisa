@@ -30,7 +30,7 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes, roleLabels } from "@/lib/configs";
-import { status, userRole as userRoles } from "@prisma/client";
+import { EntityStatus, UserRole as UserRoles } from "@prisma/client";
 import { User, Institution } from "@/types/models";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/types/custom";
@@ -58,7 +58,7 @@ interface SelectedEditUser {
   names: string;
   email: string;
   tel: string | null;
-  status?: status;
+  status?: EntityStatus;
   photoUrl: string | null;
   photoFile?: File | undefined;
 }

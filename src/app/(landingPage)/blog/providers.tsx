@@ -2,23 +2,23 @@
 import Link from "next/link";
 import React, { createContext, useState, useEffect } from "react";
 import { Loader } from "@/components/atoms/loader";
-import { Blog } from "@prisma/client";
+import { Blogpost } from "@prisma/client";
 import toast from "react-hot-toast";
-export const BlogContext = createContext<Blog[]>([]);
+export const BlogContext = createContext<Blogpost[]>([]);
 
 export default function BlogProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [blogposts, setBlog] = useState<Blog[] | null>(null);
+  const [blogposts, setBlog] = useState<Blogpost[] | null>(null);
   //onMount
   useEffect(() => {
     (async () => {
       const fetchOptions = {
         method: "GET",
       };
-      const _blogposts: Blog[] | null = await fetch(
+      const _blogposts: Blogpost[] | null = await fetch(
         `/api/data?collection=blog`,
         fetchOptions
       ).then(async (res_) => {

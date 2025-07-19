@@ -51,7 +51,9 @@ export async function POST(request: Request) {
     });
 
     if (!emailerRes.ok) {
-      throw new Error("Failed to send email");
+      return Response.json(
+        "Email was not sent: reset password later, or contact support"
+      );
     }
 
     console.log("Registration successful");

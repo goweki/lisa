@@ -2,6 +2,8 @@ export interface TemplateObj {
   [key: string]: any;
 }
 
+export type Role = "system" | "admin" | "user";
+
 export type UIstate =
   | "loading"
   | "OK"

@@ -413,7 +413,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { taskType as taskTypeOptions } from "@prisma/client";
+import { TaskType as taskTypeOptions } from "@prisma/client";
 import {
   Form,
   FormControl,
@@ -573,21 +573,24 @@ export default function TaskEditModal(params: TaskEditModalProps) {
     // Filter only changed values
     const changedValues = Object.keys(formEdit)
       .filter((key) => formEdit[key]) // Get only edited fields
-      .reduce((acc, key) => {
-        const typedKey = key as keyof typeof values;
+      .reduce(
+        (acc, key) => {
+          const typedKey = key as keyof typeof values;
 
-        // Handle dueDate separately since it's a Date
-        if (typedKey === "dueDate") {
-          acc[typedKey] =
-            typeof values[typedKey] === "string"
-              ? new Date(values[typedKey])
-              : values[typedKey] || undefined;
-        } else {
-          acc[typedKey] = values[typedKey] as any; // Explicitly cast for TS
-        }
+          // Handle dueDate separately since it's a Date
+          if (typedKey === "dueDate") {
+            acc[typedKey] =
+              typeof values[typedKey] === "string"
+                ? new Date(values[typedKey])
+                : values[typedKey] || undefined;
+          } else {
+            acc[typedKey] = values[typedKey] as any; // Explicitly cast for TS
+          }
 
-        return acc;
-      }, {} as Partial<z.infer<typeof taskSchema>>);
+          return acc;
+        },
+        {} as Partial<z.infer<typeof taskSchema>>
+      );
 
     // If nothing changed, don't update
     if (Object.keys(changedValues).length === 0) {

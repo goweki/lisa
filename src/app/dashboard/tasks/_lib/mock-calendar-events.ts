@@ -1,7 +1,7 @@
 import { CalendarTask } from "../_components/calendar/calendar-types";
 import { addDays, startOfMonth } from "date-fns";
 import { colorOptions } from "../_components/calendar/calendar-tailwind-classes";
-import { Reminder, taskType } from "@prisma/client";
+import { Reminder, TaskType } from "@prisma/client";
 
 const EVENT_TITLES = [
   "Team Standup",
@@ -56,11 +56,11 @@ export function generateMockEvents(): CalendarTask[] {
       reminders: [],
       type:
         Math.floor(Math.random() * 2) + 1 === 1
-          ? taskType.document
-          : taskType.event,
+          ? TaskType.DOCUMENT
+          : TaskType.EVENT,
       description: null,
-      completedByID: null,
-      caseID: "",
+      completedById: null,
+      caseId: "",
     });
   }
 

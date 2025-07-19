@@ -1,6 +1,6 @@
 import { hash, generateRandom } from "@/helpers/passwordHandlers";
 import { BASE_URL } from "@/helpers/getUrl";
-import { PrismaClient, userRole } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
 const prisma = new PrismaClient();
 
 /**
@@ -96,7 +96,7 @@ export async function createUser(userData: {
             institution: {
               connect: { id: institutionId },
             },
-            role: institutionName ? userRole.admin : undefined,
+            role: institutionName ? UserRole.ADMIN : undefined,
           })),
         },
       },

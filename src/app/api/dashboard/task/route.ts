@@ -71,7 +71,7 @@ async function deleteHandler(request: Request, user: SessionUser) {
     const deleteTask = await prisma.task.delete({
       where: {
         id: id,
-        caseID: caseID,
+        caseId: caseID,
       },
     });
     console.log(`SUCCESS: task deleted.\n..........`);

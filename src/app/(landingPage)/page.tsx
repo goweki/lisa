@@ -18,7 +18,7 @@ export default function LandingPage() {
     <main className="flex bg-transparent flex-col flex-grow justify-start items-center">
       <div className="flex flex-wrap items-center">
         <div className="w-full px-4">
-          <div className="z-10 p-16 mx-auto max-w-md min-w-sm">
+          <div className="z-10 p-16 mx-auto max-w-sm min-w-xs">
             <SVGlogoAnimation1 className={""} />
           </div>
         </div>
@@ -27,7 +27,7 @@ export default function LandingPage() {
         ) : !session ? (
           <div className="w-full px-4">
             <div className="hero-content mx-auto max-w-[780px] text-center">
-              <h1 className="mb-8 text-3xl text-font-inactive dark:text-font-dark-inactive font-bold leading-snug sm:text-4xl sm:leading-snug md:text-[45px] md:leading-snug">
+              <h1 className="mb-8 text-xl text-font-inactive dark:text-font-dark-inactive font-bold leading-snug sm:text-2xl sm:leading-snug md:text-[36px] md:leading-snug">
                 The <span>L</span>egal <span>I</span>ntelligent <span>S</span>
                 upport <span>A</span>ssistant
               </h1>
@@ -57,7 +57,7 @@ export default function LandingPage() {
                   </span>
                 </Link>
               </ul>
-              <p className="mx-auto mb-10 max-w-[600px] text-base sm:text-lg sm:leading-relaxed md:text-xl md:leading-relaxed">
+              <p className="mx-auto mb-10 max-w-[600px] text-base sm:text-md sm:leading-relaxed md:text-lg md:leading-relaxed">
                 With Lisa, legal professionals now have a handy tool that
                 unifies resources and keeps track of activities. Lisa is much
                 more than an information manager, it is a research assistant and

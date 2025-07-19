@@ -10,7 +10,7 @@ import Calendar from "./_components/calendar/calendar";
 import { CalendarTask, Mode } from "./_components/calendar/calendar-types";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
-import { taskType as taskTypeOptions } from "@prisma/client";
+import { TaskType as TaskTypeOptions } from "@prisma/client";
 import { Task } from "@/types/models";
 import { handleTaskCreation } from "./_actions/add-task";
 import { handleTaskDeletion } from "./_actions/delete-task";
@@ -69,7 +69,7 @@ export default function TasksView() {
   useEffect(() => {
     setOptions((prev) => ({
       ...prev,
-      taskTypes: Object.values(taskTypeOptions),
+      taskTypes: Object.values(TaskTypeOptions),
     }));
   }, []);
 
@@ -77,15 +77,15 @@ export default function TasksView() {
   async function addTask(
     newTask: Partial<Task>
   ): Promise<{ status: number; message: string }> {
-    const { caseID, ..._task } = newTask;
+    const { caseId, ..._task } = newTask;
 
-    if (!caseID) {
+    if (!caseId) {
       console.error("Missing caseID - ", newTask);
     }
 
     const res_ = await handleTaskCreation({
       newTask: _task,
-      selectedCase: { id: caseID },
+      selectedCase: { id: caseId },
     });
 
     return res_;
@@ -110,15 +110,15 @@ export default function TasksView() {
   async function deleteTask(
     _task: Partial<Task>
   ): Promise<{ status: number; message: string }> {
-    const { caseID, id } = _task;
+    const { caseId, id } = _task;
 
-    if (!caseID && !id) {
+    if (!caseId && !id) {
       console.error("Missing caseID || taskID - ", _task);
     }
 
     const res_ = await handleTaskDeletion({
       id,
-      caseID,
+      caseId,
     });
 
     return res_;

@@ -71,7 +71,7 @@ export function withAuthAdmin(
       );
     }
 
-    if (institutionUser && institutionUser.role === "admin") {
+    if (institutionUser && institutionUser.role === "ADMIN") {
       return handler(
         req,
         {

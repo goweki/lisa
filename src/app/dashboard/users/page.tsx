@@ -35,7 +35,7 @@ import MultiSelect, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
 import { TemplateObj } from "@/types/custom";
-import { userRole as userRoles } from "@prisma/client";
+import { UserRole as userRoles } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";
 
 type newUserType = {

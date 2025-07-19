@@ -43,8 +43,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InputImage } from "@/components/atoms/inputs";
-import { status } from "@prisma/client";
 import { Switch } from "@/components/ui/switch";
+import { EntityStatus } from "@prisma/client";
 
 interface InstitutionEdit {
   name: string;
@@ -253,7 +253,10 @@ export default function InstitutionView({ params }: { params: any }) {
     // api call
     try {
       console.log("INFO: toggling status of institution");
-      const newStatus = selected.status === "INACTIVE" ? "ACTIVE" : "INACTIVE";
+      const newStatus =
+        selected.status !== EntityStatus.ACTIVE
+          ? EntityStatus.ACTIVE
+          : EntityStatus.INACTIVE;
       const fetchBody = {
         id: selected.id,
         status: newStatus,

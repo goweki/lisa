@@ -75,7 +75,7 @@ async function getHandler(req: Request, user: SessionUser) {
             : [],
 
         prisma.case.findMany({
-          where: isSysAdmin ? {} : { institutionID: { in: instIDs_activeSub } },
+          where: isSysAdmin ? {} : { institutionId: { in: instIDs_activeSub } },
           include: {
             caseType: true,
             institution: true,
@@ -98,7 +98,7 @@ async function getHandler(req: Request, user: SessionUser) {
 
         prisma.assigneeRequest.findMany({
           where: {
-            assigneeID: user.id,
+            assigneeId: user.id,
           },
         }),
       ]);

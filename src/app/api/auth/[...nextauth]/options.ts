@@ -2,6 +2,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 import prisma from "@/lib/prisma/prisma";
 import { compareHash } from "@/helpers/passwordHandlers";
+import { Role } from "@/types/custom";
 
 // interface User {
 //   id: string
@@ -92,20 +93,18 @@ export const authOptions: NextAuthOptions = {
         token.systemAdmin = user.systemAdmin;
         token.photoUrl = user.photoUrl;
         // embed role in token
-        let userRole_: string = "";
+        let userRole_: Role = "user";
         if (user.systemAdmin) {
           userRole_ = "system";
         } else {
           const isAdmin_ = !!(await prisma.institutionUser.findFirst({
             where: {
               userId: user.id,
-              role: "admin",
+              role: "ADMIN",
             },
           }));
           if (isAdmin_) {
             userRole_ = "admin";
-          } else {
-            userRole_ = "user";
           }
         }
         token.role = userRole_;
@@ -118,7 +117,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.systemAdmin = token.systemAdmin as boolean;
         session.user.photoUrl = token.photoUrl as string;
-        session.user.role = token.role as "user" | "system" | "admin";
+        session.user.role = token.role as Role;
       }
       // console.log("session here: ", session);
       return session;

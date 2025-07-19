@@ -98,11 +98,11 @@ export default function CalendarEvent({
         <motion.div
           className={cn(
             `px-3 py-1.5 rounded-md truncate cursor-pointer transition-all duration-300 bg-${
-              event.completedByID ? "emerald" : "slate"
+              event.completedById ? "emerald" : "slate"
             }-500/10 hover:bg-${
-              event.completedByID ? "emerald" : "slate"
+              event.completedById ? "emerald" : "slate"
             }-500/20 border border-${
-              event.completedByID ? "emerald" : "slate"
+              event.completedById ? "emerald" : "slate"
             }-500`,
             !month && "absolute",
             className
@@ -148,7 +148,7 @@ export default function CalendarEvent({
           <motion.div
             className={cn(
               `flex flex-col w-full text-${
-                event.completedByID ? "emerald" : "slate"
+                event.completedById ? "emerald" : "slate"
               }-500`,
               month && "flex-row items-center justify-between"
             )}

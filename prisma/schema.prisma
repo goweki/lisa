@@ -7,20 +7,20 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum status {
+enum EntityStatus {
   ACTIVE
-  DORMANT // Fixed typo
+  DORMANT
   INACTIVE
 }
 
 model Institution {
-  id       String  @id @default(uuid())
-  name     String  @unique
+  id       String       @id @default(uuid())
+  name     String       @unique
   location String?
   logoUrl  String?
-  status   status  @default(DORMANT)
+  status   EntityStatus @default(DORMANT)
 
-  users         InstitutionUser[] // join table
+  users         InstitutionUser[]
   cases         Case[]
   caseTypes     CaseType[]
   subscriptions Subscription[]
@@ -30,32 +30,31 @@ model Institution {
 }
 
 model User {
-  id               String    @id @default(uuid())
+  id               String       @id @default(uuid())
   names            String
-  email            String    @unique
-  systemAdmin      Boolean   @default(false)
+  email            String       @unique
+  systemAdmin      Boolean      @default(false)
   tel              String?
   password         String?
   resetToken       String?
   resetTokenExpiry DateTime?
   photoUrl         String?
-  status           status    @default(DORMANT) // Fixed typo
+  status           EntityStatus @default(DORMANT)
 
-  institutions     InstitutionUser[] // join table
+  institutions     InstitutionUser[]
   cases            Case[]
   completedTasks   Task[]
-  AssigneeRequests AssigneeRequest[]
-  Blog             Blog[]
+  assigneeRequests AssigneeRequest[]
+  blogposts        Blogpost[]
 
   @@map("users")
 }
 
-// Join model for Institution <-> User many-to-many
 model InstitutionUser {
   id            String   @id @default(uuid())
   institutionId String
   userId        String
-  role          userRole @default(lawyer)
+  role          UserRole @default(LAWYER)
 
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -64,7 +63,6 @@ model InstitutionUser {
   @@map("institutionUsers")
 }
 
-// Subscription by Institution
 model Subscription {
   id                  String               @id @default(uuid())
   institutionId       String
@@ -83,7 +81,6 @@ model Subscription {
   @@map("subscriptions")
 }
 
-// Pricing plans
 model Plan {
   id           String   @id @default(uuid())
   name         String   @unique
@@ -126,7 +123,6 @@ model PlanFeature {
   @@unique([planId, featureId])
 }
 
-// Payment records
 model PaymentTransaction {
   id                    String        @id @default(uuid())
   institutionId         String
@@ -150,7 +146,7 @@ model PaymentTransaction {
 
 model CaseType {
   id             String  @id @default(uuid())
-  institutionId  String? // Fixed naming convention
+  institutionId  String?
   name           String  @unique
   primaryParty   String
   secondaryParty String
@@ -165,7 +161,7 @@ model Case {
   id                    String     @id @default(uuid())
   name                  String
   description           String?
-  status                caseStatus @default(open)
+  status                CaseStatus @default(OPEN)
   caseNumber            String?
   clientParty           String
   clientName            String
@@ -178,15 +174,15 @@ model Case {
   otherPartyDescription String?
   court                 String?
 
-  caseTypeID    String
-  caseType      CaseType    @relation(fields: [caseTypeID], references: [id])
-  institutionID String
-  institution   Institution @relation(fields: [institutionID], references: [id])
-  userID        String?
-  lawyer        User?       @relation(fields: [userID], references: [id])
+  caseTypeId    String
+  caseType      CaseType    @relation(fields: [caseTypeId], references: [id])
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  userId        String?
+  lawyer        User?       @relation(fields: [userId], references: [id])
 
   tasks            Task[]
-  AssigneeRequests AssigneeRequest[]
+  assigneeRequests AssigneeRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -197,11 +193,11 @@ model Case {
 
 model AssigneeRequest {
   id         String                @id @default(uuid())
-  caseID     String
-  case       Case                  @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  assigneeID String
-  assignee   User                  @relation(fields: [assigneeID], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  status     assigneeRequestStatus @default(pending)
+  caseId     String
+  case       Case                  @relation(fields: [caseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  assigneeId String
+  assignee   User                  @relation(fields: [assigneeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  status     AssigneeRequestStatus @default(PENDING)
   createdAt  DateTime              @default(now())
 
   @@map("assigneeRequests")
@@ -210,13 +206,13 @@ model AssigneeRequest {
 model Task {
   id            String   @id @default(uuid())
   name          String
-  type          taskType
+  type          TaskType
   dueDate       DateTime
   description   String?
-  completedByID String?
-  completedBy   User?    @relation(fields: [completedByID], references: [id])
-  caseID        String
-  case          Case     @relation(fields: [caseID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  completedById String?
+  completedBy   User?    @relation(fields: [completedById], references: [id])
+  caseId        String
+  case          Case     @relation(fields: [caseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   reminders Reminder[]
   documents Document[]
@@ -228,55 +224,76 @@ model Document {
   id     String @id @default(uuid())
   name   String
   link   String
-  taskID String
+  taskId String
 
-  task Task @relation(fields: [taskID], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("documents")
 }
 
 model Reminder {
-  id      String           @id @default(uuid())
-  regime  timeRegimes
-  count   Int
-  channel reminderChannels
-  Task    Task?            @relation(fields: [taskId], references: [id])
-  taskId  String?
+  id        String           @id @default(uuid())
+  regime    TimeRegimes
+  count     Int
+  channel   ReminderChannels
+  taskId    String?
+  createdAt DateTime         @default(now())
+
+  task Task? @relation(fields: [taskId], references: [id])
+}
+
+model Blogpost {
+  id         String        @id @default(cuid())
+  title      String
+  slug       String        @unique
+  content    String
+  excerpt    String?
+  coverImage String?
+  published  Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  status     ContentStatus @default(DRAFT)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("Blog")
 }
 
 // ENUMS
-enum userRole {
-  admin
-  advocate
-  lawyer
+
+enum UserRole {
+  ADMIN
+  ADVOCATE
+  LAWYER
 }
 
-enum caseStatus {
-  open
-  closed
+enum CaseStatus {
+  OPEN
+  CLOSED
 }
 
-enum assigneeRequestStatus {
-  pending
-  approved
-  rejected
+enum AssigneeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
-enum reminderChannels {
+enum ReminderChannels {
   email
   sms
   whatsapp
 }
 
-enum timeRegimes {
+enum TimeRegimes {
   minutes
   hours
   days
 }
 
-enum taskType {
-  event
-  document
+enum TaskType {
+  EVENT
+  DOCUMENT
 }
 
 enum BillingCycle {
@@ -302,24 +319,9 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
 }
 
-model Blog {
-  id         String        @id @default(cuid())
-  title      String
-  slug       String        @unique
-  content    String
-  excerpt    String?
-  coverImage String? // URL to cover image
-  published  Boolean       @default(false)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  status     contentStatus @default(draft)
-
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
-}
-
-enum contentStatus {
-  draft
-  unpublished
-  published
+enum ContentStatus {
+  DRAFT
+  UNPUBLISHED
+  PUBLISHED
+  ARCHIVED
 }

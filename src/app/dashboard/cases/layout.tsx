@@ -28,7 +28,7 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
-import { caseStatus } from "@prisma/client";
+import { CaseStatus } from "@prisma/client";
 
 export default function CasesLayout({
   children,

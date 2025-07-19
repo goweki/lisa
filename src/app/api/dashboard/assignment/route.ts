@@ -46,11 +46,11 @@ async function postHandler(
       `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${res_assigneeRequest.case.name}`
     );
 
-    if (res_assigneeRequest && case_ && !case_.userID) {
+    if (res_assigneeRequest && case_ && !case_.userId) {
       const res_case_ = await prisma.case.update({
         where: { id: caseID },
         data: {
-          userID,
+          userId: userID,
         },
       });
 
@@ -59,15 +59,15 @@ async function postHandler(
           id: res_assigneeRequest.id,
         },
         data: {
-          status: "approved",
+          status: "APPROVED",
         },
       });
 
       console.log(
         `SUCCESS: case assigned to ${
           res_assigneeRequest.assignee.email
-        }.\n > case:  ${res_assigneeRequest.case.name} \n > case.userID:  ${
-          res_case_.userID === userID
+        }.\n > case:  ${res_assigneeRequest.case.name} \n > case.userId:  ${
+          res_case_.userId === userID
         }.\n`
       );
     }
@@ -94,7 +94,7 @@ async function deleteHandler(
     const doc__ = await prisma.assigneeRequest.findFirst({
       where: {
         id: requestID,
-        assigneeID: user.id,
+        assigneeId: user.id,
       },
     });
     if (!doc__) {
