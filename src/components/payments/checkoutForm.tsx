@@ -120,8 +120,8 @@ export default function Checkout({
   }, [email.value, name.value]);
 
   // you can call this function anything
-  const onSuccess = (reference: any) => {
-    console.log("payment made - ", reference);
+  const onSuccess = (_ref: any) => {
+    console.log("payment made - ", _ref);
     // message: "Approved"
     // redirecturl: "?trxref=Team-1753050372673&reference=Team-1753050372673"
     // reference: "Team-1753050372673"
@@ -129,19 +129,28 @@ export default function Checkout({
     // trans: "5164754910"
     // transaction: "5164754910"
     // trxref: "Team-1753050372673"
+    if (_ref.status !== "success") {
+      toast.custom(
+        <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
+          {_ref.status} - {_ref.message}
+        </div>
+      );
+    } else {
+      toast.success(_ref.message);
+    }
     fetch("/api/payments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        providerTransactionId: reference.reference,
-        institutionId: reference.metadata.institutionId,
-        subscriptionId: reference.metadata.subscriptionId, // optional
-        amount: reference.amount / 100, // Paystack sends in kobo
+        providerTransactionId: _ref.reference,
+        institutionId: _ref.metadata.institutionId,
+        subscriptionId: _ref.metadata.subscriptionId, // optional
+        amount: _ref.amount / 100, // Paystack sends in kobo
         paymentMethod: "paystack",
-        description: reference.metadata.description || "Subscription payment",
-        metadata: reference.metadata,
+        description: _ref.metadata.description || "Subscription payment",
+        metadata: _ref.metadata,
       }),
     })
       .then(async (res) => {
