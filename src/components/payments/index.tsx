@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,11 +22,8 @@ import { Switch } from "@/components/ui/switch";
 import { formatNumberToK } from "@/helpers/stringHandlers";
 import { CheckIcon, MinusIcon } from "lucide-react";
 import React, { useState } from "react";
-import { Modal } from "../mols/modal";
-import InputArea from "./inputArea";
+import CheckoutForm from "./checkoutForm";
 import { signOut } from "next-auth/react";
-
-const publicKey = "pk_your_public_key_here";
 
 type Regime = "monthly" | "yearly";
 type PriceDetails = {
@@ -70,13 +74,6 @@ export default function PaymentsSection() {
 
   const toggleRegime = () =>
     setRegime((prev) => (prev === "monthly" ? "yearly" : "monthly"));
-
-  // const paymentConfig = {
-  //   reference: new Date().getTime().toString(),
-  //   email: "user@example.com",
-  //   amount: 20000,
-  //   publicKey: "pk_test_dsdfghuytfd2345678gvxxxxxxxxxx",
-  // };
 
   return (
     <div className="container mx-auto px-4 md:px-6 2xl:max-w-[1400px] py-8 lg:py-16">
@@ -157,9 +154,9 @@ export default function PaymentsSection() {
             </ul>
           </CardContent>
           <CardFooter>
-            <BuyButton
+            <BuyCTA
               label="BUY"
-              amount={plans.startup.price[regime] * 100}
+              amount={plans.startup.price[regime]}
               packag={plans.startup.title}
             />
           </CardFooter>
@@ -194,10 +191,10 @@ export default function PaymentsSection() {
             </ul>
           </CardContent>
           <CardFooter>
-            <BuyButton
+            <BuyCTA
               label="BUY"
               variant="default"
-              amount={plans.team.price[regime] * 100}
+              amount={plans.team.price[regime]}
               packag={plans.team.title}
             />
           </CardFooter>
@@ -228,9 +225,9 @@ export default function PaymentsSection() {
             </ul>
           </CardContent>
           <CardFooter>
-            <BuyButton
+            <BuyCTA
               label="BUY"
-              amount={plans.enterprise.price[regime] * 100}
+              amount={plans.enterprise.price[regime]}
               packag={plans.enterprise.title}
             />
           </CardFooter>
@@ -242,8 +239,7 @@ export default function PaymentsSection() {
   );
 }
 
-function BuyButton({
-  label = "BUY",
+function BuyCTA({
   amount,
   packag,
   variant = "outline",
@@ -253,19 +249,54 @@ function BuyButton({
   packag: string;
   variant?: "outline" | "default";
 }) {
+  const [open, setOpen] = useState<boolean>(false);
+
+  const closeModal = () => {
+    console.log("closing modal...");
+    setOpen(false);
+  };
+
   return (
     <>
-      <Modal
-        trigger={label}
+      <Button
         variant={variant}
         className="w-full"
-        title={packag + " Package"}
+        onClick={() => setOpen(true)}
       >
-        <>
-          <text>radar</text>
-          <InputArea amount={amount} packag={packag} />
-        </>
-      </Modal>
+        BUY
+      </Button>
+      <PaymentDialogue open={open} setOpen={setOpen} title="Checkout">
+        <CheckoutForm closeModal={closeModal} amount={amount} packag={packag} />
+      </PaymentDialogue>
     </>
+  );
+}
+
+function PaymentDialogue({
+  title = "Title",
+  open,
+  setOpen,
+  Description,
+  children,
+}: {
+  title?: string;
+  open: boolean;
+  setOpen: (state: boolean) => void;
+  // closeModal: () => void;
+  Description?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{Description}</DialogDescription>
+        </DialogHeader>
+        {children}
+        {/* <DialogFooter>
+        </DialogFooter> */}
+      </DialogContent>
+    </Dialog>
   );
 }

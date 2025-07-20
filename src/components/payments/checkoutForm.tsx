@@ -15,6 +15,7 @@ import { Separator } from "../ui/separator";
 import { def_Input, Input, UIstate } from "@/types/custom";
 import dynamic from "next/dynamic";
 import { Loader } from "../atoms/loader";
+import { Button } from "../ui/button";
 
 const CheckoutButton = dynamic(() => import("./checkoutButton"), {
   ssr: false,
@@ -27,33 +28,92 @@ export interface PaymentConfig {
   reference: string;
   email: string;
   amount: number;
+  currency: "USD" | "KES";
+  metadata: {
+    custom_fields: Array<{
+      display_name: string;
+      variable_name: string;
+      value: string;
+    }>;
+    [key: string]: any; // Allows for additional arbitrary metadata properties
+  };
   publicKey: string;
 }
 
-export default function InputArea({
+type PaymentConfigFactory = (packag: string, amount: number) => PaymentConfig;
+
+const def_paymentConfig: PaymentConfigFactory = (
+  packag: string,
+  amount: number
+) => ({
+  reference: `${packag}-${new Date().getTime().toString()}`,
+  amount,
+  currency: "KES",
+  email: "", // You likely want to pass this as an argument or get it from context
+  metadata: {
+    // Corrected: custom_fields is an array of PaystackCustomField objects
+    custom_fields: [
+      {
+        display_name: "Package", // A user-friendly label
+        variable_name: "package_name", // A programmatic name
+        value: packag,
+      },
+      // You might add more custom fields here based on your needs
+    ],
+  },
+  publicKey: PAYSTACK_PUBLIC_KEY || "",
+});
+
+export default function Checkout({
   packag,
   amount,
+  closeModal,
 }: {
   packag: string;
   amount: number;
+  closeModal: () => void;
 }) {
   const [name, setName] = useState<Input>(def_Input);
   const [email, setEmail] = useState<Input>(def_Input);
+  const [payConfig, setPayConfig] = useState<PaymentConfig>(
+    def_paymentConfig(packag, amount * 100)
+  );
 
-  const [payConfig, setPayConfig] = useState<PaymentConfig>({
-    reference: `${packag}-${new Date().getTime().toString()}`,
-    amount,
-    email: "",
-    publicKey: PAYSTACK_PUBLIC_KEY || "",
-  });
-  const [UIstate, setUIstate] = useState<UIstate>("loading");
   const router = useRouter();
 
   useEffect(() => {
-    const emailError_ = emailValidator(email.value);
-    if (emailError_) setEmail((prev) => ({ ...prev, error: emailError_ }));
-    else setPayConfig((prev) => ({ ...prev, email: email.value }));
-  }, [name.value, email.value]);
+    let nameError_ = "";
+    if (name.value) {
+      nameError_ = nameValidator(name.value);
+      setName((prev) => ({ ...prev, error: nameError_ }));
+    }
+
+    let emailError_ = "";
+    if (email.value) {
+      emailError_ = emailValidator(email.value);
+      setEmail((prev) => ({ ...prev, error: emailError_ }));
+    }
+
+    if (!nameError_ || !emailError_) {
+      setPayConfig((prev) => ({
+        ...prev,
+        email: email.value,
+        metadata: {
+          ...prev.metadata,
+          custom_fields: [
+            {
+              display_name: "Customer Name",
+              variable_name: "customer_name",
+              value: name.value,
+            },
+          ],
+        },
+      }));
+    } else {
+      // This part looks correct, as def_paymentConfig should return a properly typed PaymentConfig
+      setPayConfig(def_paymentConfig(packag, amount));
+    }
+  }, [email.value, name.value]);
 
   // you can call this function anything
   const onSuccess = (reference: any) => {
@@ -79,7 +139,10 @@ export default function InputArea({
           icon={SVGprofile}
           valObj={name}
           setValue={setName}
-          valValidator={nameValidator}
+          valValidator={(val: string) => {
+            if (!val) return "";
+            else return nameValidator(val);
+          }}
         />
         <InputText
           label="Email *"
@@ -89,7 +152,7 @@ export default function InputArea({
           icon={SVGemail}
           valObj={email}
           setValue={setEmail}
-          valValidator={nameValidator}
+          valValidator={emailValidator}
         />
       </div>
 
@@ -98,21 +161,17 @@ export default function InputArea({
         <h3 className="text-lg font-semibold">Order Summary</h3>
         <div className="bg-muted/50 p-4 rounded-lg space-y-2">
           <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>$99.99</span>
+            <span>Package</span>
+            <span>{packag}</span>
           </div>
           <div className="flex justify-between">
-            <span>Shipping</span>
-            <span>$9.99</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tax</span>
-            <span>$8.80</span>
+            <span>Price</span>
+            <span>Ksh. {amount.toLocaleString("en-US")}</span>
           </div>
           <Separator />
           <div className="flex justify-between font-semibold text-lg">
             <span>Total</span>
-            <span>$118.78</span>
+            <span>Ksh. {amount.toLocaleString("en-US")}</span>
           </div>
         </div>
       </div>
@@ -120,9 +179,12 @@ export default function InputArea({
       {!PAYSTACK_PUBLIC_KEY ? (
         <>ERROR: missing integration keys</>
       ) : !payConfig.email ? (
-        <>Enter email to proceed</>
+        <Button disabled={true} className="text-center italic">
+          Enter email to proceed
+        </Button>
       ) : (
         <CheckoutButton
+          closeModal={closeModal}
           disabled={!!name.error || !!email.error || !PAYSTACK_PUBLIC_KEY}
           config={payConfig}
         />

@@ -79,7 +79,7 @@ export function InputText({
   );
 }
 
-type ValObj = {
+export type ValObj = {
   value: string;
   error: string;
 };

@@ -14,13 +14,13 @@ import { faker } from "@faker-js/faker";
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-  console.log("🌱 Starting database seeding...");
-
   if (process.env.NODE_ENV !== "production") {
     console.log("♻️ Clearing existing data...");
     await clearTables(prisma);
     console.log("✅ Tables cleared");
   }
+
+  console.log("🌱 Starting database seeding...");
 
   const plans = await seedPlans(prisma);
   const features = await seedFeatures(prisma);
@@ -211,7 +211,7 @@ async function seedUsers(prisma_: PrismaClient, count = 3): Promise<User[]> {
       where: { email },
       update: {},
       create: {
-        names: `Test${i + 1}` + faker.person.lastName(),
+        names: `Test${i + 1} ` + faker.person.lastName(),
         email,
         tel: faker.phone.number(),
         photoUrl: faker.image.avatar(),

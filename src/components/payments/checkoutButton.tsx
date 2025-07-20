@@ -16,10 +16,12 @@ export default function CheckoutButton({
   config,
   disabled = false,
   onClose = () => console.log("checkout closed"),
+  closeModal = () => console.log("form submitted"),
   onSuccess = (ref_) => console.log("payment made", ref_),
 }: {
   config: HookConfig;
   disabled?: boolean;
+  closeModal: () => void;
   onSuccess?: (ref: any) => void;
   onClose?: () => void;
 }) {
@@ -31,6 +33,7 @@ export default function CheckoutButton({
         className="w-full"
         type="button"
         onClick={() => {
+          closeModal();
           initializePayment({ onSuccess, onClose });
         }}
       >

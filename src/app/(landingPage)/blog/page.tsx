@@ -55,8 +55,8 @@ function renderCard(post: Blogpost) {
     <>
       <div className="order-1 sm:ml-6 xl:ml-0">
         <h3 className="mb-1 text-slate-900 font-semibold dark:text-slate-200">
-          <span className="mb-1 block text-sm leading-6 text-purple-500">
-            {post.createdAt.toDateString()}
+          <span className="mb-1 block text-sm leading-6 text-muted-foreground">
+            {new Date(post.createdAt).toDateString()}
           </span>
           {post.title}
         </h3>
