@@ -165,11 +165,6 @@ export default function Checkout({
     router.push("/dashboard");
   };
 
-  // you can call this function anything
-  const onClose = () => {
-    console.log("paystack closed");
-  };
-
   return (
     <>
       <div className="space-y-4">
