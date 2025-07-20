@@ -133,7 +133,7 @@ model PaymentTransaction {
   amount                Float
   currency              String        @default("KES")
   status                PaymentStatus @default(PENDING)
-  providerTransactionId String
+  providerTransactionId String        @unique
   description           String?
   metadata              String?
   createdAt             DateTime      @default(now())
