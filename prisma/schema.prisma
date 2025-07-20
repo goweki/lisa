@@ -83,7 +83,7 @@ model Subscription {
 
 model Plan {
   id           String   @id @default(uuid())
-  name         String   @unique
+  name         PlanName @unique
   description  String?
   price        Float
   currency     String   @default("KES")
@@ -324,4 +324,10 @@ enum ContentStatus {
   UNPUBLISHED
   PUBLISHED
   ARCHIVED
+}
+
+enum PlanName {
+  starter
+  team
+  enterprise
 }
