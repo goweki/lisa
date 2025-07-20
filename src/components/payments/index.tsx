@@ -24,11 +24,17 @@ import { CheckIcon, MinusIcon } from "lucide-react";
 import React, { useState } from "react";
 import CheckoutForm from "./checkoutForm";
 import { signOut } from "next-auth/react";
+import { PlanName } from "@prisma/client";
 
-type Regime = "monthly" | "yearly";
+type DurationRegime = "monthly" | "yearly";
 type PriceDetails = {
-  [K in Regime]: number;
+  [K in DurationRegime]: number;
 };
+
+export interface Packag {
+  name: PlanName;
+  regime: DurationRegime;
+}
 
 interface Plan {
   title: string;
@@ -70,7 +76,7 @@ const plans: Record<string, Plan> = {
 };
 
 export default function PaymentsSection() {
-  const [regime, setRegime] = useState<Regime>("monthly");
+  const [regime, setRegime] = useState<DurationRegime>("monthly");
 
   const toggleRegime = () =>
     setRegime((prev) => (prev === "monthly" ? "yearly" : "monthly"));
@@ -157,7 +163,7 @@ export default function PaymentsSection() {
             <BuyCTA
               label="BUY"
               amount={plans.startup.price[regime]}
-              packag={plans.startup.title}
+              packag={{ name: plans.startup.title as PlanName, regime }}
             />
           </CardFooter>
         </Card>
@@ -195,7 +201,7 @@ export default function PaymentsSection() {
               label="BUY"
               variant="default"
               amount={plans.team.price[regime]}
-              packag={plans.team.title}
+              packag={{ name: plans.team.title as PlanName, regime }}
             />
           </CardFooter>
         </Card>
@@ -228,7 +234,7 @@ export default function PaymentsSection() {
             <BuyCTA
               label="BUY"
               amount={plans.enterprise.price[regime]}
-              packag={plans.enterprise.title}
+              packag={{ name: plans.enterprise.title as PlanName, regime }}
             />
           </CardFooter>
         </Card>
@@ -246,7 +252,7 @@ function BuyCTA({
 }: {
   label: string;
   amount: number;
-  packag: string;
+  packag: Packag;
   variant?: "outline" | "default";
 }) {
   const [open, setOpen] = useState<boolean>(false);

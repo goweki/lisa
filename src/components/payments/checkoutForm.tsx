@@ -16,6 +16,7 @@ import { def_Input, Input, UIstate } from "@/types/custom";
 import dynamic from "next/dynamic";
 import { Loader } from "../atoms/loader";
 import { Button } from "../ui/button";
+import { Packag } from ".";
 
 const CheckoutButton = dynamic(() => import("./checkoutButton"), {
   ssr: false,
@@ -40,26 +41,19 @@ export interface PaymentConfig {
   publicKey: string;
 }
 
-type PaymentConfigFactory = (packag: string, amount: number) => PaymentConfig;
+type PaymentConfigFactory = (packag: Packag, amount: number) => PaymentConfig;
 
 const def_paymentConfig: PaymentConfigFactory = (
-  packag: string,
+  packag: Packag,
   amount: number
 ) => ({
-  reference: `${packag}-${new Date().getTime().toString()}`,
+  reference: `lisa-paystack-${packag.name}-${packag.regime}-${new Date().getTime().toString()}`,
   amount,
   currency: "KES",
   email: "", // You likely want to pass this as an argument or get it from context
   metadata: {
     // Corrected: custom_fields is an array of PaystackCustomField objects
-    custom_fields: [
-      {
-        display_name: "Package", // A user-friendly label
-        variable_name: "package_name", // A programmatic name
-        value: packag,
-      },
-      // You might add more custom fields here based on your needs
-    ],
+    custom_fields: [],
   },
   publicKey: PAYSTACK_PUBLIC_KEY || "",
 });
@@ -69,7 +63,7 @@ export default function Checkout({
   amount,
   closeModal,
 }: {
-  packag: string;
+  packag: Packag;
   amount: number;
   closeModal: () => void;
 }) {
@@ -106,6 +100,16 @@ export default function Checkout({
               variable_name: "customer_name",
               value: name.value,
             },
+            {
+              display_name: "Package", // A user-friendly label
+              variable_name: "package_name", // A programmatic name
+              value: packag.name,
+            },
+            {
+              display_name: "Duration", // A user-friendly label
+              variable_name: "duration", // A programmatic name
+              value: packag.regime,
+            },
           ],
         },
       }));
@@ -117,8 +121,46 @@ export default function Checkout({
 
   // you can call this function anything
   const onSuccess = (reference: any) => {
-    // Implementation for whatever you want to do with reference and after success call.
     console.log("payment made - ", reference);
+    // message: "Approved"
+    // redirecturl: "?trxref=Team-1753050372673&reference=Team-1753050372673"
+    // reference: "Team-1753050372673"
+    // status: "success"
+    // trans: "5164754910"
+    // transaction: "5164754910"
+    // trxref: "Team-1753050372673"
+    fetch("/api/payments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        providerTransactionId: reference.reference,
+        institutionId: reference.metadata.institutionId,
+        subscriptionId: reference.metadata.subscriptionId, // optional
+        amount: reference.amount / 100, // Paystack sends in kobo
+        paymentMethod: "paystack",
+        description: reference.metadata.description || "Subscription payment",
+        metadata: reference.metadata,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Payment recorded:", data);
+        closeModal(); // Close modal or form
+        // Optional: Redirect or show toast
+        // router.push("/dashboard");
+      })
+      .catch((err) => {
+        console.error("Error saving payment:", err);
+        alert("Payment succeeded but saving failed. Please contact support.");
+      });
     toast.success("Payment successful, proceed to dashboard");
     router.push("/dashboard");
   };
@@ -162,7 +204,9 @@ export default function Checkout({
         <div className="bg-muted/50 p-4 rounded-lg space-y-2">
           <div className="flex justify-between">
             <span>Package</span>
-            <span>{packag}</span>
+            <span>
+              {packag.name}, {packag.regime}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>Price</span>
@@ -185,6 +229,7 @@ export default function Checkout({
       ) : (
         <CheckoutButton
           closeModal={closeModal}
+          onSuccess={onSuccess}
           disabled={!!name.error || !!email.error || !PAYSTACK_PUBLIC_KEY}
           config={payConfig}
         />
