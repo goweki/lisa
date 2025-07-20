@@ -42,7 +42,7 @@ async function main(): Promise<void> {
 async function seedPlans(prisma_: PrismaClient): Promise<Plan[]> {
   const plans: Omit<Plan, "id" | "createdAt" | "updatedAt" | "isActive">[] = [
     {
-      name: "Startup",
+      name: "starter",
       description: "Starter package for small firms",
       price: 5000,
       priceMonthly: 5000,
@@ -51,7 +51,7 @@ async function seedPlans(prisma_: PrismaClient): Promise<Plan[]> {
       trialDays: 14,
     },
     {
-      name: "Team",
+      name: "team",
       description: "For growing teams with collaboration features",
       price: 15000,
       priceMonthly: 15000,
@@ -60,7 +60,7 @@ async function seedPlans(prisma_: PrismaClient): Promise<Plan[]> {
       trialDays: 30,
     },
     {
-      name: "Enterprise",
+      name: "enterprise",
       description: "Full-scale access and support",
       price: 50000,
       priceMonthly: 50000,

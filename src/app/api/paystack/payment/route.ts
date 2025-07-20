@@ -18,7 +18,7 @@ const BodySchema = z.object({
 // Main handler
 async function postHandler(req: Request, user: SessionUser) {
   const json = await req.json();
-  const parsed: = BodySchema.safeParse(json);
+  const parsed = BodySchema.safeParse(json);
 
   if (!parsed.success) {
     console.error("Error parsing payment ", parsed.error.flatten());
