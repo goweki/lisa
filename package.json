@@ -16,7 +16,9 @@
     "db:start": "docker run --name lisa-postgres -e POSTGRES_PASSWORD=lisa -p 5432:5432 -d postgres",
     "db:stop": "docker stop lisa-postgres",
     "db:rm": "docker rm lisa-postgres",
-    "db:restart": "npm run db:stop && npm run db:start"
+    "db:restart": "npm run db:stop && npm run db:start",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -79,13 +81,19 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/africastalking": "^0.6.2",
     "@types/bcrypt": "^5.0.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.8",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
+    "jest": "^30.0.4",
+    "jest-environment-jsdom": "^30.0.4",
     "postcss": "^8",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.1",
