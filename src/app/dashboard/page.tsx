@@ -6,7 +6,7 @@ import { useDate } from "@/lib/dateTime";
 import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { CardItemsTable } from "@/components/mols/cards";
 import { SVGtime } from "@/components/atoms/svgs";
-import { DataContext } from "./providers";
+import { DataContext } from "@/app/dashboard/providers";
 import { isDatePassed } from "@/helpers/dateHandlers";
 import { useSession, signOut } from "next-auth/react";
 import { Case, Task } from "@/types/models";

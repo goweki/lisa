@@ -100,7 +100,7 @@ type InputTextProps = {
 /**
  * Combobox with search functionality
  */
-type Options = { label: string; value: string }[];
+export type Option = { label: string; value: string };
 
 export function ComboboxSearchable({
   label,
@@ -110,7 +110,7 @@ export function ComboboxSearchable({
   setValue,
 }: {
   label: string;
-  options: Options;
+  options: Option[];
   value: string;
   error?: string;
   setValue: React.Dispatch<React.SetStateAction<any>>;

@@ -25,8 +25,10 @@ import {
 import { cn } from "@/lib/utils";
 import { SessionUser } from "@/types/next-auth";
 
-export default function Navbar(props: { user?: SessionUser }) {
+export default function Navbar() {
+  const { data: session, status: authStatus } = useSession();
   const pathname = usePathname();
+
   return (
     <nav
       className={`z-40 sticky bg-card/50 backdrop-blur-md w-full top-0 left-0 border-b border-border`}
@@ -43,19 +45,19 @@ export default function Navbar(props: { user?: SessionUser }) {
             className="hidden md:flex w-full md:w-auto items-center justify-between"
             id="navbar-tab-items"
           >
-            <NavigationMenuComponent user={props.user} />
+            <NavigationMenuComponent />
           </div>
         </div>
         <div className="flex items-center space-x-2 px-2 md:px-6">
           <ul className="hidden md:flex md:font-medium md:flex-row md:space-x-4">
             <ThemeToggler />
-            {pathname.includes("/dashboard") ? (
+            {session?.user?.name ? (
               <MenuDropdown
-                menuText={props.user?.name}
+                menuText={session?.user?.name}
                 menuItems={menuItemsOptions.user}
                 terminalButton={{
-                  label: props.user ? "Sign Out" : "Sign In",
-                  onClick: props.user
+                  label: session?.user ? "Sign Out" : "Sign In",
+                  onClick: session?.user
                     ? async () => {
                         await signOut();
                       }
@@ -80,16 +82,16 @@ export default function Navbar(props: { user?: SessionUser }) {
                 menuIcon={SVGhamburger}
                 menuItems={
                   pathname.includes("/dashboard")
-                    ? props.user?.role === "system"
+                    ? session?.user?.role === "system"
                       ? menuItemsOptions.auth.system
-                      : props.user?.role === "admin"
+                      : session?.user?.role === "admin"
                         ? menuItemsOptions.auth.admin
                         : menuItemsOptions.auth.lawyer
                     : menuItemsOptions.unauth
                 }
                 terminalButton={{
-                  label: props.user ? "Sign Out" : "Sign In",
-                  onClick: props.user
+                  label: session?.user ? "Sign Out" : "Sign In",
+                  onClick: session?.user
                     ? async () => {
                         await signOut();
                       }
@@ -142,66 +144,43 @@ const menuItemsOptions: { [key: string]: any } = {
 };
 
 // Nav Menu
-function NavigationMenuComponent(props: { user?: SessionUser }) {
+function NavigationMenuComponent() {
   //
   const pathname = usePathname();
+  const { data: session, status: authStatus } = useSession();
   const segments = pathname.split("/").filter(Boolean); // Remove empty strings
 
   // Check the last segment and ignore it if it contains numerals (0-9)
   const isId = /\d/.test(segments[segments.length - 1]); // Check if the last segment contains any digit (0-9)
   const relevantSegments = isId ? segments.slice(0, -1) : segments; // Ignore the last segment if it's an ID
-
   // Join the relevant segments back into a path
   const cleanPathname = "/" + relevantSegments.join("/");
 
-  const { data: authSession, status: authStatus } = useSession();
-
   const menulinks =
-    props.user?.role === "system"
+    session?.user?.role === "system"
       ? menuItemsOptions.auth.system
-      : props.user?.role === "admin"
+      : session?.user?.role === "admin"
         ? menuItemsOptions.auth.admin
         : menuItemsOptions.auth.lawyer;
 
-  //render
-  if (authSession?.user && menulinks)
-    return cleanPathname.includes("/dashboard") ? (
-      <NavigationMenu>
-        <NavigationMenuList className="gap-4">
-          {menulinks.map(({ label, link }: { label: string; link: string }) => (
-            <NavigationMenuItem key={label}>
-              <Link
-                href={link}
-                className={`text-foreground hover:underline ${
-                  cleanPathname === link ? "font-bold" : "font-light"
-                }`}
-              >
-                {label}
-              </Link>
-            </NavigationMenuItem>
-          ))}
-        </NavigationMenuList>
-      </NavigationMenu>
-    ) : (
-      <NavigationMenu>
-        <NavigationMenuList className="gap-4">
-          {menuItemsOptions.unauth.map(
-            ({ label, link }: { label: string; link: string }) => (
-              <NavigationMenuItem key={label}>
-                <Link
-                  href={link}
-                  className={`text-foreground hover:text-primary ${
-                    pathname === link ? "font-bold" : "font-normal"
-                  }`}
-                >
-                  {label}
-                </Link>
-              </NavigationMenuItem>
-            )
-          )}
-        </NavigationMenuList>
-      </NavigationMenu>
-    );
+  return (
+    <NavigationMenu>
+      <NavigationMenuList className="gap-4">
+        {menulinks.map(({ label, link }: { label: string; link: string }) => (
+          <NavigationMenuItem key={label}>
+            <Link
+              href={link}
+              className={`text-foreground hover:underline ${
+                cleanPathname === link ? "font-bold" : "font-light"
+              }`}
+            >
+              {label}
+            </Link>
+          </NavigationMenuItem>
+        ))}
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
 }
 
 const ListItem = React.forwardRef<

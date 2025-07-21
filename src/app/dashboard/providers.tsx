@@ -7,7 +7,6 @@ import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import { Loader } from "@/components/atoms/loader";
-import { httpCodes } from "@/lib/configs";
 import { Case, Institution, User } from "@/types/models";
 import { AssigneeRequest, CaseType, Task } from "@prisma/client";
 import { UIstate } from "@/types/custom";

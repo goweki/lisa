@@ -16,7 +16,7 @@ export default async function UserLayout({
   else
     return (
       <UserProviders>
-        <Navbar user={session.user} />
+        <Navbar />
         {children}
         <Footer />
       </UserProviders>

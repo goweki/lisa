@@ -1,13 +1,3 @@
-/**
- * HINTS:
- *
- * 1.
- * HOFs that wrap the routes to authenticate and
- * leave the route a gift: a user
- * object:{id,name,institutions...}
- *
- */
-
 import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
@@ -16,7 +6,7 @@ import { Institution, InstitutionUser } from "@prisma/client";
 
 // create institution
 async function postHandler(
-  request: Request | NextRequest,
+  request: Request,
   user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
@@ -56,7 +46,7 @@ async function postHandler(
 
 // update institution
 async function patchHandler(
-  request: Request | NextRequest,
+  request: Request,
   user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
@@ -87,9 +77,49 @@ async function patchHandler(
   }
 }
 
+// GET institutions related to user
+async function getHandler(
+  request: Request,
+  user: SessionUser,
+) {
+  const { searchParams } = new URL(request.url);
+  console.log('search params: ', searchParams)
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return Response.json("Missing userId", { status: 400 });
+  }
+
+  // Only allow the user themselves or system role to fetch
+  if (user.role !== "system" && user.id !== userId) {
+    return Response.json("You do not have permission to view these institutions", {
+      status: 403,
+    });
+  }
+
+  try {
+    const userInstitutions = await prisma.institutionUser.findMany({
+      where: { userId },
+      select: { institutionId: true },
+    });
+
+    const institutionIds = userInstitutions.map((i) => i.institutionId);
+
+    const institutions = await prisma.institution.findMany({
+      where: { id: { in: institutionIds } },
+      select: { id: true, name: true },
+    });
+
+    return Response.json(institutions);
+  } catch (err) {
+    console.error("ERROR: Failed to fetch institutions", err);
+    return Response.json("Server error", { status: 500 });
+  }
+}
+
 // delete institution
 async function deleteHandler(
-  request: Request | NextRequest,
+  request: Request,
   user: SessionUser,
   institutionUser: InstitutionUser | null
 ) {
@@ -126,4 +156,5 @@ async function deleteHandler(
 
 export const POST = withAuthAdmin(postHandler);
 export const PATCH = withAuthAdmin(patchHandler);
+export const GET = withAuthGeneral(getHandler);
 export const DELETE = withAuthAdmin(deleteHandler);

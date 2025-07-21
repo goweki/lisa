@@ -1,7 +1,7 @@
 "use client";
 
-import { usePaystackPayment } from "react-paystack";
-import { InputText } from "../atoms/inputs";
+import { useSession } from "next-auth/react";
+import { ComboboxSearchable, InputText } from "../atoms/inputs";
 import { SVGcell, SVGemail, SVGprofile } from "../atoms/svgs";
 import { useEffect, useState } from "react";
 import {
@@ -17,6 +17,7 @@ import dynamic from "next/dynamic";
 import { Loader } from "../atoms/loader";
 import { Button } from "../ui/button";
 import { Packag } from ".";
+import { Option } from "@/components/atoms/inputs";
 
 const CheckoutButton = dynamic(() => import("./checkoutButton"), {
   ssr: false,
@@ -69,11 +70,31 @@ export default function Checkout({
 }) {
   const [name, setName] = useState<Input>(def_Input);
   const [email, setEmail] = useState<Input>(def_Input);
+  const [institutions, setInstitutions] = useState<Option[]>();
+  const [selected_institutionId, setSelectedInstitutionId] = useState<string>('');
   const [payConfig, setPayConfig] = useState<PaymentConfig>(
     def_paymentConfig(packag, amount * 100)
   );
+  const { data: session } = useSession();
 
   const router = useRouter();
+
+  useEffect(() => {
+    (async () => {
+      const insts_ = await fetch(`/api/dashboard/institution?userId=${session?.user?.id}`).then(
+        async (res) => {
+          if (res.ok) return await res.json()
+          const err = await res.json();
+          console.error('Error fetching institutions - ', err)
+          toast.error('Error fetching institutions');
+        }
+      )
+
+      setInstitutions(
+        insts_.map(({ id, name }: { id: string, name: string }) => ({ label: name, value: id }))
+      );
+    })();
+  }, [])
 
   useEffect(() => {
     let nameError_ = "";
@@ -120,7 +141,7 @@ export default function Checkout({
   }, [email.value, name.value]);
 
   // you can call this function anything
-  const onSuccess = (_ref: any) => {
+  const onSuccess = async (_ref: any) => {
     console.log("payment made - ", _ref);
     // message: "Approved"
     // redirecturl: "?trxref=Team-1753050372673&reference=Team-1753050372673"
@@ -138,40 +159,42 @@ export default function Checkout({
     } else {
       toast.success(_ref.message);
     }
-    fetch("/api/payments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        providerTransactionId: _ref.reference,
-        institutionId: _ref.metadata.institutionId,
-        subscriptionId: _ref.metadata.subscriptionId, // optional
-        amount: _ref.amount / 100, // Paystack sends in kobo
-        paymentMethod: "paystack",
-        description: _ref.metadata.description || "Subscription payment",
-        metadata: _ref.metadata,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err);
-        }
-        return res.json();
+    try {
+      const res_ = await fetch("/api/paystack/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerTransactionId: _ref.reference,
+          institutionId: _ref.metadata.institutionId,
+          subscriptionId: _ref.metadata.subscriptionId,
+          amount: _ref.amount / 100,
+          paymentMethod: "paystack",
+          description: _ref.metadata.description || "Subscription payment",
+          metadata: _ref.metadata,
+        }),
       })
-      .then((data) => {
-        console.log("Payment recorded:", data);
-        closeModal(); // Close modal or form
-        // Optional: Redirect or show toast
+        .then(async (res) => {
+          if (res.ok) return await res.json()
+          const err = await res.json();
+          console.error('Error saving payment info - ', err)
+          toast.error('Error saving payment information');
+        })
+
+      if (res_) {
+        console.log("Payment recorded:", res_); router.refresh();
+        toast.success("Payment successful, proceed to dashboard");
         // router.push("/dashboard");
-      })
-      .catch((err) => {
-        console.error("Error saving payment:", err);
-        alert("Payment succeeded but saving failed. Please contact support.");
-      });
-    toast.success("Payment successful, proceed to dashboard");
-    router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error("Error saving payment:", err);
+      toast.custom(
+        <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
+          Payment succeeded but saving failed. Please contact support.
+        </div>
+      );
+    };
   };
 
   return (
@@ -200,6 +223,9 @@ export default function Checkout({
           setValue={setEmail}
           valValidator={emailValidator}
         />
+        {institutions && <div className="my-3">
+          <ComboboxSearchable label='institution' options={institutions} value={selected_institutionId} setValue={setSelectedInstitutionId} />
+        </div>}
       </div>
 
       {/* Order Summary */}

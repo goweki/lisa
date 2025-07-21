@@ -18,10 +18,12 @@ const BodySchema = z.object({
 // Main handler
 async function postHandler(req: Request, user: SessionUser) {
   const json = await req.json();
+  console.log("POST /api/paystack/payment - ", json);
+  // return Response.json("TEST PASSED");
   const parsed = BodySchema.safeParse(json);
 
   if (!parsed.success) {
-    console.error("Error parsing payment ", parsed.error.flatten());
+    console.error("Error parsing payment ", parsed.error?.flatten());
     return Response.json("Invalid request body", { status: 400 });
   }
 
