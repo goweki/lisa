@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { SessionUser } from "@/types/next-auth";
 
 export default function Navbar() {
-  const { data: session, status: authStatus } = useSession();
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   return (
@@ -161,7 +161,9 @@ function NavigationMenuComponent() {
       ? menuItemsOptions.auth.system
       : session?.user?.role === "admin"
         ? menuItemsOptions.auth.admin
-        : menuItemsOptions.auth.lawyer;
+        : session?.user?.role === "user"
+          ? menuItemsOptions.auth.lawyer
+          : menuItemsOptions.unauth;
 
   return (
     <NavigationMenu>
