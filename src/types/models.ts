@@ -6,7 +6,20 @@ import {
   Task as _Task,
   Document as _Document,
   InstitutionUser as _InstitutionUser,
+  Plan as _Plan,
+  PlanFeature as _PlanFeature,
+  Subscription as _Subscription,
+  Feature as _Feature,
 } from "@prisma/client";
+
+export interface Plan extends _Plan {
+  planFeatures?: _PlanFeature[];
+  subscriptions?: _Subscription[];
+}
+
+export interface PlanFeature extends _PlanFeature {
+  feature?: _Feature;
+}
 
 export interface Institution extends _Institution {
   users?: _User[];

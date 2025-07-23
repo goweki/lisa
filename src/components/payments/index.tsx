@@ -19,14 +19,16 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { formatNumberToK } from "@/helpers/stringHandlers";
-import { CheckIcon, MinusIcon } from "lucide-react";
-import React, { useState } from "react";
+import { formatNumberToK, strPascalCase } from "@/helpers/stringHandlers";
+import { CheckIcon } from "lucide-react";
+import React, { useState, useContext, useCallback, useEffect } from "react";
 import CheckoutForm from "./checkoutForm";
 import { signOut } from "next-auth/react";
-import { PlanName } from "@prisma/client";
+import { Feature, PlanName } from "@prisma/client";
+import toast from "react-hot-toast";
+import { Plan, PlanFeature } from "@/types/models";
 
-type DurationRegime = "monthly" | "yearly";
+export type DurationRegime = "monthly" | "yearly";
 type PriceDetails = {
   [K in DurationRegime]: number;
 };
@@ -36,50 +38,44 @@ export interface Packag {
   regime: DurationRegime;
 }
 
-interface Plan {
-  title: string;
-  features: string[];
-  price: PriceDetails;
-  currency: string;
-}
-
-/**
- * A record of all available plans, mapped by their unique string identifiers.
- */
-const plans: Record<string, Plan> = {
-  startup: {
-    title: "Startup",
-    features: ["Up to 2 users", "Case Management", "Email integrations"],
-    price: { monthly: 5000, yearly: 50000 },
-    currency: "Ksh",
-  },
-  team: {
-    title: "Team",
-    features: [
-      "Up to 5 users",
-      "Case / User / Role Management",
-      "Email / SMS / Whatsapp integrations",
-    ],
-    price: { monthly: 15000, yearly: 150000 },
-    currency: "Ksh",
-  },
-  enterprise: {
-    title: "Enterprise",
-    features: [
-      "50+ users",
-      "Full / custom & branding features",
-      "Dedicated legal tech advisory",
-    ],
-    price: { monthly: 50000, yearly: 500000 },
-    currency: "Ksh",
-  },
-};
-
 export default function PaymentsSection() {
   const [regime, setRegime] = useState<DurationRegime>("monthly");
+  const [packages, setPlans] = useState<Plan[]>([]);
 
   const toggleRegime = () =>
     setRegime((prev) => (prev === "monthly" ? "yearly" : "monthly"));
+
+  const fetchPlansData = useCallback(async () => {
+    try {
+      const fetchOptions = {
+        method: "GET",
+      };
+      const response = await fetch(`/api/dashboard/plan`, fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            //CHECKPOINT
+            const error_ = await res_.json();
+            console.error(`ERROR: ` + error_ || "Error fetching plans data");
+            toast.error(error_);
+          }
+        }
+      );
+
+      if (!response) {
+        return;
+      }
+      console.log("plans data", response);
+      setPlans(response);
+    } catch (err) {
+      console.error("ERROR: caught error\n > " + err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPlansData();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 md:px-6 2xl:max-w-[1400px] py-8 lg:py-16">
@@ -135,110 +131,68 @@ export default function PaymentsSection() {
       {/* End Switch */}
       {/* Grid */}
       <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:items-center">
-        {/* STARTUP CARD */}
-        <Card className="flex flex-col">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="mb-7">{plans.startup.title}</CardTitle>
-            <span className="font-bold text-3xl text-emerald-500">
-              <span className="text-xl opacity-75 font-normal -ml-4 text-foreground">
-                {plans.startup.currency}.
-              </span>
-              {formatNumberToK(plans.startup.price[regime])}
-            </span>
-          </CardHeader>
-          <CardDescription className="text-center  w-11/12 mx-auto">
-            Get your firm started!
-          </CardDescription>
-          <CardContent className="flex-1">
-            <ul className="mt-7 space-y-2.5 text-sm">
-              {plans.startup.features.map((feat_, i) => (
-                <li key={i} className="flex space-x-2">
-                  <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
-                  <span className="text-muted-foreground">{feat_}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <BuyCTA
-              label="BUY"
-              amount={plans.startup.price[regime]}
-              packag={{ name: plans.startup.title as PlanName, regime }}
-            />
-          </CardFooter>
-        </Card>
-        {/* End Card */}
-        {/* Card */}
-        <Card className="border-primary flex flex-col">
-          <CardHeader className="text-center pb-2">
-            <Badge className="uppercase w-max self-center mb-3">
-              Most popular
-            </Badge>
-            <CardTitle className="!mb-7">{plans.team.title}</CardTitle>
+        {packages?.length !== 0
+          ? packages?.map((pkg, i) => (
+              <Card
+                key={i}
+                className={`${i === 1 ? "border-primary" : ""} flex flex-col`}
+              >
+                <CardHeader className="text-center pb-2">
+                  {i === 1 && (
+                    <Badge className="uppercase w-max self-center mb-3">
+                      Most popular
+                    </Badge>
+                  )}
+                  <CardTitle className="!mb-7">
+                    {strPascalCase(pkg.name)}
+                  </CardTitle>
 
-            <span className="font-bold text-3xl text-emerald-500">
-              <span className="text-xl opacity-75 font-normal -ml-8 text-foreground">
-                {plans.team.currency}.
-              </span>
-              {formatNumberToK(plans.team.price[regime])}
-            </span>
-          </CardHeader>
-          <CardDescription className="text-center w-11/12 mx-auto">
-            All you need to digitize your firm!
-          </CardDescription>
-          <CardContent className="flex-1">
-            <ul className="mt-7 space-y-2.5 text-sm">
-              {plans.team.features.map((feat_, i) => (
-                <li key={i} className="flex space-x-2">
-                  <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
-                  <span className="text-muted-foreground">{feat_}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <BuyCTA
-              label="BUY"
-              variant="default"
-              amount={plans.team.price[regime]}
-              packag={{ name: plans.team.title as PlanName, regime }}
-            />
-          </CardFooter>
-        </Card>
-        {/* End Card */}
-        {/* Card */}
-        <Card className="flex flex-col">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="mb-7">{plans.enterprise.title}</CardTitle>
-            <span className="font-bold text-3xl text-emerald-500">
-              <span className="text-xl opacity-75 font-normal -ml-8 text-foreground">
-                {plans.enterprise.currency}.
-              </span>
-              {formatNumberToK(plans.enterprise.price[regime])}
-            </span>
-          </CardHeader>
-          <CardDescription className="text-center  w-11/12 mx-auto">
-            Advanced features for managing your firm operations
-          </CardDescription>
-          <CardContent>
-            <ul className="mt-7 space-y-2.5 text-sm">
-              {plans.enterprise.features.map((feat_, i) => (
-                <li key={i} className="flex space-x-2">
-                  <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
-                  <span className="text-muted-foreground">{feat_}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <BuyCTA
-              label="BUY"
-              amount={plans.enterprise.price[regime]}
-              packag={{ name: plans.enterprise.title as PlanName, regime }}
-            />
-          </CardFooter>
-        </Card>
-        {/* End Card */}
+                  <span className="font-bold text-3xl text-emerald-500">
+                    <span className="text-xl opacity-75 font-normal -ml-8 text-foreground">
+                      {pkg.currency}.
+                    </span>
+                    {formatNumberToK(
+                      regime === "monthly"
+                        ? pkg.priceMonthly
+                        : regime === "yearly"
+                          ? pkg.priceAnnual
+                          : 0
+                    )}
+                  </span>
+                </CardHeader>
+                <CardDescription className="text-center w-11/12 mx-auto">
+                  {pkg.description}
+                </CardDescription>
+                <CardContent className="flex-1">
+                  <ul className="mt-7 space-y-2.5 text-sm">
+                    {pkg.planFeatures?.map((planFeat: PlanFeature, i) => (
+                      <li key={i} className="flex space-x-2">
+                        <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                        <span className="text-muted-foreground">
+                          {planFeat.feature?.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <BuyCTA
+                    label="BUY"
+                    variant={i === 1 ? "default" : undefined}
+                    amount={
+                      regime === "monthly"
+                        ? pkg.priceMonthly
+                        : regime === "yearly"
+                          ? pkg.priceAnnual
+                          : 0
+                    }
+                    // packag={{ name: pkg.name as PlanName, regime }}
+                    pkg={pkg}
+                  />
+                </CardFooter>
+              </Card>
+            ))
+          : null}
       </div>
       {/* End Grid */}
     </div>
@@ -246,13 +200,14 @@ export default function PaymentsSection() {
 }
 
 function BuyCTA({
+  label = "BUY",
   amount,
-  packag,
+  pkg,
   variant = "outline",
 }: {
   label: string;
+  pkg: Plan;
   amount: number;
-  packag: Packag;
   variant?: "outline" | "default";
 }) {
   const [open, setOpen] = useState<boolean>(false);
@@ -262,6 +217,14 @@ function BuyCTA({
     setOpen(false);
   };
 
+  // 🧠 Determine regime based on amount
+  const regime =
+    amount === pkg.priceMonthly
+      ? "monthly"
+      : amount === pkg.priceAnnual
+        ? "yearly"
+        : "monthly";
+
   return (
     <>
       <Button
@@ -269,10 +232,17 @@ function BuyCTA({
         className="w-full"
         onClick={() => setOpen(true)}
       >
-        BUY
+        {label}
       </Button>
       <PaymentDialogue open={open} setOpen={setOpen} title="Checkout">
-        <CheckoutForm closeModal={closeModal} amount={amount} packag={packag} />
+        <CheckoutForm
+          closeModal={closeModal}
+          amount={amount}
+          packag={{
+            name: pkg.name,
+            regime,
+          }}
+        />
       </PaymentDialogue>
     </>
   );

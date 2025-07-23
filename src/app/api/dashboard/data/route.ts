@@ -37,8 +37,9 @@ async function getHandler(req: Request, user: SessionUser) {
     }
 
     // Run institution, users, cases, caseTypes, assignmentRequests in parallel
-    const [institutions, rawUsers, cases, caseTypes, assignmentRequests] =
+    const [plans, institutions, rawUsers, cases, caseTypes, assignmentRequests] =
       await Promise.all([
+        prisma.plan.findMany({}),
         prisma.institution.findMany({
           where: isSysAdmin ? {} : { id: { in: instIDs_activeSub } },
           include: {
@@ -49,29 +50,29 @@ async function getHandler(req: Request, user: SessionUser) {
 
         isSysAdmin
           ? prisma.user.findMany({
-              include: {
-                institutions: true,
-                cases: true,
-                completedTasks: true,
-              },
-            })
+            include: {
+              institutions: true,
+              cases: true,
+              completedTasks: true,
+            },
+          })
           : instIDs_activeSub.length > 0
             ? prisma.user.findMany({
-                where: {
-                  institutions: {
-                    some: {
-                      institutionId: { in: instIDs_activeSub },
-                    },
+              where: {
+                institutions: {
+                  some: {
+                    institutionId: { in: instIDs_activeSub },
                   },
                 },
-                include: {
-                  institutions: {
-                    include: {
-                      institution: true,
-                    },
+              },
+              include: {
+                institutions: {
+                  include: {
+                    institution: true,
                   },
                 },
-              })
+              },
+            })
             : [],
 
         prisma.case.findMany({
@@ -114,6 +115,7 @@ async function getHandler(req: Request, user: SessionUser) {
     return Response.json({
       institutions,
       users,
+      plans,
       caseTypes,
       cases,
       tasks,

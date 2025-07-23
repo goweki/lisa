@@ -71,7 +71,8 @@ export default function Checkout({
   const [name, setName] = useState<Input>(def_Input);
   const [email, setEmail] = useState<Input>(def_Input);
   const [institutions, setInstitutions] = useState<Option[]>();
-  const [selected_institutionId, setSelectedInstitutionId] = useState<string>('');
+  const [selected_institutionId, setSelectedInstitutionId] =
+    useState<string>("");
   const [payConfig, setPayConfig] = useState<PaymentConfig>(
     def_paymentConfig(packag, amount * 100)
   );
@@ -81,20 +82,28 @@ export default function Checkout({
 
   useEffect(() => {
     (async () => {
-      const insts_ = await fetch(`/api/dashboard/institution?userId=${session?.user?.id}`).then(
-        async (res) => {
-          if (res.ok) return await res.json()
-          const err = await res.json();
-          console.error('Error fetching institutions - ', err)
-          toast.error('Error fetching institutions');
+      const insts_ = await fetch(
+        `/api/dashboard/institution?userId=${session?.user?.id}`
+      ).then(async (res) => {
+        if (res.ok) {
+          const insts = await res.json();
+          console.log("User Institutions - ", insts);
+          return insts;
         }
-      )
+        const err = await res.json();
+        console.error("Error fetching institutions - ", err);
+        toast.error("Error fetching institutions");
+      });
 
       setInstitutions(
-        insts_.map(({ id, name }: { id: string, name: string }) => ({ label: name, value: id }))
+        insts_.map(({ id, name }: { id: string; name: string }) => ({
+          label: name,
+          value: id,
+        }))
       );
+      setSelectedInstitutionId(insts_[0].id);
     })();
-  }, [])
+  }, []);
 
   useEffect(() => {
     let nameError_ = "";
@@ -160,32 +169,33 @@ export default function Checkout({
       toast.success(_ref.message);
     }
     try {
-      const res_ = await fetch("/api/paystack/payment", {
+      const res_ = await fetch("/api/paystack/pay-verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           providerTransactionId: _ref.reference,
-          institutionId: _ref.metadata.institutionId,
-          subscriptionId: _ref.metadata.subscriptionId,
-          amount: _ref.amount / 100,
+          institutionId: selected_institutionId,
+          // subscriptionId: _ref.metadata.subscriptionId,
+          amount: amount,
           paymentMethod: "paystack",
-          description: _ref.metadata.description || "Subscription payment",
-          metadata: _ref.metadata,
+          description: "Subscription payment",
+          packag,
         }),
-      })
-        .then(async (res) => {
-          if (res.ok) return await res.json()
-          const err = await res.json();
-          console.error('Error saving payment info - ', err)
-          toast.error('Error saving payment information');
-        })
+      }).then(async (res) => {
+        if (res.ok) return await res.json();
+        const err = await res.json();
+        console.error("Error saving payment info - ", err);
+        toast.error("Error saving payment information");
+        return;
+      });
 
       if (res_) {
-        console.log("Payment recorded:", res_); router.refresh();
+        console.log("Payment recorded:", res_);
+        router.refresh();
         toast.success("Payment successful, proceed to dashboard");
-        // router.push("/dashboard");
+        router.push("/dashboard");
       }
     } catch (err) {
       console.error("Error saving payment:", err);
@@ -194,7 +204,7 @@ export default function Checkout({
           Payment succeeded but saving failed. Please contact support.
         </div>
       );
-    };
+    }
   };
 
   return (
@@ -223,9 +233,22 @@ export default function Checkout({
           setValue={setEmail}
           valValidator={emailValidator}
         />
-        {institutions && <div className="my-3">
-          <ComboboxSearchable label='institution' options={institutions} value={selected_institutionId} setValue={setSelectedInstitutionId} />
-        </div>}
+        {institutions && (
+          <div className="my-3 pt-3 flex flex-row space-x-3">
+            <label
+              htmlFor="intitution"
+              className={`text-xs px-2 ${!selected_institutionId ? "text-red-500" : ""}`}
+            >
+              Institution *
+            </label>
+            <ComboboxSearchable
+              label="institution"
+              options={institutions}
+              value={selected_institutionId}
+              setValue={setSelectedInstitutionId}
+            />
+          </div>
+        )}
       </div>
 
       {/* Order Summary */}
@@ -252,7 +275,7 @@ export default function Checkout({
 
       {!PAYSTACK_PUBLIC_KEY ? (
         <>ERROR: missing integration keys</>
-      ) : !payConfig.email ? (
+      ) : !payConfig.email || !selected_institutionId ? (
         <Button disabled={true} className="text-center italic">
           Enter email to proceed
         </Button>

@@ -134,15 +134,15 @@ async function seedPlanFeatures(
     featureNames: string[];
   }> = [
     {
-      plan: "Startup",
+      plan: "starter", // ✅ matches name in seedPlans
       featureNames: ["Case Management"],
     },
     {
-      plan: "Team",
+      plan: "team",
       featureNames: ["Case Management", "User Management", "Integrations"],
     },
     {
-      plan: "Enterprise",
+      plan: "enterprise",
       featureNames: [
         "Case Management",
         "User Management",
@@ -154,11 +154,17 @@ async function seedPlanFeatures(
 
   for (const assoc of associations) {
     const plan = plans.find((p) => p.name === assoc.plan);
-    if (!plan) continue;
+    if (!plan) {
+      console.warn(`⚠️ Plan not found: ${assoc.plan}`);
+      continue;
+    }
 
     for (const featureName of assoc.featureNames) {
       const feature = features.find((f) => f.name === featureName);
-      if (!feature) continue;
+      if (!feature) {
+        console.warn(`⚠️ Feature not found: ${featureName}`);
+        continue;
+      }
 
       await prisma_.planFeature.upsert({
         where: {
@@ -175,6 +181,8 @@ async function seedPlanFeatures(
       });
     }
   }
+
+  console.log(`🧩 Plan-feature associations created successfully.`);
 }
 
 async function seedInstitutions(

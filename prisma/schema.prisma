@@ -84,7 +84,7 @@ model Subscription {
 model Plan {
   id           String   @id @default(uuid())
   name         PlanName @unique
-  description  String?
+  description  String
   price        Float
   currency     String   @default("KES")
   isActive     Boolean  @default(true)

@@ -14,6 +14,7 @@ import PaymentsSection from "@/components/payments";
 
 export interface UIDATA {
   users: User[];
+  plans: [];
   caseTypes: CaseType[];
   cases: Case[];
   tasks: Task[];
@@ -29,6 +30,7 @@ interface DataContext {
 export const defaultDataContext: DataContext = {
   data: {
     users: [],
+    plans: [],
     caseTypes: [],
     cases: [],
     tasks: [],
