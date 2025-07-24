@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
@@ -40,9 +40,8 @@ export function ReqDemoModal({
     try {
       const body = {
         subject: "INTEREST IN LISA",
-        text: `The below user has expressed interest in Lisa via website \nName: ${
-          firstName.value
-        }  \nEmail: ${email.value}, ${tel.value ? `\nTel: ${tel.value} ` : ``}`,
+        text: `The below user has expressed interest in Lisa via website \nName: ${firstName.value
+          }  \nEmail: ${email.value}, ${tel.value ? `\nTel: ${tel.value} ` : ``}`,
       };
       const fetchOptions = {
         method: "POST",
@@ -68,8 +67,8 @@ export function ReqDemoModal({
       }
       console.log(
         "SUCCESS: info sent\n > " +
-          JSON.stringify(response) +
-          "\n.............."
+        JSON.stringify(response) +
+        "\n.............."
       );
       toast.success(response);
       setFirstName(def_Input);

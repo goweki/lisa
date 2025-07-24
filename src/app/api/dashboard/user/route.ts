@@ -63,16 +63,16 @@ async function postHandler(
       }),
     });
 
-    let message_: string | undefined = undefined;
-    if (!emailerRes.ok) {
+    let message_: string = 'Failed to send onboarding email';
+    if (emailerRes.ok) {
+      message_ = "message sent";
+    } else {
       console.warn(
         "Failed to send onboarding email to - ",
         newRegistration.email
       );
-      message_ = "Failed to send onboarding email";
     }
 
-    console.log("User created successfully");
     return Response.json({
       id: newRegistration.id,
       name: newRegistration.name,
@@ -151,11 +151,11 @@ async function patchHandler(
 
     const userInstitutionsJoin_ = _institutionIds
       ? {
-          deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
-          create: _institutionIds.map((institutionId: string) => ({
-            institution: { connect: { id: institutionId } },
-          })),
-        }
+        deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
+        create: _institutionIds.map((institutionId: string) => ({
+          institution: { connect: { id: institutionId } },
+        })),
+      }
       : undefined;
 
     const updatedUser = await prisma.user.update({

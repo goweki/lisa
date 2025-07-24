@@ -4,8 +4,11 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
-import { httpCodes } from "@/lib/configs";
 import { UIstate } from "@/types/custom";
+import { messageConfirmationEmail } from "@/lib/emailRenderer";
+import { BASE_URL } from "@/helpers/getUrl";
+
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_MAIL_ACCOUNT_ADMIN
 
 export default function ContactsPage() {
   const [UIstate, setUIstate] = useState<UIstate>("OK");
@@ -22,53 +25,62 @@ export default function ContactsPage() {
   }, [UIstate]);
   //onClick Send
   async function handleSend() {
+    if (!ADMIN_EMAIL) {
+      toast.error('ERROR: no admin address. Contact support at lisa@goweki.com');
+      return
+    }
     // confirm fields filled
     if (!name || !email) {
       toast.error(`Please provide your ${!name ? " name " : " email "}`);
       return;
     }
-    // fetch options
-    let fetchOptions = {
-      method: "POST",
-      // headers: {
-      //   "Content-Type": "application/json",
-      //   'Content-Type': 'application/x-www-form-urlencoded',
-      // },
-      body: JSON.stringify({
-        subject: `Thank you for contacting LISA!`,
-        text: `Hi: ${name} \nWe have received your message and will contact you soon via: ${email} \n Message: ${message}\nSource: website`,
-        cc: ccCheckbox ? email : null,
-      }),
-    };
+
     setUIstate("loading");
-    // POST request using fetch
-    const _res = await fetch("/api/mailer", fetchOptions).then(async (res_) => {
-      if (res_.ok) {
-        return await res_.json();
-      } else {
-        const error_ =
-          (await res_.json()) || `Error-${res_.status} sending mail`;
-        console.log(`ERROR: ` + JSON.stringify(res_));
-        toast.error(``);
-        setUIstate(error_);
+    // send email
+
+    try {
+      const emailToSend = await messageConfirmationEmail(
+        name,
+        message);
+
+
+      const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
+        method: "POST",
+        body: JSON.stringify({
+          email: {
+            to: ADMIN_EMAIL,
+            subject: "Message Recieved",
+            html: emailToSend.html,
+            text: emailToSend.text,
+          },
+        }),
+      }).then(async (res_) => {
+        if (res_.ok) {
+          return await res_.json()
+        } else {
+          const error_ = `ERROR ${res_.status} - ${await res_.json()}`
+          console.log(error_)
+          toast.error(error_)
+        }
+      });
+
+      if (!emailerRes) {
+        return
       }
-    });
-    if (_res?.success) {
+
       console.log(
-        "SUCCESS: info sent\n > " + JSON.stringify(_res) + "\n.............."
+        "SUCCESS: info sent\n > ", emailerRes
       );
       toast.success("Info submitted!");
       setName("");
       setEmail("");
       setMessage("");
       setUIstate("OK");
-    } else {
-      console.error(
-        "ERROR: failed sending info at contacts /page\n > " +
-          JSON.stringify(_res) +
-          "\n.............."
-      );
-      setUIstate(_res?.error ?? "No Response, check internet connection");
+    } catch (err: any) {
+      console.error('Error in contacts form 7hf - ', err)
+      toast.error('Info was not sent. Contact support at lisa@goweki.com')
+    } finally {
+      setUIstate('OK')
     }
   }
   //render
@@ -80,7 +92,7 @@ export default function ContactsPage() {
     <div className="container my-24 mx-auto md:px-6">
       {/* <!-- Section: Design Block --> */}
       <section className="mb-32">
-        <div className="relative h-[300px] overflow-hidden bg-cover bg-[50%] bg-no-repeat bg-[url('https://i.postimg.cc/nrV7ytdv/og-image.jpg')]"></div>
+        <div className="relative h-[300px] overflow-hidden bg-cover bg-[50%] bg-no-repeat bg-[url('/logo_onLight.svg')] dark:bg-no-repeat bg-[url('/logo_onDark.svg')]"></div>
         <div className="container px-6 md:px-12">
           <div className="block bg-backg-surface/75 dark:bg-backg-dark-surface/75 rounded-lg px-6 py-12 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]  dark:shadow-black/20 md:py-16 md:px-12 -mt-[100px] backdrop-blur-[30px]">
             <div className="flex flex-wrap">
@@ -95,11 +107,11 @@ export default function ContactsPage() {
                       value={message}
                       rows={3}
                       onChange={(e) => setMessage(e.target.value)}
+                      required
                     />
                     <label
-                      className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${
-                        message ? "scale-[0.8] -translate-y-5" : ""
-                      } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+                      className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${message ? "scale-[0.8] -translate-y-5" : ""
+                        } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
                       htmlFor="message"
                     >
                       Message / Inquiry
@@ -292,9 +304,8 @@ function renderInput(
         onChange={(e) => setValue(e.target.value)}
       />
       <label
-        className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${
-          value ? "scale-[0.8] -translate-y-5" : ""
-        } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+        className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${value ? "scale-[0.8] -translate-y-5" : ""
+          } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
         htmlFor={name}
       >
         Your {name}*

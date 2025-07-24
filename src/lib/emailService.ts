@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 const gmailAccountUser = process.env.GMAIL_ACCOUNT_USER;
 const gmailAccountKey = process.env.GMAIL_APP_KEY;
 const emailFrom = process.env.GMAIL_ACCOUNT_FROM;
-const emailCC = process.env.GMAIL_ACCOUNT_CC;
+const emailCC = process.env.NEXT_PUBLIC_MAIL_ACCOUNT_ADMIN;
 
 interface SendEmailOptions {
   to: string;

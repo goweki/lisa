@@ -3,13 +3,14 @@ import sendSMS from "@/lib/smsService";
 
 export async function POST(request: Request) {
   const body = await request.json();
+  console.log('MAILER request - ', body)
   if (!body.sms && !body.email) {
     console.error(
       "FAILED: route /mailer POST: >> Missing required fields in request body",
       body
     );
     return Response.json(
-      { error: "Missing required fields in request body" },
+      "Missing required fields in request body",
       { status: 400 }
     );
   }

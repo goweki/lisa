@@ -1,10 +1,12 @@
 import { render } from "@react-email/render";
 import React from "react";
 import { WelcomeEmail, welcomeEmailText } from "@/components/emails/welcome";
+import { ConfirmEmail, confirmEmailText } from "@/components/emails/messageConfirmation";
 import {
   ResetPasswordHtml,
   resetPasswordText,
 } from "@/components/emails/resetPassword";
+
 
 /**
  * Renders a React component to a static HTML string.
@@ -45,6 +47,15 @@ export const resetPasswordEmail = async (
     name,
     resetPasswordLink: resetPasswordLink,
   });
+
+  return { html: emailHtml, text: emailText };
+};
+
+export const messageConfirmationEmail = async (name: string, message: string) => {
+  const emailHtml = await renderEmailHtml(
+    <ConfirmEmail name={name} message={message} />
+  );
+  const emailText = confirmEmailText({ name, message });
 
   return { html: emailHtml, text: emailText };
 };
