@@ -92,7 +92,7 @@ export default function PaymentsSection() {
       {/* Title */}
       <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-          Secure A Plan to Continue
+          Get A Plan to Continue
         </h2>
         <p className="mt-1 text-muted-foreground">
           Curated packages to suit you, whether starting, scaling or large...
