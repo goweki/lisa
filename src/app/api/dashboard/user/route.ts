@@ -1,11 +1,8 @@
 import prisma from "@/lib/prisma/prisma";
-import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
-import { hash } from "@/helpers/passwordHandlers";
+import { withAuthAdmin } from "@/lib/authRouteWrappers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { NextRequest } from "next/server";
 import { welcomeEmail } from "@/lib/emailRenderer";
-import { InstitutionUser } from "@prisma/client";
-import { User } from "@/types/models";
 import { SessionUser } from "@/types/next-auth";
 import { includesAll } from "@/helpers/dataHandlers";
 import { createUser } from "@/lib/prisma/queries";
@@ -13,39 +10,37 @@ import { createUser } from "@/lib/prisma/queries";
 async function postHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   const doc = await request.json();
-  const { names, email, tel, institutionIds } = doc;
+  console.log("POST - /api/dashboard/user", doc);
+
+  const { names, email, tel, institutionIds: _institutionIds_update } = doc;
+
+  // institution auth check
+  if (user.role !== "system") {
+    const isAllAdmin = includesAll(
+      _institutionIds_update,
+      institutionIds || []
+    );
+    if (!isAllAdmin) {
+      return Response.json("Not allowed", { status: 403 });
+    }
+  }
+
+  // new user object
+  const newUser_ = {
+    names,
+    email,
+    // tel,
+    institutionIds: _institutionIds_update,
+  };
+  console.log("newUser_:", newUser_);
 
   try {
-    // institution auth check
-    if (user.role !== "system") {
-      const adminsInsts = await prisma.institutionUser.findMany({
-        where: { userId: user.id },
-      });
-      const adminsInsts_strArr = adminsInsts.map(({ id }) => id);
-      //  * includesAll(['a', 'b'], ['a', 'b', 'c']); // true
-      const isAllAdmin = includesAll(institutionIds, adminsInsts_strArr);
-      if (!isAllAdmin) {
-        return Response.json("Institution Not Found", { status: 40 });
-      }
-    }
-
-    // new user object
-    const newUser_ = {
-      names,
-      email,
-      // tel,
-      institutionIds,
-    };
-    console.log("newUser_:", newUser_);
-
     //add to db
     const newRegistration = await createUser(newUser_);
-
     console.log("Database updated", newRegistration);
-
     // send email
     const emailToSend = await welcomeEmail(
       newRegistration.name,
@@ -63,7 +58,7 @@ async function postHandler(
       }),
     });
 
-    let message_: string = 'Failed to send onboarding email';
+    let message_: string = "Failed to send onboarding email";
     if (emailerRes.ok) {
       message_ = "message sent";
     } else {
@@ -79,19 +74,25 @@ async function postHandler(
       email: newRegistration.email,
       message: message_,
     });
-  } catch (err) {
+  } catch (err: any) {
+    let message = "SERVER ERROR";
+    let code = 500;
+    if (err.code === 409) {
+      message = err.message || "User exists";
+      code = err.code;
+    }
     console.error(
       "ERROR occurred during user creation -route:/api/dashboard/user POST\n >> error:",
-      err
+      message
     );
-    return Response.json("SERVER ERROR ", { status: 500 });
+    return Response.json(message, { status: code });
   }
 }
 
 async function getHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   const url = new URL(request.url);
   const userID = url.searchParams.get("id");
@@ -99,15 +100,6 @@ async function getHandler(
   if (!userID) {
     return Response.json("No userID provided", {
       status: 400,
-    });
-  }
-
-  if (
-    !institutionUser ||
-    (institutionUser.role !== "ADMIN" && !user.systemAdmin)
-  ) {
-    return Response.json("You do not have permission to delete user", {
-      status: 403,
     });
   }
 
@@ -128,31 +120,31 @@ async function getHandler(
 async function patchHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   try {
     // request body
     const doc = await request.json();
     console.log(`PATCH - /api/dashboard/user\n`, doc);
     // update doc
-    const { id, institutionIDs: _institutionIds, ...doc_ } = doc;
-    if (_institutionIds) {
+    const { id, institutionIDs, ...doc_ } = doc;
+    if (institutionIDs) {
       const _institutions = await prisma.institution.findMany({
         where: {
           id: {
-            in: _institutionIds,
+            in: institutionIDs,
           },
         },
       });
-      if (_institutionIds.length !== _institutions.length) {
+      if (institutionIDs.length !== _institutions.length) {
         throw new Error("Invalid institutions found");
       }
     }
 
-    const userInstitutionsJoin_ = _institutionIds
+    const userInstitutionsJoin_ = institutionIDs
       ? {
         deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
-        create: _institutionIds.map((institutionId: string) => ({
+        create: institutionIDs.map((institutionId: string) => ({
           institution: { connect: { id: institutionId } },
         })),
       }
@@ -177,7 +169,7 @@ async function patchHandler(
 async function deleteHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   const doc = await request.json();
   const { id } = doc;

@@ -58,11 +58,10 @@ export function InputText({
           name={name}
           id={name}
           type={type}
-          className={`${
-            valObj.error
+          className={`${valObj.error
               ? "border-red-500 dark:border-red-400"
               : "border-transparent dark:border-transparent focus:ring-primary focus:border-primary"
-          } border shadow dark:shadow-dark dark:focus:shadow-dpressed focus:shadow-pressed text-sm rounded-lg block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic bg-transparent`}
+            } border shadow dark:shadow-dark dark:focus:shadow-dpressed focus:shadow-pressed text-sm rounded-lg block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic bg-transparent`}
           placeholder={placeholder}
           value={valObj.value}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +183,7 @@ export function InputImage({
         {label}
       </Label>
       <label
-        htmlFor="profile-image"
+        htmlFor="image"
         className="group relative flex justify-center w-32 aspect-square items-center bg-emerald-100 rounded-full hover:cursor-pointer border-4 border-emerald-800/25"
       >
         {!imagePreviewUrl && !_photo ? (
@@ -207,7 +206,7 @@ export function InputImage({
           upload
         </span>
         <input
-          id="profile-image"
+          id="image"
           className="hidden"
           type="file"
           onChange={async (e) => {

@@ -3,6 +3,7 @@ import type { NextAuthOptions } from "next-auth";
 import prisma from "@/lib/prisma/prisma";
 import { compareHash } from "@/helpers/passwordHandlers";
 import { Role } from "@/types/custom";
+import { EntityStatus } from "@prisma/client";
 
 // interface User {
 //   id: string
@@ -66,6 +67,16 @@ export const authOptions: NextAuthOptions = {
               user_
             )}`
           );
+          //update status
+          if (user_.status !== EntityStatus.ACTIVE) {
+            await prisma.user.update({
+              where: { id: user_.id },
+              data: {
+                status: EntityStatus.ACTIVE,
+              },
+            });
+          }
+
           return user_;
         } else {
           // invalid credentials

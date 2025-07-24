@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "./prisma/prisma";
-import { InstitutionUser } from "@prisma/client";
+import { InstitutionUser, UserRole } from "@prisma/client";
 import { SessionUser } from "@/types/next-auth";
 
 export function withAuthGeneral(
@@ -30,7 +30,7 @@ export function withAuthAdmin(
   handler: (
     req: Request | NextRequest,
     user: SessionUser,
-    institutionUser: InstitutionUser | null
+    institutionIds: string[] | undefined
   ) => Promise<Response>
 ) {
   return async function (req: Request | NextRequest) {
@@ -38,53 +38,33 @@ export function withAuthAdmin(
     const user = session?.user;
 
     if (!user) {
-      return Response.json(
-        { message: "Unauthorized: please log in" },
-        { status: 401 }
-      );
+      return Response.json("Unauthorized: please log in", { status: 401 });
     }
 
-    const url = new URL(req.url);
-    const institutionId = url.searchParams.get("institutionId");
-    if (!institutionId && !user.systemAdmin) {
-      return Response.json(
-        { message: "Missing institutionId" },
-        { status: 400 }
-      );
+    let institutionIds: string[] | undefined = undefined;
+
+    if (!user.systemAdmin) {
+      const userInsts = await prisma.institutionUser.findMany({
+        where: {
+          userId: user.id,
+          role: UserRole.ADMIN,
+        },
+      });
+
+      if (userInsts.length < 1) {
+        return Response.json("Not Allowed", { status: 403 });
+      } else {
+        institutionIds = userInsts.map(({ institutionId }) => institutionId);
+      }
     }
 
-    const institutionUser = await prisma.institutionUser.findFirst({
-      where: {
-        userId: user.id,
-        institutionId: institutionId || undefined,
+    return handler(
+      req,
+      {
+        ...user,
+        role: user.role || "user",
       },
-    });
-
-    if (user.systemAdmin) {
-      return handler(
-        req,
-        {
-          ...user,
-          role: user.role || "user",
-        },
-        institutionUser
-      );
-    }
-
-    if (institutionUser && institutionUser.role === "ADMIN") {
-      return handler(
-        req,
-        {
-          ...user,
-          role: user.role || "user",
-        },
-        institutionUser
-      );
-    }
-
-    return Response.json(
-      { message: "Unauthorized: you do not have admin access" },
-      { status: 403 }
+      institutionIds
     );
   };
 }

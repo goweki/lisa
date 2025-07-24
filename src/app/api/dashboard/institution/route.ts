@@ -8,7 +8,7 @@ import { Institution, InstitutionUser } from "@prisma/client";
 async function postHandler(
   request: Request,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   if (user.role !== "system") {
     return Response.json("You do not have permission to create institution", {
@@ -48,7 +48,7 @@ async function postHandler(
 async function patchHandler(
   request: Request,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   const doc = await request.json();
   console.log("REQUEST: Patch institution", doc);
@@ -78,12 +78,9 @@ async function patchHandler(
 }
 
 // GET institutions related to user
-async function getHandler(
-  request: Request,
-  user: SessionUser,
-) {
+async function getHandler(request: Request, user: SessionUser) {
   const { searchParams } = new URL(request.url);
-  console.log('search params: ', searchParams)
+  console.log("search params: ", searchParams);
   const userId = searchParams.get("userId");
 
   if (!userId) {
@@ -92,9 +89,12 @@ async function getHandler(
 
   // Only allow the user themselves or system role to fetch
   if (user.role !== "system" && user.id !== userId) {
-    return Response.json("You do not have permission to view these institutions", {
-      status: 403,
-    });
+    return Response.json(
+      "You do not have permission to view these institutions",
+      {
+        status: 403,
+      }
+    );
   }
 
   try {
@@ -121,7 +121,7 @@ async function getHandler(
 async function deleteHandler(
   request: Request,
   user: SessionUser,
-  institutionUser: InstitutionUser | null
+  institutionIds: string[] | undefined
 ) {
   if (user.role !== "system") {
     return Response.json("You do not have permission to delete institution", {

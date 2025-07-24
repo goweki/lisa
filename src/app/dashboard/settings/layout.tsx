@@ -5,20 +5,20 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarNav } from "./_components/sidebar-nav";
 import { BreadCrumb } from "@/components/atoms/breadcrumb";
 
-const _rootPath = "/dashboard/settings";
+const rootPath = "/dashboard/settings";
 
 const sidebarNavItems = [
   {
     title: "Profile",
-    href: _rootPath,
+    href: rootPath,
   },
   {
     title: "Appearance",
-    href: _rootPath + "/appearance",
+    href: rootPath + "/appearance",
   },
   {
     title: "Notifications",
-    href: _rootPath + "/notifications",
+    href: rootPath + "/notifications",
   },
 ];
 

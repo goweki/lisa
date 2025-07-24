@@ -10,7 +10,7 @@ import { DataContext } from "@/app/dashboard/providers";
 import { isDatePassed } from "@/helpers/dateHandlers";
 import { useSession, signOut } from "next-auth/react";
 import { Case, Task } from "@/types/models";
-import { CaseStatus, EntityStatus } from "@prisma/client";
+import { CaseStatus, EntityStatus, UserRole } from "@prisma/client";
 
 interface UsersBrief {
   id: string;
@@ -90,7 +90,7 @@ export default function UserHome() {
         name: user_.names,
         role: user_.systemAdmin
           ? "system"
-          : roles_.includes("admin")
+          : roles_.includes(UserRole.ADMIN)
             ? "admin"
             : "user",
         institutions: user_institutions_str,
@@ -237,7 +237,7 @@ function ProfileCard({
                 </div>
               )}
               <div>
-                <Link href="/dashboard/cases/new">
+                <Link href="/dashboard/cases">
                   <ButtonSecondary label="New Case" onClick={() => ""} />
                 </Link>
               </div>

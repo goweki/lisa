@@ -28,6 +28,7 @@ import {
   telValidator,
 } from "@/helpers/inputValidators";
 import { httpCodes } from "@/lib/configs";
+import { EntityStatus } from "@prisma/client";
 
 export default function UsersLayout({
   children,
@@ -36,7 +37,7 @@ export default function UsersLayout({
 }>) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: userSession, status: authStatus } = useSession();
+  const { data: session, status: authStatus } = useSession();
   // if (status === "authenticated") {
   //   return <p>Signed in as {session.user.email}</p>;
   // }
@@ -75,10 +76,7 @@ export default function UsersLayout({
   }, [searchPhrase, users]);
 
   //if not admin, re-route to dashboard
-  if (
-    userSession?.user?.role !== "system" &&
-    userSession?.user?.role !== "admin"
-  ) {
+  if (session?.user?.role !== "system" && session?.user?.role !== "admin") {
     return router.push("/dashboard");
   }
 
@@ -117,8 +115,9 @@ export default function UsersLayout({
               + create
             </Link>
             {filtUsers.length > 0 &&
-              filtUsers.map(
-                ({ id, names, status, institutions: userInsts }) => (
+              filtUsers
+                .filter(({ id }) => id !== session.user?.id)
+                .map(({ id, names, status, institutions: userInsts }) => (
                   <Link
                     key={id}
                     className={`p-2 rounded ${
@@ -128,10 +127,14 @@ export default function UsersLayout({
                     }`}
                     href={`/dashboard/users/${id}`}
                   >
-                    <div>{names}</div>
+                    <div className="flex flex-row">
+                      {names}{" "}
+                      <div
+                        className={`w-2 h-2 ${status === EntityStatus.ACTIVE ? "bg-green-500" : status === EntityStatus.DORMANT ? "bg-yellow-500" : "bg-muted-foreground"} rounded-full ml-2 my-auto`}
+                      ></div>
+                    </div>
                     <div className={`hidden text-sm md:inline-block`}>
-                      {status} -
-                      <span className="ml-2 italic">
+                      <span className="mr-2 italic">
                         {userInsts
                           ?.map(({ institutionId }) => {
                             const institution_ = institutions?.find(
@@ -140,11 +143,10 @@ export default function UsersLayout({
                             return institution_?.name;
                           })
                           .join(", ")}
-                      </span>
+                      </span>{" "}
                     </div>
                   </Link>
-                )
-              )}
+                ))}
           </div>
         </nav>
 

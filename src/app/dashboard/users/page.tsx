@@ -65,6 +65,17 @@ export default function UsersPage() {
   const [UIstate, setUIstate] = useState("");
   const [newUser, setNewUser] = useState(_defaultUser);
 
+  useEffect(() => {
+    if (institutions?.length === 1) {
+      setNewUser((prev) => {
+        return {
+          ...prev,
+          institutionIds: institutions.map(({ id }) => id),
+        };
+      });
+    }
+  }, [institutions]);
+
   // handle Institutions edits
   function updateSelectionUserInstits(selections: MultiSelectOption[]) {
     // console.log("Changed selection: ", selections);
@@ -222,11 +233,17 @@ export default function UsersPage() {
               Institutions *
             </Label>
             <MultiSelect
-              // value={instOptions}
-
+              hidePlaceholderWhenSelected
+              value={newUser.institutionIds.map((id_) => {
+                const inst = institutions?.find(({ id }) => id === id_);
+                return {
+                  value: inst?.id || "error",
+                  label: inst?.name || "error",
+                };
+              })}
+              disabled={institutions?.length === 1}
               onChange={updateSelectionUserInstits}
-              //
-              defaultOptions={institutions?.map(
+              options={institutions?.map(
                 ({ id, name }: { id: string; name: string }) => ({
                   value: id,
                   label: name,

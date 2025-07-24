@@ -193,9 +193,8 @@ export default function Checkout({
 
       if (res_) {
         console.log("Payment recorded:", res_);
-        router.refresh();
         toast.success("Payment successful");
-        router.refresh();
+        router.replace('/');
       }
     } catch (err) {
       console.error("Error saving payment:", err);

@@ -14,11 +14,11 @@ import { faker } from "@faker-js/faker";
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-  if (process.env.NODE_ENV !== "production") {
-    console.log("♻️ Clearing existing data...");
-    await clearTables(prisma);
-    console.log("✅ Tables cleared");
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   console.log("♻️ Clearing existing data...");
+  //   await clearTables(prisma);
+  //   console.log("✅ Tables cleared");
+  // }
 
   console.log("🌱 Starting database seeding...");
 
@@ -26,13 +26,13 @@ async function main(): Promise<void> {
   const features = await seedFeatures(prisma);
   await seedPlanFeatures(prisma, plans, features);
 
-  const institutions = await seedInstitutions(prisma);
-  const users = await seedUsers(prisma);
+  // const institutions = await seedInstitutions(prisma);
+  // const users = await seedUsers(prisma);
 
-  await seedInstitutionUsers(prisma, users, institutions);
-  await seedSubscriptions(prisma, institutions, plans);
+  // await seedInstitutionUsers(prisma, users, institutions);
+  // await seedSubscriptions(prisma, institutions, plans);
 
-  await seedBlog(prisma, users);
+  // await seedBlog(prisma, users);
 
   console.log("✅ Seeding complete.");
 }
@@ -133,24 +133,24 @@ async function seedPlanFeatures(
     plan: string;
     featureNames: string[];
   }> = [
-    {
-      plan: "starter", // ✅ matches name in seedPlans
-      featureNames: ["Case Management"],
-    },
-    {
-      plan: "team",
-      featureNames: ["Case Management", "User Management", "Integrations"],
-    },
-    {
-      plan: "enterprise",
-      featureNames: [
-        "Case Management",
-        "User Management",
-        "Integrations",
-        "Custom Branding",
-      ],
-    },
-  ];
+      {
+        plan: "starter", // ✅ matches name in seedPlans
+        featureNames: ["Case Management"],
+      },
+      {
+        plan: "team",
+        featureNames: ["Case Management", "User Management", "Integrations"],
+      },
+      {
+        plan: "enterprise",
+        featureNames: [
+          "Case Management",
+          "User Management",
+          "Integrations",
+          "Custom Branding",
+        ],
+      },
+    ];
 
   for (const assoc of associations) {
     const plan = plans.find((p) => p.name === assoc.plan);

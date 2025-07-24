@@ -100,19 +100,7 @@ export default function UserView({ params }: { params: any }) {
       editObj: SelectedEditUser
     ): boolean => {
       const newInstIDS_ = userInstitutions?.map(({ value }) => value);
-      console.log(
-        "comparing - ",
-        selected?.institutionIDs,
-        " and ",
-        newInstIDS_
-      );
       if (!deepEqual(selected?.institutionIDs, newInstIDS_)) {
-        console.log(
-          "comparing - ",
-          selected?.institutionIDs,
-          " and ",
-          newInstIDS_
-        );
         return true;
       }
 
@@ -143,8 +131,6 @@ export default function UserView({ params }: { params: any }) {
       const foundUser_ = users.find(({ id }: { id: string }) => id === userID);
 
       if (!foundUser_) {
-        toast.error("User not found");
-        router.push("/dashboard/users");
         return;
       }
 
@@ -226,8 +212,8 @@ export default function UserView({ params }: { params: any }) {
           !selected.photoUrl
             ? undefined
             : {
-                replaceTargetUrl: selected.photoUrl,
-              };
+              replaceTargetUrl: selected.photoUrl,
+            };
 
         const photoEdgeUpload = await edgestore.publicFiles.upload({
           file: userEdit.photoFile,
@@ -349,7 +335,7 @@ export default function UserView({ params }: { params: any }) {
   async function handleDeleteUser() {
     if (!selected || !selected?.id) {
       toast.error("Sorry, no user selected");
-      return router.push("/dashboard/users");
+      return
     }
 
     setUIstate("loading");
@@ -383,6 +369,7 @@ export default function UserView({ params }: { params: any }) {
         url: selected.photoUrl,
       });
     }
+
     toast.success("user deleted");
     await refreshData();
     router.replace(`/dashboard/users/`);
@@ -469,6 +456,8 @@ export default function UserView({ params }: { params: any }) {
               Institutions *
             </Label>
             <MultiSelect
+              disabled={institutions?.length === 1}
+              hidePlaceholderWhenSelected
               value={userInstitutions}
               onChange={setUserInstitutions}
               //

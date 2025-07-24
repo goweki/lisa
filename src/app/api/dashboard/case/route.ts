@@ -40,7 +40,11 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
   }
 }
 
-async function putHandler(request: Request | NextRequest, user: SessionUser) {
+async function putHandler(
+  request: Request | NextRequest,
+  user: SessionUser,
+  institutionIds: string[] | undefined
+) {
   try {
     // request body
     const doc = await request.json();
@@ -67,7 +71,8 @@ async function putHandler(request: Request | NextRequest, user: SessionUser) {
 
 async function deleteHandler(
   request: Request | NextRequest,
-  user: SessionUser
+  user: SessionUser,
+  institutionIds: string[] | undefined
 ) {
   const doc = await request.json();
   const { id } = doc;

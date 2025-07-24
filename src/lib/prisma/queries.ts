@@ -1,6 +1,7 @@
 import { hash, generateRandom } from "@/helpers/passwordHandlers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 const prisma = new PrismaClient();
 
 /**
@@ -112,8 +113,20 @@ export async function createUser(userData: {
       onboardingURL: resetURL,
     };
   } catch (error: any) {
-    console.error("Error creating user:", error);
-    throw new Error(error.message || "Failed to create institution and user.");
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      // Handle unique constraint error
+      console.error("User with this email already exists", error.meta);
+      throw {
+        code: 409,
+        message: `A ${error.meta?.modelName} exists with the same ${JSON.stringify(error.meta?.target)}`,
+      };
+    }
+
+    console.error("Unexpected error during user creation:", error);
+    throw new Error("An unexpected error occurred while creating the user.");
   }
 }
 

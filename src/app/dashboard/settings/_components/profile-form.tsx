@@ -1,156 +1,303 @@
 "use client";
 
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { cn } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { DataContext } from "@/app/dashboard/providers";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
+import { useContext, useEffect, useState } from "react";
+import { User } from "@prisma/client";
+import { emailValidator, nameValidator } from "@/helpers/inputValidators";
 import toast from "react-hot-toast";
+import { InputTel } from "@/components/ui/input-tel";
+import { isValidPhoneNumber } from "react-phone-number-input";
+import { InputImage } from "@/components/atoms/inputs";
+import { useEdgeStore } from "@/lib/edgestore";
+import { UIstate } from "@/types/custom";
+import { Loader } from "@/components/atoms/loader";
+import { ProfileEdit as _ProfileEdit } from "@/types/custom";
 
-const profileFormSchema = z.object({
-  name: z
-    .string()
-    .min(5, {
-      message: "Name must be at least 5 characters.",
-    })
-    .max(30, {
-      message: "Name must not be longer than 30 characters.",
-    }),
-  email: z
-    .string({
-      required_error: "Please select an email to display.",
-    })
-    .email(),
-  bio: z.string().max(160).min(4),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url({ message: "Please enter a valid URL." }),
-      })
-    )
-    .optional(),
-});
+interface ProfileEdit extends Omit<_ProfileEdit, "id"> {
+  photoFile?: File;
+}
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+const def_ProfileEdit: ProfileEdit = {
+  names: "",
+  email: "",
+  tel: null,
+  photoUrl: null,
+};
 
 export function ProfileForm() {
-  const { data: authSession, status: authStatus } = useSession();
+  const [user, setUser] = useState<User>();
+  const [isUpdated, setIsUpdated] = useState<boolean>(false);
+  const [UIstate, setUIstate] = useState<UIstate>("loading");
+  const { edgestore } = useEdgeStore();
+  const form = useForm<ProfileEdit>({
+    defaultValues: def_ProfileEdit,
+  });
 
-  // This can come from your database or API.
-  const defaultValues: Partial<ProfileFormValues> = {
-    name: authSession?.user?.name || "",
-    bio: "I own a computer.",
-    urls: [
-      { value: "https://shadcn.com" },
-      { value: "http://twitter.com/shadcn" },
-    ],
+  const {
+    data: { users },
+    refreshData,
+  } = useContext(DataContext);
+  const { data: session } = useSession();
+
+  // initialize form data
+  useEffect(() => {
+    if (users && session?.user) {
+      const matchedUser = users.find(({ id }) => id === session.user?.id);
+      if (!matchedUser) return;
+      setUser(matchedUser);
+      form.reset({
+        names: matchedUser.names,
+        email: matchedUser.email,
+        tel: matchedUser.tel,
+        photoUrl: matchedUser.photoUrl,
+        photoFile: undefined,
+      });
+    }
+    setUIstate("OK");
+  }, []);
+
+  // chack if isUpdated
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      if (!user) {
+        setIsUpdated(false);
+        return;
+      }
+
+      const hasChanged =
+        !!values.photoFile ||
+        values.names !== (user.names || "") ||
+        values.email !== (user.email || "") ||
+        (values.tel || "") !== (user.tel || "");
+
+      setIsUpdated(hasChanged);
+    });
+
+    return () => subscription.unsubscribe(); // cleanup
+  }, [form, user]);
+
+  const onSubmit = async (data: ProfileEdit) => {
+    if (!session?.user?.id || !user) {
+      return;
+    }
+
+    console.log("Form data: ", data);
+    const { names, tel, photoFile } = data;
+    if (!names && !tel) {
+      toast.error("Please provide names and Phone No.");
+      return;
+    }
+
+    const namesErr = names ? nameValidator(names) : "";
+    if (namesErr) {
+      toast.error(namesErr);
+      return;
+    }
+
+    const telErr = !tel
+      ? ""
+      : !isValidPhoneNumber(tel)
+        ? "Invalid phone number"
+        : "";
+    if (telErr) {
+      toast.error(telErr);
+      return;
+    }
+
+    setUIstate("loading");
+
+    try {
+      //upload image and retain url
+      let photoUrl: string | null = null;
+      if (photoFile) {
+        // console.log("New logo to be uploaded");
+
+        const uploadOptions: { replaceTargetUrl: string } | undefined =
+          !user.photoUrl
+            ? undefined
+            : {
+                replaceTargetUrl: user.photoUrl,
+              };
+
+        const photoEdgeUpload = await edgestore.publicFiles.upload({
+          file: photoFile,
+          options: uploadOptions,
+          // onProgressChange: (progress) => {
+          //   // you can use this to show a progress bar
+          //   console.log(progress);
+          // },
+        });
+        // upload file using edgestore- edgestore returns:
+        // const res: {
+        //   url: string;
+        //   size: number;
+        //   uploadedAt: Date;
+        //   metadata: Record<string, never>;
+        //   path: Record<string, never>;
+        //   pathOrder: string[];
+        // }
+
+        // console.log("edge File - ", logoEdgeUpload);
+        photoUrl = photoEdgeUpload.url;
+        // setUserEdit((prev) => {
+        //   return { ...prev, photoFile: undefined };
+        // });
+        form.setValue("photoFile", undefined);
+        if (!photoUrl) {
+          console.error("image upload failed");
+
+          toast.custom(
+            <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
+              Photo could not be uploaded
+            </div>
+          );
+        }
+      }
+
+      //new user obj for PATCH
+      const body_profilePatch: Partial<_ProfileEdit> = {
+        id: session.user.id,
+        names: names && names !== user.names ? names : undefined,
+        // email: email||undefined,
+        tel: tel && tel !== user.tel ? tel : undefined,
+        photoUrl,
+      };
+      console.log("body_", body_profilePatch);
+
+      const fetchOptions = {
+        method: "PATCH",
+        body: JSON.stringify(body_profilePatch),
+      };
+
+      // PATCH request using fetch
+      const res = await fetch("/api/dashboard/profile", fetchOptions).then(
+        async (res_) => {
+          if (res_?.ok) {
+            return await res_.json();
+          } else {
+            const error_ =
+              (await res_.json()).message ||
+              `ERROR: ` + res_.status + "Unknown error";
+            console.error(error_);
+            toast.error("Error updating profile");
+            return null;
+          }
+        }
+      );
+      if (!res) return;
+      //res is truthy
+      console.log("SUCCESS: profile updated\n > ", res, "\n..............");
+      toast.success(res);
+      await refreshData();
+    } catch (error) {
+      console.error("fetch failed:", error);
+      toast.error("FAILED to update profile. Try again later");
+    } finally {
+      setUIstate("OK");
+    }
   };
 
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues,
-    mode: "onChange",
-  });
-
-  const { fields, append } = useFieldArray({
-    name: "urls",
-    control: form.control,
-  });
-
-  function onSubmit(data: ProfileFormValues) {
-    toast(`Values: ${JSON.stringify(data, null, 2)}`);
-  }
-
-  return authStatus === "authenticated" && authSession.user ? (
+  return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="name"
+          name="names"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="full names" {...field} />
+                <Input placeholder="Full names" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-                {/* You can only change this once every 30 days. */}
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{" "}
-                <Link href="/examples/forms">email settings</Link>.
-              </FormDescription>
+              <FormControl>
+                <Input disabled placeholder="Email address" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
-          name="bio"
+          name="tel"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio</FormLabel>
+              <FormLabel>Phone No.</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Tell us a little bit about yourself"
-                  className="resize-none"
-                  {...field}
+                {/* <Input placeholder="Phone number" {...field} value={field.value || ""} /> */}
+                <InputTel
+                  // country="US"
+                  onChange={field.onChange}
+                  value={field.value || ""}
                 />
               </FormControl>
-              <FormDescription>
-                A short statement about yourself
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Update profile</Button>
+        <div id="dpWrapper" className="py-4">
+          <FormField
+            control={form.control}
+            name="photoFile"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Profile</FormLabel>
+                <FormControl>
+                  {/* <Input placeholder="Phone number" {...field} value={field.value || ""} />
+                  <InputTel
+                    country="US"
+                    {...field} value={field.value || ""} /> */}
+                  <InputImage
+                    label="Photo"
+                    _photo={user?.photoUrl || ""}
+                    setPhoto={async (_imageFile: File | null) => {
+                      // setProfileEdits((prev_) => ({
+                      //   ...prev_,
+                      //   photoFile: _imageFile || undefined,
+                      // }));
+                      field.onChange(_imageFile);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div>
+          <Button
+            disabled={!isUpdated || UIstate === "loading"}
+            type="submit"
+            className="mt-4"
+          >
+            {UIstate === "loading" ? <Loader /> : "Update profile"}
+          </Button>
+        </div>
       </form>
     </Form>
-  ) : null;
+  );
 }
