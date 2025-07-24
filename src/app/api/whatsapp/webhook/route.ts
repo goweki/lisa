@@ -420,6 +420,7 @@ async function processStatusUpdate(status: any): Promise<string | null> {
 
 // GET: Verification
 export async function GET(req: NextRequest) {
+  console.log("GET webhook verification", req.url);
   const { searchParams } = req.nextUrl;
 
   const mode = searchParams.get("hub.mode");
