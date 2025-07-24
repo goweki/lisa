@@ -10,7 +10,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import { main, container, text, button, anchor } from "./_styles";
+import { main, container, text, highlight } from "./_styles";
 import { BASE_URL } from "@/helpers/getUrl";
 
 interface MessageEmailProps {
@@ -40,10 +40,10 @@ const ConfirmHtml = ({ name, message }: MessageEmailProps) => {
             <Text style={text}>
               Find a copy of your message below:
             </Text>
-            <Text style={text}>
+            <Text style={{ ...highlight, marginBottom: "1.5rem" }}>
               {message}
             </Text>
-            <Text style={text}>Team -Lisa</Text>
+            <Text style={text}>- Lisa</Text>
           </Section>
         </Container>
       </Body>
@@ -59,7 +59,8 @@ coming days.
 
 Here is a copy of your message: ${message}
 
-Team - Lisa`;
+Regards,
+- Lisa`;
 
 ConfirmHtml.PreviewProps = {
   name: "Antonio",

@@ -9,13 +9,44 @@ export const container = {
   padding: "45px",
 };
 
+// export const text = {
+//   fontSize: "16px",
+//   fontFamily:
+//     "'Open Sans', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif",
+//   fontWeight: "300",
+//   color: "#404040",
+//   lineHeight: "26px",
+// };
+
+// export const highlight = {
+//   fontSize: "16px",
+//   fontFamily:
+//     "'Open Sans', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif",
+//   fontWeight: "300",
+//   lineHeight: "26px",
+//   fontStyle: "italic",
+//   color: "#505050", // slightly softer for quotes
+// };
+
 export const text = {
-  fontSize: "16px",
-  fontFamily:
-    "'Open Sans', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif",
-  fontWeight: "300",
-  color: "#404040",
-  lineHeight: "26px",
+  fontSize: "1rem", // 16px
+  fontFamily: "'Open Sans', Helvetica, Arial, sans-serif",
+  fontWeight: 300,
+  color: "#2E2E2E", // slightly deeper for better readability
+  lineHeight: 1.625, // ~26px
+  letterSpacing: "0.01em",
+};
+
+export const highlight = {
+  fontSize: "1rem",
+  fontFamily: "'Merriweather', 'Georgia', serif", // serif for quote-like emphasis
+  fontWeight: 400, // slightly bolder for emphasis
+  lineHeight: 1.625,
+  fontStyle: "italic",
+  color: "#4A4A4A", // softer, but distinct
+  backgroundColor: "rgba(240, 240, 240, 0.6)", // subtle background to set it apart
+  padding: "0.25rem 0.5rem",
+  borderLeft: "3px solid #d0d0d0", // optional quote bar
 };
 
 export const button = {
