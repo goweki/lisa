@@ -30,24 +30,45 @@ model Institution {
 }
 
 model User {
-  id               String       @id @default(uuid())
-  names            String
-  email            String       @unique
-  systemAdmin      Boolean      @default(false)
-  tel              String?
-  password         String?
-  resetToken       String?
-  resetTokenExpiry DateTime?
-  photoUrl         String?
-  status           EntityStatus @default(DORMANT)
+  id                String               @id @default(uuid())
+  names             String
+  email             String               @unique
+  systemAdmin       Boolean              @default(false)
+  tel               String?              @unique
+  emailVerification Boolean              @default(false)
+  telVerification   Boolean              @default(false)
+  resetTokenSentTo  VerificationChannel?
+  password          String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  photoUrl          String?
+  status            EntityStatus         @default(DORMANT)
 
   institutions     InstitutionUser[]
   cases            Case[]
   completedTasks   Task[]
   assigneeRequests AssigneeRequest[]
   blogposts        Blogpost[]
+  messages         Message[]
 
   @@map("users")
+}
+
+model Message {
+  id          String         @id @default(uuid())
+  messageId   String
+  userId      String?
+  user        User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     MessageSubject @default(OTHER)
+  from        String
+  to          String
+  text        String?
+  mediaUrl    String?
+  intent      String?
+  isDelivered Boolean        @default(false)
+  isRead      Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
 
 model InstitutionUser {
@@ -324,6 +345,20 @@ enum ContentStatus {
   UNPUBLISHED
   PUBLISHED
   ARCHIVED
+}
+
+enum MessageSubject {
+  SET_YOUR_PASSWORD
+  PASSWORD_RESET
+  INVOICE
+  SUBSCRIPTION_CONFIRMATION
+  SERVICE_NOTIFICATION
+  OTHER
+}
+
+enum VerificationChannel {
+  EMAIL
+  WHATSAPP
 }
 
 enum PlanName {

@@ -82,3 +82,21 @@ export function formatNumberToK(
 
   return `${formattedNum}k`;
 }
+
+/**
+ * Extracts the first word (substring before the first whitespace) from a given string.
+ *
+ * @param input - The input string to process.
+ * @returns The first section of the string before any whitespace. If there is no whitespace, returns the full string.
+ *
+ * @example
+ * getFirstWord("Hello world"); // returns "Hello"
+ * getFirstWord("OneWord");     // returns "OneWord"
+ * getFirstWord("   Leading space"); // returns ""
+ */
+export function strFirstWord(input: string): string {
+  const trimmed = input.trim();
+  const firstSpaceIndex = trimmed.indexOf(" ");
+
+  return firstSpaceIndex === -1 ? trimmed : trimmed.slice(0, firstSpaceIndex);
+}
