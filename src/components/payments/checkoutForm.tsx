@@ -194,8 +194,8 @@ export default function Checkout({
       if (res_) {
         console.log("Payment recorded:", res_);
         router.refresh();
-        toast.success("Payment successful, proceed to dashboard");
-        router.push("/dashboard");
+        toast.success("Payment successful");
+        router.refresh();
       }
     } catch (err) {
       console.error("Error saving payment:", err);
