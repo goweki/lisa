@@ -3,32 +3,11 @@
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { DataContext } from "../providers";
 import { Case as CaseType } from "@/types/models";
-import { ButtonPrimary } from "@/components/atoms/buttons";
-import { Loader } from "@/components/atoms/loader";
-import toast from "react-hot-toast";
-import {
-  emailValidator,
-  nameValidator,
-  telValidator,
-} from "@/helpers/inputValidators";
-import { httpCodes } from "@/lib/configs";
-import { CaseStatus } from "@prisma/client";
 
 export default function CasesLayout({
   children,
@@ -38,10 +17,6 @@ export default function CasesLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { data: userSession, status: authStatus } = useSession();
-
-  // if (status === "authenticated") {
-  //   return <p>Signed in as {session.user.email}</p>;
-  // }
 
   const {
     data: { users, caseTypes, cases },
