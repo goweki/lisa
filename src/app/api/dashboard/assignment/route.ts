@@ -26,7 +26,7 @@ async function postHandler(
     const case_ = await prisma.case.findFirst({
       where: {
         id: caseID,
-        createdBy: userID,
+        createdById: userID,
       },
     });
 
@@ -46,11 +46,11 @@ async function postHandler(
       `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${res_assigneeRequest.case.name}`
     );
 
-    if (res_assigneeRequest && case_ && !case_.userId) {
+    if (res_assigneeRequest && case_ && !case_.assigneeId) {
       const res_case_ = await prisma.case.update({
         where: { id: caseID },
         data: {
-          userId: userID,
+          assigneeId: userID,
         },
       });
 
@@ -67,7 +67,7 @@ async function postHandler(
         `SUCCESS: case assigned to ${
           res_assigneeRequest.assignee.email
         }.\n > case:  ${res_assigneeRequest.case.name} \n > case.userId:  ${
-          res_case_.userId === userID
+          res_case_.assigneeId === userID
         }.\n`
       );
     }

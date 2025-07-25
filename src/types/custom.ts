@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  CaseStatus,
+  CaseType,
+  Institution,
+  User,
+  Task,
+  AssigneeRequest,
+} from "@prisma/client"; // or your local types
 
 export interface TemplateObj {
   [key: string]: any;
@@ -38,3 +46,18 @@ export const profileEditSchema = z.object({
 });
 
 export type ProfileEdit = z.infer<typeof profileEditSchema>;
+
+export const caseInputSchema = z.object({
+  status: z.enum(["OPEN", "CLOSED"]).optional(), // Adjust to match your CaseStatus enum
+  clientID: z.string().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  createdBy: z.string().optional(),
+  caseType: z.any().optional(),
+  institution: z.any().optional(),
+  lawyer: z.any().optional(),
+  tasks: z.array(z.any()).optional(),
+  assigneeRequests: z.array(z.any()).optional(),
+});
+
+export type CaseInput = z.infer<typeof caseInputSchema>;

@@ -37,27 +37,33 @@ async function getHandler(req: Request, user: SessionUser) {
     }
 
     // Run institution, users, cases, caseTypes, assignmentRequests in parallel
-    const [plans, institutions, rawUsers, cases, caseTypes, assignmentRequests] =
-      await Promise.all([
-        prisma.plan.findMany({}),
-        prisma.institution.findMany({
-          where: isSysAdmin ? {} : { id: { in: instIDs_activeSub } },
-          include: {
-            cases: true,
-            users: true,
-          },
-        }),
+    const [
+      plans,
+      institutions,
+      rawUsers,
+      cases,
+      caseTypes,
+      assignmentRequests,
+    ] = await Promise.all([
+      prisma.plan.findMany({}),
+      prisma.institution.findMany({
+        where: isSysAdmin ? {} : { id: { in: instIDs_activeSub } },
+        include: {
+          cases: true,
+          users: true,
+        },
+      }),
 
-        isSysAdmin
-          ? prisma.user.findMany({
+      isSysAdmin
+        ? prisma.user.findMany({
             include: {
               institutions: true,
-              cases: true,
+              caseAssignments: true,
               completedTasks: true,
             },
           })
-          : instIDs_activeSub.length > 0
-            ? prisma.user.findMany({
+        : instIDs_activeSub.length > 0
+          ? prisma.user.findMany({
               where: {
                 institutions: {
                   some: {
@@ -73,36 +79,36 @@ async function getHandler(req: Request, user: SessionUser) {
                 },
               },
             })
-            : [],
+          : [],
 
-        prisma.case.findMany({
-          where: isSysAdmin ? {} : { institutionId: { in: instIDs_activeSub } },
-          include: {
-            caseType: true,
-            institution: true,
-            lawyer: true,
-            tasks: true,
-          },
-        }),
+      prisma.case.findMany({
+        where: isSysAdmin ? {} : { institutionId: { in: instIDs_activeSub } },
+        include: {
+          caseType: true,
+          institution: true,
+          lawyer: true,
+          tasks: true,
+        },
+      }),
 
-        prisma.caseType.findMany({
-          where: {
-            OR: [
-              { institutionId: null },
-              { institutionId: { in: instIDs_activeSub } },
-            ],
-          },
-          include: {
-            institution: true,
-          },
-        }),
+      prisma.caseType.findMany({
+        where: {
+          OR: [
+            { institutionId: null },
+            { institutionId: { in: instIDs_activeSub } },
+          ],
+        },
+        include: {
+          institution: true,
+        },
+      }),
 
-        prisma.assigneeRequest.findMany({
-          where: {
-            assigneeId: user.id,
-          },
-        }),
-      ]);
+      prisma.assigneeRequest.findMany({
+        where: {
+          assigneeId: user.id,
+        },
+      }),
+    ]);
 
     const users = excludeFields(rawUsers, [
       "password",

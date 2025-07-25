@@ -45,11 +45,12 @@ model User {
   status            EntityStatus         @default(DORMANT)
 
   institutions     InstitutionUser[]
-  cases            Case[]
+  caseAssignments  Case[]            @relation("assignment")
   completedTasks   Task[]
   assigneeRequests AssigneeRequest[]
   blogposts        Blogpost[]
   messages         Message[]
+  casesCreated     Case[]            @relation("creator")
 
   @@map("users")
 }
@@ -199,15 +200,16 @@ model Case {
   caseType      CaseType    @relation(fields: [caseTypeId], references: [id])
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id])
-  userId        String?
-  lawyer        User?       @relation(fields: [userId], references: [id])
+  assigneeId    String?
+  lawyer        User?       @relation("assignment", fields: [assigneeId], references: [id])
+  createdById   String
+  creator       User        @relation("creator", fields: [createdById], references: [id])
 
   tasks            Task[]
   assigneeRequests AssigneeRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String?
 
   @@map("cases")
 }

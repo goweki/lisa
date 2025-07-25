@@ -12,13 +12,50 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
   // request body
   const doc = await request.json();
   console.log("POST - api/dashboard/case: ", doc);
+  //     id?: String | StringFieldUpdateOperationsInput,
+  // ?   status?: CaseStatus | EnumCaseStatusFieldUpdateOperationsInput,
+  // ?   clientID?: String | NullableStringFieldUpdateOperationsInput | Null,
+  // ?   createdAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+  // ?   updatedAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+  // ?   createdBy?: String | NullableStringFieldUpdateOperationsInput | Null,
+  // ?   caseType?: CaseTypeUpdateOneRequiredWithoutCasesNestedInput,
+  // ?   institution?: InstitutionUpdateOneRequiredWithoutCasesNestedInput,
+  // ?   lawyer?: UserUpdateOneWithoutCasesNestedInput,
+  // ?   tasks?: TaskUpdateManyWithoutCaseNestedInput,
+  // ?   assigneeRequests?: AssigneeRequestUpdateManyWithoutCaseNestedInput
 
-  const { institutionID, ...doc_ } = doc;
+  //   id: '32b25529-5877-4d16-98e5-87d3aa99897d',
+  // name: 'New Case',
+  // description: '',
+  // court: null,
+  // userId: null,
+  // caseNumber: '453553464555',
+  // clientParty: 'Accused',
+  // clientTel: '+254700833003',
+  // clientEmail: null,
+  // clientName: 'Defendant One',
+  // otherPartyName: null,
+  // otherPartyTel: null,
+  // otherPartyEmail: null,
+  // otherPartyDescription: null
+
+  const { institutionId: _institutionId, ...doc_ } = doc;
 
   if (user.role !== "system") {
-    return Response.json("You do not have permission to update institution", {
-      status: 403,
+    const userInsts = await prisma.institutionUser.findMany({
+      where: {
+        userId: user.id,
+      },
+      select: { institutionId: true },
     });
+
+    const isMember = userInsts.some(
+      ({ institutionId }) => institutionId === _institutionId
+    );
+
+    if (!isMember) {
+      return Response.json("Not Allowed", { status: 403 });
+    }
   }
 
   try {
@@ -33,10 +70,10 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
       `SUCCESS: case inserted, for institution ${res_.institution.name}.\n > ${res_.name}`
     );
     // HTTP response
-    return Response.json({ success: res_ });
+    return Response.json(res_);
   } catch (err) {
     console.error(`ERROR: /api/dashboard/case POST\n >> error: `, err);
-    return Response.json({ error: "SERVER ERROR" });
+    return Response.json("SERVER ERROR", { status: 500 });
   }
 }
 

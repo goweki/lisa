@@ -257,7 +257,7 @@ export default function TaskView({ params }: { params: any }) {
       description: caseEdit.description || selected.description,
       // status: caseEdit.status || selected.status,
       court: caseEdit.court || selected.court,
-      userID: caseEdit.userId || selected.userId,
+      userID: caseEdit.assigneeId || selected.assigneeId,
       caseNumber: caseEdit.caseNumber || selected.caseNumber,
       clientParty: caseEdit.clientParty || selected.clientParty,
       clientTel: caseEdit.clientTel || selected.clientTel,
@@ -456,8 +456,8 @@ export default function TaskView({ params }: { params: any }) {
               Assignee
             </Label>
             <Select
-              name="lawyer"
-              value={caseEdit.userId || selected.userId || ""}
+              name="assignee"
+              value={caseEdit.assigneeId || selected.assigneeId || ""}
               onValueChange={(value) => {
                 setCaseEdit((prev) => ({
                   ...prev,

@@ -172,8 +172,8 @@ export default function CasesPage() {
     const newCaseObj = {
       name: newCase.name.value,
       description: newCase.description,
-      caseTypeID: newCase.caseTypeID,
-      institutionID: newCase.institutionID,
+      caseTypeId: newCase.caseTypeID,
+      institutionId: newCase.institutionID,
       clientParty: newCase.clientParty,
       clientName: newCase.clientName.value,
       clientTel: newCase.clientTel.value,
@@ -199,36 +199,26 @@ export default function CasesPage() {
           if (res_.ok) {
             return await res_.json();
           } else {
+            const error = `ERROR: ${await res_.json()}`;
             console.log(`ERROR: ` + JSON.stringify(res_));
-            setUIstate(httpCodes[res_.status]);
+            toast.error(error);
+            return;
           }
         }
       );
-      if (_res?.success) {
-        console.log(
-          "SUCCESS: case initialized successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
-        );
-        toast.success("Case initialized successfully!");
-        await refreshData();
-        router.replace(`/dashboard/cases/${_res.success.id}`);
-      } else {
-        console.error(
-          "ERROR: failed to initialize case at /dashboard/cases/new /page\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
-        );
-        setUIstate(_res?.error ?? "No Response, check internet connection");
+      if (!_res) {
+        setUIstate("OK");
+        return;
       }
+
+      console.log("SUCCESS: case initialized successfully\n > ", _res);
+      toast.success("Case initialized successfully!");
+      await refreshData();
+      router.replace(`/dashboard/cases/${_res.id}`);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Case initialization failed:", error.message);
-      } else {
-        console.error("Case initialization failed:", error);
-      }
-      // setUIstate("Error: Institution was not initialized");
-      toast.error("Case NOT initialized");
+      console.error("Case initialization failed:", error);
+      setUIstate("OK");
+      toast.error("Case NOT initialized. Try again later");
     }
   }
 

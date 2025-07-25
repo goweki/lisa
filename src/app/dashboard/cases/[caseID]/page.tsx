@@ -81,8 +81,8 @@ import { stat } from "fs";
 import { handleTaskCreation } from "../../tasks/_actions/add-task";
 import { AssigneeRequest } from "@prisma/client";
 
-export default function CaseView({ params }: { params: { caseID: string } }) {
-  const { caseID } = params;
+export default function CaseView({ params }: { params: { caseId: string } }) {
+  const { caseId } = params;
   const {
     data: { users, institutions, cases, caseTypes, assignmentRequests },
     refreshData,
@@ -109,12 +109,12 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
 
   // setSelected, get case by caseID and update selected
   useEffect(() => {
-    if (caseID) {
-      const _selected = cases.find(({ id }: { id: string }) => id === caseID);
+    if (caseId) {
+      const _selected = cases.find(({ id }: { id: string }) => id === caseId);
       setSelected(_selected);
     }
     setUIstate("OK");
-  }, [cases, caseID]);
+  }, [cases, caseId]);
 
   // update caseTypes options
   useEffect(() => {
@@ -288,7 +288,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
       description: caseEdit.description || selected.description,
       // status: caseEdit.status || selected.status,
       court: caseEdit.court || selected.court,
-      userID: caseEdit.userId || selected.userId,
+      userId: caseEdit.assigneeId || selected.assigneeId,
       caseNumber: caseEdit.caseNumber || selected.caseNumber,
       clientParty: caseEdit.clientParty || selected.clientParty,
       clientTel: caseEdit.clientTel || selected.clientTel,
@@ -404,8 +404,8 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
   }
 
   //func to Delete Task
-  const handleDeleteTask = async (caseID: string, taskID: string) => {
-    console.log("deleting...: ", taskID);
+  const handleDeleteTask = async (caseId: string, taskId: string) => {
+    console.log("deleting...: ", taskId);
 
     setUIstate("loading");
 
@@ -418,8 +418,8 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
         //   'Content-Type': 'application/x-www-form-urlencoded',
         // },
         body: JSON.stringify({
-          caseID,
-          taskID,
+          caseId,
+          taskId,
         }),
       };
       // POST request using fetch
@@ -467,13 +467,13 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
 
     const { caseId, ...newTask_ } = newTask;
 
-    if (!caseID && !newTask_.name) {
+    if (!caseId && !newTask_.name) {
       console.error(" > Missing task attributes - ", newTask);
     }
 
     const res_ = await handleTaskCreation({
       newTask: newTask_,
-      selectedCase: { id: caseID },
+      selectedCase: { id: caseId },
     });
     return res_;
   };
@@ -563,7 +563,9 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
             {session?.user?.role?.includes("admin") ? (
               <Select
                 name="assignee"
-                value={caseEdit.userId || (selected.userId as string) || ""}
+                value={
+                  caseEdit.assigneeId || (selected.assigneeId as string) || ""
+                }
                 onValueChange={(value) => {
                   setCaseEdit((prev) => ({
                     ...prev,
@@ -584,7 +586,7 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
               </Select>
             ) : (
               <AssignmentRequestComponent
-                assigneeID={selected.userId}
+                assigneeID={selected.assigneeId}
                 pendingRequest={assignmentRequests?.find(
                   (req: AssigneeRequest) =>
                     req.caseId === selected.id &&
@@ -1034,8 +1036,8 @@ export default function CaseView({ params }: { params: { caseID: string } }) {
           </Accordion>
         </form>
       </CardContent>
-      {(session?.user?.role?.includes("admin") ||
-        selected.userId === session?.user?.id) && (
+      {(session?.user?.role === "admin" ||
+        selected.assigneeId === session?.user?.id) && (
         <CardFooter className="border-t px-6 py-4 min-h-20">
           {UIstate === "loading" ? (
             <Loader />

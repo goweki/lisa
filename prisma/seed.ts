@@ -8,6 +8,8 @@ import {
   SubscriptionStatus,
   EntityStatus,
   ContentStatus,
+  Case,
+  CaseType,
 } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 
@@ -25,6 +27,8 @@ async function main(): Promise<void> {
   const plans = await seedPlans(prisma);
   const features = await seedFeatures(prisma);
   await seedPlanFeatures(prisma, plans, features);
+
+  await seedCaseTypes(prisma);
 
   // const institutions = await seedInstitutions(prisma);
   // const users = await seedUsers(prisma);
@@ -133,24 +137,24 @@ async function seedPlanFeatures(
     plan: string;
     featureNames: string[];
   }> = [
-      {
-        plan: "starter", // ✅ matches name in seedPlans
-        featureNames: ["Case Management"],
-      },
-      {
-        plan: "team",
-        featureNames: ["Case Management", "User Management", "Integrations"],
-      },
-      {
-        plan: "enterprise",
-        featureNames: [
-          "Case Management",
-          "User Management",
-          "Integrations",
-          "Custom Branding",
-        ],
-      },
-    ];
+    {
+      plan: "starter", // ✅ matches name in seedPlans
+      featureNames: ["Case Management"],
+    },
+    {
+      plan: "team",
+      featureNames: ["Case Management", "User Management", "Integrations"],
+    },
+    {
+      plan: "enterprise",
+      featureNames: [
+        "Case Management",
+        "User Management",
+        "Integrations",
+        "Custom Branding",
+      ],
+    },
+  ];
 
   for (const assoc of associations) {
     const plan = plans.find((p) => p.name === assoc.plan);
@@ -183,6 +187,56 @@ async function seedPlanFeatures(
   }
 
   console.log(`🧩 Plan-feature associations created successfully.`);
+}
+
+async function seedCaseTypes(prisma: PrismaClient): Promise<CaseType[]> {
+  const defaultCaseTypes = [
+    {
+      name: "Criminal Case",
+      primaryParty: "Complainant",
+      secondaryParty: "Accused",
+    },
+    {
+      name: "Civil Dispute",
+      primaryParty: "Plaintiff",
+      secondaryParty: "Defendant",
+    },
+    {
+      name: "Family Case",
+      primaryParty: "Petitioner",
+      secondaryParty: "Respondent",
+    },
+    {
+      name: "Land Dispute",
+      primaryParty: "Claimant",
+      secondaryParty: "Objector",
+    },
+    {
+      name: "Employment Dispute",
+      primaryParty: "Employee",
+      secondaryParty: "Employer",
+    },
+  ];
+
+  const seededCaseTypes: CaseType[] = [];
+
+  for (const caseType of defaultCaseTypes) {
+    const existing = await prisma.caseType.findUnique({
+      where: { name: caseType.name },
+    });
+
+    if (!existing) {
+      const created = await prisma.caseType.create({
+        data: caseType,
+      });
+      console.log(`Seeded case type: ${caseType.name}`);
+      seededCaseTypes.push(created);
+    } else {
+      console.log(`Skipped existing case type: ${caseType.name}`);
+    }
+  }
+
+  return seededCaseTypes;
 }
 
 async function seedInstitutions(
