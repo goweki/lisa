@@ -15,11 +15,6 @@ async function getHandler(req: Request, user: SessionUser) {
       select: { institutionId: true },
     });
 
-    console.log(
-      "All INSTITUTIONS - ",
-      instUsers.map(({ institutionId }) => institutionId)
-    );
-
     let instIDs_activeSub: string[] = [];
 
     for (const instUser_ of instUsers) {
@@ -56,29 +51,29 @@ async function getHandler(req: Request, user: SessionUser) {
 
       isSysAdmin
         ? prisma.user.findMany({
-            include: {
-              institutions: true,
-              caseAssignments: true,
-              completedTasks: true,
-            },
-          })
+          include: {
+            institutions: true,
+            caseAssignments: true,
+            completedTasks: true,
+          },
+        })
         : instIDs_activeSub.length > 0
           ? prisma.user.findMany({
-              where: {
-                institutions: {
-                  some: {
-                    institutionId: { in: instIDs_activeSub },
-                  },
+            where: {
+              institutions: {
+                some: {
+                  institutionId: { in: instIDs_activeSub },
                 },
               },
-              include: {
-                institutions: {
-                  include: {
-                    institution: true,
-                  },
+            },
+            include: {
+              institutions: {
+                include: {
+                  institution: true,
                 },
               },
-            })
+            },
+          })
           : [],
 
       prisma.case.findMany({
@@ -86,7 +81,7 @@ async function getHandler(req: Request, user: SessionUser) {
         include: {
           caseType: true,
           institution: true,
-          lawyer: true,
+          assignee: true,
           tasks: true,
         },
       }),

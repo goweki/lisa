@@ -5,30 +5,31 @@ import { SessionUser } from "@/types/next-auth";
 import { profileEditSchema } from "@/types/custom";
 
 async function patchHandler(request: Request | NextRequest, user: SessionUser) {
+  // request body
+  const body = await request.json();
+  // Validate structure
+  const parsed = profileEditSchema.safeParse(body);
+  if (!parsed.success) {
+    console.error("Validation error:", parsed.error.flatten());
+    return Response.json("Invalid request body", { status: 400 });
+  }
+  const doc = parsed.data;
+  const { id, ...doc_ } = doc;
+
+  if (id !== user.id) {
+    return Response.json("Not allowed", { status: 403 });
+  }
+
+  console.log("update - ", doc_);
+
+  if (!Object.values(doc_).some(Boolean)) {
+    console.error("No update in body: ", doc);
+    return Response.json("No update in body", { status: 400 });
+  }
+
+  console.log(`PATCH - /api/dashboard/profile\n > Updating: `, doc_);
+
   try {
-    // request body
-    const body = await request.json();
-    // Validate structure
-    const parsed = profileEditSchema.safeParse(body);
-    if (!parsed.success) {
-      console.error("Validation error:", parsed.error.flatten());
-      return Response.json("Invalid request body", { status: 400 });
-    }
-
-    const doc = parsed.data;
-    const { id, ...doc_ } = doc;
-
-    if (id !== user.id) {
-      return Response.json("Not allowed", { status: 403 });
-    }
-
-    if (!Object.values(doc_).some(Boolean)) {
-      console.error("No update in body: ", doc);
-      return Response.json("No update in body", { status: 400 });
-    }
-
-    console.log(`PATCH - /api/dashboard/profile\n > Updating: `, doc_);
-
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {

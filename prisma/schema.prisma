@@ -188,7 +188,6 @@ model Case {
   clientParty           String
   clientName            String
   clientTel             String
-  clientID              String?
   clientEmail           String?
   otherPartyName        String?
   otherPartyTel         String?
@@ -201,7 +200,7 @@ model Case {
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id])
   assigneeId    String?
-  lawyer        User?       @relation("assignment", fields: [assigneeId], references: [id])
+  assignee        User?       @relation("assignment", fields: [assigneeId], references: [id])
   createdById   String
   creator       User        @relation("creator", fields: [createdById], references: [id])
 

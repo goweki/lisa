@@ -6,6 +6,7 @@ import { welcomeEmail } from "@/lib/emailRenderer";
 import { SessionUser } from "@/types/next-auth";
 import { includesAll } from "@/helpers/dataHandlers";
 import { createUser } from "@/lib/prisma/queries";
+import { UserRole } from "@prisma/client";
 
 async function postHandler(
   request: Request | NextRequest,
@@ -122,12 +123,13 @@ async function patchHandler(
   user: SessionUser,
   institutionIds: string[] | undefined
 ) {
+  // request body
+  const doc = await request.json();
+  console.log(`PATCH - /api/dashboard/user\n`, doc);
+  // update doc
+  const { id, institutionIDs, ...doc_ } = doc;
+
   try {
-    // request body
-    const doc = await request.json();
-    console.log(`PATCH - /api/dashboard/user\n`, doc);
-    // update doc
-    const { id, institutionIDs, ...doc_ } = doc;
     if (institutionIDs) {
       const _institutions = await prisma.institution.findMany({
         where: {
@@ -143,11 +145,11 @@ async function patchHandler(
 
     const userInstitutionsJoin_ = institutionIDs
       ? {
-        deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
-        create: institutionIDs.map((institutionId: string) => ({
-          institution: { connect: { id: institutionId } },
-        })),
-      }
+          deleteMany: {}, // ❗ removes all existing InstitutionUser entries for this user
+          create: institutionIDs.map((institutionId: string) => ({
+            institution: { connect: { id: institutionId } },
+          })),
+        }
       : undefined;
 
     const updatedUser = await prisma.user.update({
@@ -160,9 +162,19 @@ async function patchHandler(
     console.log(`SUCCESS: user updated`, updatedUser);
     // HTTP response
     return Response.json(updatedUser);
-  } catch (err) {
-    console.error(`ERROR: user not updated`, err);
-    return Response.json("Server error", { status: 500 });
+  } catch (err: any) {
+    let errorMessage = "Server error";
+    let errorCode = 500;
+
+    if (err.message) {
+      errorMessage = err.message;
+    }
+    if (err.code) {
+      errorMessage = err.code;
+    }
+
+    console.error(`ERROR: user not updated`, err, " - ", errorMessage);
+    return Response.json(errorMessage, { status: errorCode });
   }
 }
 
@@ -185,7 +197,7 @@ async function deleteHandler(
     const del_institutionUser = await prisma.institutionUser.findFirst({
       where: { userId: id },
     });
-    if (!del_institutionUser || del_institutionUser.role === "ADMIN") {
+    if (!del_institutionUser || del_institutionUser.role === UserRole.ADMIN) {
       return Response.json("You do not have permission to delete this user", {
         status: 403,
       });

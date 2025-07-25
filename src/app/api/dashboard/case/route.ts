@@ -3,41 +3,16 @@ import { withAuthAdmin, withAuthGeneral } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
 import { User } from "@/types/models";
 import { SessionUser } from "@/types/next-auth";
+import { caseInputSchema, TemplateObj } from "@/types/custom";
 
 export const POST = withAuthGeneral(postHandler);
-export const PUT = withAuthAdmin(putHandler);
+export const PATCH = withAuthAdmin(patchHandler);
 export const DELETE = withAuthAdmin(deleteHandler);
 
 async function postHandler(request: Request | NextRequest, user: SessionUser) {
   // request body
   const doc = await request.json();
   console.log("POST - api/dashboard/case: ", doc);
-  //     id?: String | StringFieldUpdateOperationsInput,
-  // ?   status?: CaseStatus | EnumCaseStatusFieldUpdateOperationsInput,
-  // ?   clientID?: String | NullableStringFieldUpdateOperationsInput | Null,
-  // ?   createdAt?: DateTime | DateTimeFieldUpdateOperationsInput,
-  // ?   updatedAt?: DateTime | DateTimeFieldUpdateOperationsInput,
-  // ?   createdBy?: String | NullableStringFieldUpdateOperationsInput | Null,
-  // ?   caseType?: CaseTypeUpdateOneRequiredWithoutCasesNestedInput,
-  // ?   institution?: InstitutionUpdateOneRequiredWithoutCasesNestedInput,
-  // ?   lawyer?: UserUpdateOneWithoutCasesNestedInput,
-  // ?   tasks?: TaskUpdateManyWithoutCaseNestedInput,
-  // ?   assigneeRequests?: AssigneeRequestUpdateManyWithoutCaseNestedInput
-
-  //   id: '32b25529-5877-4d16-98e5-87d3aa99897d',
-  // name: 'New Case',
-  // description: '',
-  // court: null,
-  // userId: null,
-  // caseNumber: '453553464555',
-  // clientParty: 'Accused',
-  // clientTel: '+254700833003',
-  // clientEmail: null,
-  // clientName: 'Defendant One',
-  // otherPartyName: null,
-  // otherPartyTel: null,
-  // otherPartyEmail: null,
-  // otherPartyDescription: null
 
   const { institutionId: _institutionId, ...doc_ } = doc;
 
@@ -77,24 +52,44 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
   }
 }
 
-async function putHandler(
+async function patchHandler(
   request: Request | NextRequest,
   user: SessionUser,
   institutionIds: string[] | undefined
 ) {
-  try {
-    // request body
-    const doc = await request.json();
-    const { id, userID, ...doc_ } = doc;
+  const body = await request.json();
+  console.log("PATCH - api/dashboard/case: ", body);
+  // Validate structure
+  const parsed = caseInputSchema.safeParse(body);
+  if (!parsed.success) {
+    console.error("Validation error:", parsed.error.flatten());
+    return Response.json("Invalid request body", { status: 400 });
+  }
+  const doc = parsed.data;
+  const { id, assigneeId, institutionId, ...doc_ } = doc;
 
-    // console.log("PUT REQUEST: updating case ",doc);
+  const update: TemplateObj = doc_
+
+  // ✅ Handle optional relation
+  if (assigneeId === null) {
+    update.assignee = { disconnect: true };
+  } else if (typeof assigneeId === 'string') {
+    update.assignee = { connect: { id: assigneeId } };
+  }
+  if (institutionId === null) {
+    update.institution = { disconnect: true };
+  } else if (typeof assigneeId === 'string') {
+    update.institution = { connect: { id: institutionId } };
+  }
+
+
+  try {
     console.log(`PUT REQUEST: case data: `, doc);
     // update doc
     const res_ = await prisma.case.update({
       where: { id },
       data: {
-        ...doc_,
-        userID: userID || null,
+        ...update,
       },
     });
     console.log(`SUCCESS: case updated\n`, res_);
