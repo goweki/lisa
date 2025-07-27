@@ -34,9 +34,12 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
   }
 
   try {
+    doc_.createdById = user.id
+    doc_.institutionId = _institutionId
+    console.log('Creating - ', doc_)
     // insert doc
     const res_ = await prisma.case.create({
-      data: { ...doc, createdBy: user.id },
+      data: { ...doc_ },
       include: {
         institution: true,
       },
@@ -58,7 +61,6 @@ async function patchHandler(
   institutionIds: string[] | undefined
 ) {
   const body = await request.json();
-  console.log("PATCH - api/dashboard/case: ", body);
   // Validate structure
   const parsed = caseInputSchema.safeParse(body);
   if (!parsed.success) {
@@ -84,7 +86,7 @@ async function patchHandler(
 
 
   try {
-    console.log(`PUT REQUEST: case data: `, doc);
+    console.log(`PATCH REQUEST: case data: `, update);
     // update doc
     const res_ = await prisma.case.update({
       where: { id },

@@ -30,13 +30,13 @@ export function passwordValidator(password: string): string {
  * @param {string} name - The name string to validate.
  * @returns {string} - An error message if invalid, otherwise an empty string.
  */
-export function nameValidator(name: string): string {
-  const NAME_REGEX = /^[a-zA-Z\s'-]{3,}$/;
+export function nameValidator(name: string, label?: string): string {
+  const NAME_REGEX = /^[a-zA-Z0-9\s'-]{3,}$/;
 
-  if (!name) return "Name field can't be empty";
-  if (name.length < 3) return "Name too short";
-  if (!NAME_REGEX.test(name)) return "Names should contain alphabets only";
-  return "";
+  if (!name) return `${label ? label : 'Name'}  field can't be empty`;
+  if (name.length < 3) return `${label ? label : 'Name'} too short`;
+  if (!NAME_REGEX.test(name)) return `${label ? label : 'Name'} should contain alphabets and numbers only`;
+  return ``;
 }
 
 /**
