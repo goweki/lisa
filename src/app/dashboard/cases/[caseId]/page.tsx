@@ -284,31 +284,30 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
 
     const updatedCaseObj = {
       id: selected.id,
-      name: caseEdit.name || selected.name,
-      description: caseEdit.description || selected.description,
+      name: caseEdit.name === selected.name ? undefined : caseEdit.name,
+      description: caseEdit.description === selected.description ? undefined : caseEdit.description,
       // status: caseEdit.status || selected.status,
-      court: caseEdit.court || selected.court,
-      userId: caseEdit.assigneeId || selected.assigneeId,
-      caseNumber: caseEdit.caseNumber || selected.caseNumber,
-      clientParty: caseEdit.clientParty || selected.clientParty,
-      clientTel: caseEdit.clientTel || selected.clientTel,
-      clientEmail: caseEdit.clientEmail || selected.clientEmail,
-      clientName: caseEdit.clientName || selected.clientName,
-      otherPartyName: caseEdit.otherPartyName || selected.otherPartyName,
-      otherPartyTel: caseEdit.otherPartyTel || selected.otherPartyTel,
-      otherPartyEmail: caseEdit.otherPartyEmail || selected.otherPartyEmail,
-
+      court: caseEdit.court === selected.court ? undefined : caseEdit.court,
+      assigneeId: caseEdit.assigneeId === selected.assigneeId ? undefined : caseEdit.assigneeId,
+      caseNumber: caseEdit.caseNumber === selected.caseNumber ? undefined : caseEdit.caseNumber,
+      clientParty: caseEdit.clientParty === selected.clientParty ? undefined : caseEdit.clientParty,
+      clientTel: caseEdit.clientTel === selected.clientTel ? undefined : caseEdit.clientTel,
+      clientEmail: caseEdit.clientEmail === selected.clientEmail ? undefined : caseEdit.clientEmail,
+      clientName: caseEdit.clientName === selected.clientName ? undefined : caseEdit.clientName,
+      otherPartyName: caseEdit.otherPartyName === selected.otherPartyName ? undefined : caseEdit.otherPartyName,
+      otherPartyTel: caseEdit.otherPartyTel === selected.otherPartyTel ? undefined : caseEdit.otherPartyTel,
+      otherPartyEmail: caseEdit.otherPartyEmail === selected.otherPartyEmail ? undefined : caseEdit,
       otherPartyDescription:
-        caseEdit.otherPartyDescription || selected.otherPartyDescription,
+        caseEdit.otherPartyDescription === selected.otherPartyDescription ? undefined : caseEdit.otherPartyDescription,
     };
-    console.log("Initializing case", updatedCaseObj);
+    console.log("Updating case - ", updatedCaseObj);
 
     setUIstate("loading");
 
     try {
       // fetch options
       let fetchOptions = {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(updatedCaseObj),
       };
 
@@ -326,8 +325,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       if (_res?.success) {
         console.log(
           "SUCCESS: Case updated successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
+          JSON.stringify(_res.success) +
+          "\n.............."
         );
         await refreshData();
         toast.success("Case updated successfully!");
@@ -335,13 +334,13 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       } else {
         console.error(
           "ERROR: failed to update case - ih6\n" +
-            JSON.stringify(_res) +
-            "\n.............."
+          JSON.stringify(_res) +
+          "\n.............."
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
       setUIstate("OK");
-    } catch (error) {}
+    } catch (error) { }
   }
 
   // handle onSelect Institutions
@@ -436,8 +435,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       if (_res?.success) {
         console.log(
           "SUCCESS: task deleted successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
+          JSON.stringify(_res.success) +
+          "\n.............."
         );
         toast.success("Task deleted successfully!");
         await refreshData();
@@ -445,8 +444,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       } else {
         console.error(
           "ERROR: failed to delete task\n > " +
-            JSON.stringify(_res) +
-            "\n.............."
+          JSON.stringify(_res) +
+          "\n.............."
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
@@ -560,7 +559,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
             <Label htmlFor="assignee" className="opacity-75">
               Assignee
             </Label>
-            {session?.user?.role?.includes("admin") ? (
+            {session?.user?.role === "system" || session?.user?.role === "admin" ? (
               <Select
                 name="assignee"
                 value={
@@ -569,7 +568,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                 onValueChange={(value) => {
                   setCaseEdit((prev) => ({
                     ...prev,
-                    userID: value,
+                    assigneeId: value,
                   }));
                 }}
               >
@@ -737,10 +736,10 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                       !(caseEdit.clientParty || selected.clientParty)
                         ? ""
                         : options.clientParties.find(
-                            (party) =>
-                              party !==
-                              (caseEdit.clientParty || selected.clientParty)
-                          )
+                          (party) =>
+                            party !==
+                            (caseEdit.clientParty || selected.clientParty)
+                        )
                     }
                     // disabled={!newCase.caseTypeID}
                     disabled={true}
@@ -965,13 +964,12 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                               </TableCell>
                               <TableCell className="hidden sm:table-cell">
                                 <Badge
-                                  className={`text-xs ${
-                                    task.completedById
-                                      ? "border-emerald-500"
-                                      : isDatePassed(task.dueDate)
-                                        ? "border-destructive"
-                                        : "border-border"
-                                  }`}
+                                  className={`text-xs ${task.completedById
+                                    ? "border-emerald-500"
+                                    : isDatePassed(task.dueDate)
+                                      ? "border-destructive"
+                                      : "border-border"
+                                    }`}
                                   variant="outline"
                                 >
                                   {task.completedById
@@ -1038,29 +1036,29 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       </CardContent>
       {(session?.user?.role === "admin" ||
         selected.assigneeId === session?.user?.id) && (
-        <CardFooter className="border-t px-6 py-4 min-h-20">
-          {UIstate === "loading" ? (
-            <Loader />
-          ) : (
-            <div
-              className="flex flex-row justify-between w-full items-center"
-              id="buttonWrapper"
-            >
-              <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
-                Update Case
-              </Button>
-
-              <Button
-                variant="destructive"
-                onClick={handleDeleteCase}
-                disabled={!selected?.id}
+          <CardFooter className="border-t px-6 py-4 min-h-20">
+            {UIstate === "loading" ? (
+              <Loader />
+            ) : (
+              <div
+                className="flex flex-row justify-between w-full items-center"
+                id="buttonWrapper"
               >
-                Delete Case
-              </Button>
-            </div>
-          )}
-        </CardFooter>
-      )}
+                <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
+                  Update Case
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteCase}
+                  disabled={!selected?.id}
+                >
+                  Delete Case
+                </Button>
+              </div>
+            )}
+          </CardFooter>
+        )}
     </Card>
   ) : null;
 }

@@ -7,9 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -28,7 +26,6 @@ import {
   nameValidator,
   telValidator,
 } from "@/helpers/inputValidators";
-import { httpCodes } from "@/lib/configs";
 import { User, Institution, Case } from "@/types/models";
 import { arraysEqual, isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/types/custom";
@@ -43,7 +40,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { InputImage } from "@/components/atoms/inputs";
 import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
@@ -277,7 +273,7 @@ export default function TaskView({ params }: { params: any }) {
     try {
       // fetch options
       let fetchOptions = {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(updatedCaseObj),
       };
 
@@ -299,22 +295,22 @@ export default function TaskView({ params }: { params: any }) {
       if (_res?.success) {
         console.log(
           "SUCCESS: Case updated successfully\n > " +
-            JSON.stringify(_res.success) +
-            "\n.............."
+          JSON.stringify(_res.success) +
+          "\n.............."
         );
         await refreshData();
         toast.success("Case updated successfully!");
         setUIstate("OK");
       } else {
         console.error(
-          "ERROR: failed to update case - ih6\n" +
-            JSON.stringify(_res) +
-            "\n.............."
+          "ERROR: failed to update case - 7ghb\n" +
+          JSON.stringify(_res) +
+          "\n.............."
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
       setUIstate("OK");
-    } catch (error) {}
+    } catch (error) { }
   }
 
   // handle onSelect Institutions
@@ -614,10 +610,10 @@ export default function TaskView({ params }: { params: any }) {
                       !(caseEdit.clientParty || selected.clientParty)
                         ? ""
                         : options.clientParties.find(
-                            (party) =>
-                              party !==
-                              (caseEdit.clientParty || selected.clientParty)
-                          )
+                          (party) =>
+                            party !==
+                            (caseEdit.clientParty || selected.clientParty)
+                        )
                     }
                     // disabled={!newCase.caseTypeID}
                     disabled={true}

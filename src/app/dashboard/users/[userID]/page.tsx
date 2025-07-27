@@ -113,9 +113,7 @@ export default function UserView({ params }: { params: any }) {
       for (const key in editObj) {
         const typedKey = key as keyof SelectedEditUser;
         if (editObj[typedKey] && editObj[typedKey] !== selected_[typedKey]) {
-          console.log(
-            `${selected_[typedKey]} has changed to ${editObj[typedKey]}`
-          );
+          // console.log(`${selected_[typedKey]} has changed to ${editObj[typedKey]}`);
           return true;
         }
       }
@@ -146,7 +144,7 @@ export default function UserView({ params }: { params: any }) {
           [],
       };
 
-      console.log("found user - ", foundUser_);
+      // console.log("found user - ", foundUser_);
       setSelected(mapSelectedUser_toState);
 
       // selected?.institutionIDs
@@ -212,8 +210,8 @@ export default function UserView({ params }: { params: any }) {
           !selected.photoUrl
             ? undefined
             : {
-              replaceTargetUrl: selected.photoUrl,
-            };
+                replaceTargetUrl: selected.photoUrl,
+              };
 
         const photoEdgeUpload = await edgestore.publicFiles.upload({
           file: userEdit.photoFile,
@@ -244,7 +242,7 @@ export default function UserView({ params }: { params: any }) {
       //Updated User
       const updatedUserObj = {
         id: selected.id,
-        name: userEdit.names || undefined,
+        names: userEdit.names || undefined,
         email: userEdit.email || undefined,
         tel: userEdit.tel || undefined,
         institutionIDs: userInstitutions?.map(({ value }) => value),
@@ -263,10 +261,9 @@ export default function UserView({ params }: { params: any }) {
             return await res_.json();
           } else {
             const error_ =
-              (await res_.json()).message ||
-              `ERROR: ` + res_.status + "Unknown error";
+              (await res_.json()) || `ERROR: ` + res_.status + "Unknown error";
             console.error(error_);
-            setUIstate(error_);
+            toast.error(error_);
             return null;
           }
         }
@@ -335,7 +332,7 @@ export default function UserView({ params }: { params: any }) {
   async function handleDeleteUser() {
     if (!selected || !selected?.id) {
       toast.error("Sorry, no user selected");
-      return
+      return;
     }
 
     setUIstate("loading");

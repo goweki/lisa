@@ -60,7 +60,7 @@ export function isUser(obj: any): obj is User {
 export interface Case extends _Case {
   caseType?: _CaseType;
   institution?: _Institution;
-  lawyer?: _User;
+  assignee?: _User;
   tasks?: _Task[];
 }
 
