@@ -48,16 +48,35 @@ export const profileEditSchema = z.object({
 export type ProfileEdit = z.infer<typeof profileEditSchema>;
 
 export const caseInputSchema = z.object({
-  status: z.enum(["OPEN", "CLOSED"]).optional(), // Adjust to match your CaseStatus enum
-  clientID: z.string().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-  createdBy: z.string().optional(),
-  caseType: z.any().optional(),
-  institution: z.any().optional(),
-  lawyer: z.any().optional(),
-  tasks: z.array(z.any()).optional(),
-  assigneeRequests: z.array(z.any()).optional(),
+  id: z.string().min(3).optional(),
+  name: z.string().min(3).optional(),
+  description: z.string().optional(),
+  caseTypeId: z.string().min(3).optional(),
+  institutionId: z.string().min(3).optional(),
+  assigneeId: z.string().min(3).optional(),
+  clientParty: z.string().min(3).optional(),
+  clientName: z.string().min(3).optional(),
+  clientTel: z.string().min(3).optional(),
 });
+
+// clientParty           String
+// clientName            String
+// clientTel             String
+// clientID              String?
+// clientEmail           String?
+// otherPartyName        String?
+// otherPartyTel         String?
+// otherPartyEmail       String?
+// otherPartyDescription String?
+// court                 String?
+
+// caseTypeId    String
+// caseType      CaseType    @relation(fields: [caseTypeId], references: [id])
+// institutionId String
+// institution   Institution @relation(fields: [institutionId], references: [id])
+// assigneeId    String?
+// lawyer        User?       @relation("assignment", fields: [assigneeId], references: [id])
+// createdById   String
+// creator       User        @relation("creator", fields: [createdById], references: [id])
 
 export type CaseInput = z.infer<typeof caseInputSchema>;
