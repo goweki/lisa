@@ -187,6 +187,7 @@ model Case {
   caseNumber            String?
   clientParty           String
   clientName            String
+  clientIdNumber        String?
   clientTel             String
   clientEmail           String?
   otherPartyName        String?
@@ -200,7 +201,7 @@ model Case {
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id])
   assigneeId    String?
-  assignee        User?       @relation("assignment", fields: [assigneeId], references: [id])
+  assignee      User?       @relation("assignment", fields: [assigneeId], references: [id])
   createdById   String
   creator       User        @relation("creator", fields: [createdById], references: [id])
 
@@ -258,10 +259,10 @@ model Reminder {
   regime    TimeRegimes
   count     Int
   channel   ReminderChannels
-  taskId    String?
   createdAt DateTime         @default(now())
 
-  task Task? @relation(fields: [taskId], references: [id])
+  taskId    String?
+  task Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model Blogpost {

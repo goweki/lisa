@@ -1,11 +1,12 @@
-import { httpCodes } from "@/lib/configs";
 import { Task } from "@/types/models";
+import toast from "react-hot-toast";
 
 export const handleTaskDeletion = async (
   _task: Partial<Task>
-): Promise<{ status: number; message: string }> => {
+): Promise<string | null> => {
   if (!_task.id && !_task.caseId) {
     console.error(" > FAILED: Missing id or caseId - ", _task);
+    toast.error('Task deletion failed. Try again later.')
   }
 
   try {
@@ -18,24 +19,22 @@ export const handleTaskDeletion = async (
     const res_ = await fetch("/api/dashboard/task", fetchOptions).then(
       async (res_) => {
         if (res_.ok) {
-          return { status: 200, message: httpCodes[200] };
+          return await res_.json();
         } else {
-          console.error(
-            `FAILED: failed to delete task: ` + JSON.stringify(res_)
-          );
-          return {
-            status: res_.status,
-            message: httpCodes[res_.status] || "Unknown error",
-          };
+          const error_ = `FAILED: failed to delete task: ${await res_.json()} `
+          console.error(error_);
+          toast.error('Task deletion failed. Try again later.')
+          return null
         }
       }
     );
     return res_;
   } catch (error: any) {
     console.error(
-      "ERROR: erred Task initialization:",
-      error.message || JSON.stringify(error)
+      "ERROR: task deletion failed:",
+      error
     );
-    return { status: 500, message: error.message || "Unknown error" };
+    toast.error('Task deletion failed. Try again later.')
+    return null;
   }
 };

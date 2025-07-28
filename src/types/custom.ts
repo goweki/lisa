@@ -52,31 +52,27 @@ export const caseInputSchema = z.object({
   name: z.string().min(3).optional(),
   description: z.string().optional(),
   caseTypeId: z.string().min(3).optional(),
+  caseNumber: z.string().min(3).optional(),
   institutionId: z.string().min(3).optional(),
   assigneeId: z.string().min(3).optional(),
+  clientIdNumber: z.string().min(3).optional(),
+  clientEmail: z.string().min(3).optional(),
   clientParty: z.string().min(3).optional(),
   clientName: z.string().min(3).optional(),
   clientTel: z.string().min(3).optional(),
 });
 
-// clientParty           String
-// clientName            String
-// clientTel             String
-// clientID              String?
-// clientEmail           String?
-// otherPartyName        String?
-// otherPartyTel         String?
-// otherPartyEmail       String?
-// otherPartyDescription String?
-// court                 String?
-
-// caseTypeId    String
-// caseType      CaseType    @relation(fields: [caseTypeId], references: [id])
-// institutionId String
-// institution   Institution @relation(fields: [institutionId], references: [id])
-// assigneeId    String?
-// lawyer        User?       @relation("assignment", fields: [assigneeId], references: [id])
-// createdById   String
-// creator       User        @relation("creator", fields: [createdById], references: [id])
-
 export type CaseInput = z.infer<typeof caseInputSchema>;
+
+export const taskInputSchema = z.object({
+  id: z.string().min(3).optional(),
+  name: z.string().min(3).optional(),
+  type: z.any().optional(),
+  caseId: z.string().min(3).optional(),
+  dueDate: z.string().min(3).optional(),
+  description: z.string().optional(),
+  reminders: z.any().optional(),
+});
+
+export type taskInput = z.infer<typeof taskInputSchema>;
+

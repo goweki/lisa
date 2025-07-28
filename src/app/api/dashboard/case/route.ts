@@ -61,6 +61,7 @@ async function patchHandler(
   institutionIds: string[] | undefined
 ) {
   const body = await request.json();
+  console.log(`PATCH REQUEST: case data: `, body);
   // Validate structure
   const parsed = caseInputSchema.safeParse(body);
   if (!parsed.success) {
@@ -78,15 +79,16 @@ async function patchHandler(
   } else if (typeof assigneeId === 'string') {
     update.assignee = { connect: { id: assigneeId } };
   }
+
   if (institutionId === null) {
     update.institution = { disconnect: true };
-  } else if (typeof assigneeId === 'string') {
+  } else if (typeof institutionId === 'string') {
     update.institution = { connect: { id: institutionId } };
   }
 
 
   try {
-    console.log(`PATCH REQUEST: case data: `, update);
+    console.log(`patching... `, update);
     // update doc
     const res_ = await prisma.case.update({
       where: { id },

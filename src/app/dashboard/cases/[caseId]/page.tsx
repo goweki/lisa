@@ -64,21 +64,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import TaskModal from "@/components/mols/taskModals";
+import TaskModal from "@/components/mols/taskModal";
 import { Task as TaskType } from "@/types/models";
 import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import AssignmentRequestComponent from "./_components/assigneeComponent";
-import { stat } from "fs";
-import { handleTaskCreation } from "../../tasks/_actions/add-task";
 import { AssigneeRequest } from "@prisma/client";
 
 export default function CaseView({ params }: { params: { caseId: string } }) {
@@ -91,8 +80,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
 
   const { edgestore } = useEdgeStore();
   const router = useRouter();
-  const [selected, setSelected] = useState<Case>();
-  const [caseEdit, setCaseEdit] = useState<Partial<Case>>({});
+  const [selectedCase, setSelectedCase] = useState<Case>();
+  const [caseEdit, setCaseEdit] = useState<Partial<Case>>();
   const [caseIsUpdated, setCaseIsUpdated] = useState(false);
   const [options, setOptions] = useState<{
     caseTypes: TemplateObj[];
@@ -106,12 +95,23 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     staff: [],
   });
   const [UIstate, setUIstate] = useState("");
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // setSelected, get case by caseID and update selected
   useEffect(() => {
     if (caseId) {
-      const _selected = cases.find(({ id }: { id: string }) => id === caseId);
-      setSelected(_selected);
+      const selectedCase_ = cases.find(
+        ({ id }: { id: string }) => id === caseId
+      );
+      if (!selectedCase_) {
+        console.log("Case not found");
+        console.log("all cases ", cases);
+        console.log("id - ", caseId);
+        return;
+      }
+
+      setSelectedCase(selectedCase_);
+      setCaseEdit(selectedCase_);
     }
     setUIstate("OK");
   }, [cases, caseId]);
@@ -145,12 +145,12 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
 
   // update clientParty options
   useEffect(() => {
-    if (!(caseEdit.caseTypeId || selected?.caseTypeId)) return;
+    if (!caseEdit?.caseTypeId) return;
     // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
 
     const foundCaseType = caseTypes.find(
       ({ id }: { id: string }) =>
-        id === (caseEdit.caseTypeId || selected?.caseTypeId)
+        id === (caseEdit.caseTypeId || selectedCase?.caseTypeId)
     );
 
     if (!foundCaseType) return;
@@ -161,7 +161,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       ...prev,
       clientParties: [primaryParty, secondaryParty],
     }));
-  }, [caseEdit.caseTypeId, selected?.caseTypeId, caseTypes]);
+  }, [caseEdit?.caseTypeId, selectedCase?.caseTypeId, caseTypes]);
 
   // update staff options
   useEffect(() => {
@@ -178,26 +178,11 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     }));
   }, [users]);
 
-  // // UIstate OK after updating selected
-  // useEffect(() => {
-  //   if (selected) {
-  //     setUIstate("OK");
-  //   }
-  // }, [selected]);
-
-  // UIstate OK on UI error
-  useEffect(() => {
-    if (UIstate && UIstate !== "OK" && UIstate !== "loading") {
-      toast.error(UIstate);
-      setUIstate("OK");
-    }
-  }, [UIstate]);
-
   //check if any edits to case
   useEffect(() => {
-    if (selected) {
+    if (selectedCase && caseEdit) {
       //&& Object.keys(instEdit).length > 0
-      const caseIsUpdated = ((selected_: Case, editObj: TemplateObj) => {
+      const caseIsUpdated = ((selected_: Case, editObj: Partial<Case>) => {
         // if no values in editObj
         if (Object.values(caseEdit).filter(Boolean).length === 0) return false;
 
@@ -221,17 +206,22 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
         }
         // console.log("NO updates");
         return false;
-      })(selected as Case, caseEdit);
+      })(selectedCase, caseEdit);
       setCaseIsUpdated(caseIsUpdated);
     }
-  }, [selected, caseEdit]);
+  }, [selectedCase, caseEdit]);
 
   //func to Update Case
   async function handleUpdateCase(e: React.MouseEvent<HTMLElement>) {
     e.preventDefault();
 
-    if (!selected?.id) {
+    if (!selectedCase?.id) {
       toast.error("Sorry, case could not be found");
+      return;
+    }
+
+    if (!caseEdit) {
+      toast.error("Sorry, no case edit");
       return;
     }
 
@@ -248,10 +238,13 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     };
 
     if (caseEdit.name) {
-      inputErrors.nameError_ = nameValidator(caseEdit.name);
+      inputErrors.nameError_ = nameValidator(caseEdit.name, "Case name");
     }
     if (caseEdit.clientName) {
-      inputErrors.clientNameError_ = nameValidator(caseEdit.clientName);
+      inputErrors.clientNameError_ = nameValidator(
+        caseEdit.clientName,
+        "Client name"
+      );
     }
     if (caseEdit.clientTel) {
       inputErrors.clientTelError_ = telValidator(caseEdit.clientTel);
@@ -260,7 +253,10 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       inputErrors.clientEmailError_ = emailValidator(caseEdit.clientEmail);
     }
     if (caseEdit.otherPartyName) {
-      inputErrors.otherPartyNameError_ = nameValidator(caseEdit.otherPartyName);
+      inputErrors.otherPartyNameError_ = nameValidator(
+        caseEdit.otherPartyName,
+        "Name of secondary party"
+      );
     }
     if (caseEdit.otherPartyTel) {
       inputErrors.otherPartyTelError_ = telValidator(caseEdit.otherPartyTel);
@@ -271,7 +267,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       );
     }
     if (caseEdit.court) {
-      inputErrors.courtError_ = nameValidator(caseEdit.court);
+      inputErrors.courtError_ = nameValidator(caseEdit.court, "Court name");
     }
 
     if (Object.values(inputErrors).filter(Boolean).length !== 0) {
@@ -283,22 +279,57 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     }
 
     const updatedCaseObj = {
-      id: selected.id,
-      name: caseEdit.name === selected.name ? undefined : caseEdit.name,
-      description: caseEdit.description === selected.description ? undefined : caseEdit.description,
-      // status: caseEdit.status || selected.status,
-      court: caseEdit.court === selected.court ? undefined : caseEdit.court,
-      assigneeId: caseEdit.assigneeId === selected.assigneeId ? undefined : caseEdit.assigneeId,
-      caseNumber: caseEdit.caseNumber === selected.caseNumber ? undefined : caseEdit.caseNumber,
-      clientParty: caseEdit.clientParty === selected.clientParty ? undefined : caseEdit.clientParty,
-      clientTel: caseEdit.clientTel === selected.clientTel ? undefined : caseEdit.clientTel,
-      clientEmail: caseEdit.clientEmail === selected.clientEmail ? undefined : caseEdit.clientEmail,
-      clientName: caseEdit.clientName === selected.clientName ? undefined : caseEdit.clientName,
-      otherPartyName: caseEdit.otherPartyName === selected.otherPartyName ? undefined : caseEdit.otherPartyName,
-      otherPartyTel: caseEdit.otherPartyTel === selected.otherPartyTel ? undefined : caseEdit.otherPartyTel,
-      otherPartyEmail: caseEdit.otherPartyEmail === selected.otherPartyEmail ? undefined : caseEdit,
+      id: selectedCase.id,
+      name: caseEdit?.name === selectedCase.name ? undefined : caseEdit?.name,
+      description:
+        caseEdit?.description === selectedCase.description
+          ? undefined
+          : caseEdit?.description,
+      court: caseEdit.court === selectedCase.court ? undefined : caseEdit.court,
+      assigneeId:
+        caseEdit.assigneeId === selectedCase.assigneeId
+          ? undefined
+          : caseEdit.assigneeId,
+      caseNumber:
+        caseEdit.caseNumber === selectedCase.caseNumber
+          ? undefined
+          : caseEdit.caseNumber,
+      clientParty:
+        caseEdit.clientParty === selectedCase.clientParty
+          ? undefined
+          : caseEdit.clientParty,
+      clientIdNumber:
+        caseEdit.clientIdNumber === selectedCase.clientIdNumber
+          ? undefined
+          : caseEdit.clientIdNumber,
+      clientTel:
+        caseEdit.clientTel === selectedCase.clientTel
+          ? undefined
+          : caseEdit.clientTel,
+      clientEmail:
+        caseEdit.clientEmail === selectedCase.clientEmail
+          ? undefined
+          : caseEdit.clientEmail,
+      clientName:
+        caseEdit.clientName === selectedCase.clientName
+          ? undefined
+          : caseEdit.clientName,
+      otherPartyName:
+        caseEdit.otherPartyName === selectedCase.otherPartyName
+          ? undefined
+          : caseEdit.otherPartyName,
+      otherPartyTel:
+        caseEdit.otherPartyTel === selectedCase.otherPartyTel
+          ? undefined
+          : caseEdit.otherPartyTel,
+      otherPartyEmail:
+        caseEdit.otherPartyEmail === selectedCase.otherPartyEmail
+          ? undefined
+          : caseEdit.otherPartyEmail,
       otherPartyDescription:
-        caseEdit.otherPartyDescription === selected.otherPartyDescription ? undefined : caseEdit.otherPartyDescription,
+        caseEdit.otherPartyDescription === selectedCase.otherPartyDescription
+          ? undefined
+          : caseEdit.otherPartyDescription
     };
     console.log("Updating case - ", updatedCaseObj);
 
@@ -356,7 +387,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
 
   //func to Delete Case
   async function handleDeleteCase() {
-    if (!selected?.id) {
+    if (!selectedCase?.id) {
       toast.error("Sorry, user not found");
       return;
     }
@@ -365,7 +396,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     let fetchOptions = {
       method: "DELETE",
       body: JSON.stringify({
-        id: selected.id,
+        id: selectedCase.id,
       }),
     };
     setUIstate("loading");
@@ -402,23 +433,20 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     setUIstate("OK");
   }
 
-  //func to Delete Task
-  const handleDeleteTask = async (caseId: string, taskId: string) => {
-    console.log("deleting...: ", taskId);
+  //func to Complete Task
+  async function handleCompleteTask(task: Task) {
+    console.log("completing task : ", task.id);
 
     setUIstate("loading");
 
     try {
       // fetch options
       let fetchOptions = {
-        method: "DELETE",
-        // headers: {
-        //   "Content-Type": "application/json",
-        //   'Content-Type': 'application/x-www-form-urlencoded',
-        // },
+        method: "PATCH",
         body: JSON.stringify({
-          caseId,
-          taskId,
+          id: task.id,
+          caseId: task.caseId,
+          completedById: true
         }),
       };
       // POST request using fetch
@@ -427,8 +455,53 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
           if (res_.ok) {
             return await res_.json();
           } else {
-            console.error(`ERROR: ` + JSON.stringify(res_));
-            toast.error(httpCodes[res_.status]);
+            const error_ = `ERROR ${res_.status} - ${await res_.json()}`
+            console.error(error_);
+            toast.error(error_);
+          }
+        }
+      );
+
+      if (!_res) return
+
+      console.log(
+        "SUCCESS: task deleted ", _res
+      );
+      toast.success("Task deleted successfully!");
+      await refreshData();
+      router.refresh();
+    } catch (error: any) {
+      let errorMessage = 'Task not deleted'
+      if (error.message) errorMessage = error.message
+      // setUIstate("Error: Institution was not initialized");
+      toast.error(errorMessage);
+    }
+  };
+
+  //func to Delete Task
+  async function handleDeleteTask(task: Task) {
+    console.log("deleting...: ", task.id);
+
+    setUIstate("loading");
+
+    try {
+      // fetch options
+      let fetchOptions = {
+        method: "DELETE",
+        body: JSON.stringify({
+          id: task.id,
+          caseId: task.caseId,
+        }),
+      };
+      // POST request using fetch
+      const _res = await fetch("/api/dashboard/task", fetchOptions).then(
+        async (res_) => {
+          if (res_.ok) {
+            return await res_.json();
+          } else {
+            const error_ = `ERROR ${res_.status} - ${await res_.json()}`
+            console.error(error_);
+            toast.error(error_);
           }
         }
       );
@@ -460,28 +533,11 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
     }
   };
 
-  //func to Create Task
-  const handleCreateTask = async (newTask: Partial<Task>) => {
-    setUIstate("loading");
-
-    const { caseId, ...newTask_ } = newTask;
-
-    if (!caseId && !newTask_.name) {
-      console.error(" > Missing task attributes - ", newTask);
-    }
-
-    const res_ = await handleTaskCreation({
-      newTask: newTask_,
-      selectedCase: { id: caseId },
-    });
-    return res_;
-  };
-
   //render
-  return UIstate && selected ? (
+  return UIstate && selectedCase && caseEdit ? (
     <Card x-chunk="dashboard-04-chunk-1">
       <CardHeader>
-        <CardTitle className="font-light">{selected.name}</CardTitle>
+        <CardTitle className="font-light">{selectedCase.name}</CardTitle>
         {/* <CardDescription className="text-lg text-muted-foreground font-semibold">
           {selected.name}
         </CardDescription> */}
@@ -497,7 +553,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
               id="name"
               placeholder="case Name"
               className="placeholder:italic"
-              value={caseEdit.name || selected.name}
+              value={caseEdit.name}
               onChange={(e) =>
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -512,7 +568,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
             </Label>
             <Select
               name="type"
-              value={caseEdit.caseTypeId || selected.caseTypeId}
+              value={caseEdit?.caseTypeId}
               onValueChange={(value) => {
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -541,9 +597,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
               id="caseNo"
               placeholder="case Number (court filed)"
               className="placeholder:italic"
-              value={
-                caseEdit.caseNumber || (selected.caseNumber as string) || ""
-              }
+              value={caseEdit.caseNumber || ""}
               onChange={(e) =>
                 setCaseEdit((prev) => ({
                   ...prev,
@@ -559,12 +613,11 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
             <Label htmlFor="assignee" className="opacity-75">
               Assignee
             </Label>
-            {session?.user?.role === "system" || session?.user?.role === "admin" ? (
+            {session?.user?.role === "system" ||
+              session?.user?.role === "admin" ? (
               <Select
                 name="assignee"
-                value={
-                  caseEdit.assigneeId || (selected.assigneeId as string) || ""
-                }
+                value={caseEdit.assigneeId || ""}
                 onValueChange={(value) => {
                   setCaseEdit((prev) => ({
                     ...prev,
@@ -585,16 +638,16 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
               </Select>
             ) : (
               <AssignmentRequestComponent
-                assigneeID={selected.assigneeId}
+                assigneeID={selectedCase.assigneeId}
                 pendingRequest={assignmentRequests?.find(
                   (req: AssigneeRequest) =>
-                    req.caseId === selected.id &&
+                    req.caseId === selectedCase.id &&
                     req.assigneeId === session?.user?.id &&
                     req.status === "PENDING"
                 )}
                 uiState={UIstate}
                 setUIstate={setUIstate}
-                selectedCaseID={selected.id}
+                selectedCaseID={selectedCase.id}
                 refreshData={refreshData}
               />
             )}
@@ -612,7 +665,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                   </Label>
                   <Select
                     name="clientParty"
-                    value={caseEdit.clientParty || selected.clientParty || ""}
+                    value={caseEdit.clientParty}
                     // disabled={!newCase.caseTypeID}
                     onValueChange={(value) => {
                       setCaseEdit((prev) => ({
@@ -645,7 +698,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     id="clientName"
                     placeholder="client Name"
                     className="placeholder:italic"
-                    value={caseEdit.clientName || selected.clientName}
+                    value={caseEdit.clientName || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
@@ -666,7 +719,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     id="clientTel"
                     placeholder="client Pnone Number"
                     className="placeholder:italic"
-                    value={caseEdit.clientTel || selected.clientTel}
+                    value={caseEdit.clientTel || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
@@ -687,9 +740,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     id="clientEmail"
                     placeholder="client Email"
                     className="placeholder:italic"
-                    value={
-                      caseEdit.clientEmail || (selected.clientEmail as string)
-                    }
+                    value={caseEdit.clientEmail || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
@@ -698,22 +749,23 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     }
                   />
                 </div>
-                <div id="clientID" className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="clientEmail" className="opacity-75">
+                <div
+                  id="clientIdNumber"
+                  className="grid w-full items-center gap-1.5"
+                >
+                  <Label htmlFor="clientIdNumber" className="opacity-75">
                     client ID/Passport
                   </Label>
                   <Input
                     type="numeric"
-                    id="id-passport"
+                    id="clientIdNumber"
                     placeholder="client ID / passport No."
                     className="placeholder:italic"
-                    value={
-                      caseEdit.clientEmail || (selected.clientEmail as string)
-                    }
+                    value={caseEdit.clientIdNumber || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
-                        clientEmail: e.target.value,
+                        clientIdNumber: e.target.value,
                       }))
                     }
                   />
@@ -733,12 +785,12 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                   <Select
                     name="otherParty"
                     value={
-                      !(caseEdit.clientParty || selected.clientParty)
+                      !caseEdit.clientParty
                         ? ""
                         : options.clientParties.find(
                           (party) =>
                             party !==
-                            (caseEdit.clientParty || selected.clientParty)
+                            (caseEdit.clientParty || selectedCase.clientParty)
                         )
                     }
                     // disabled={!newCase.caseTypeID}
@@ -768,10 +820,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     id="otherPartyName"
                     placeholder="opposing-party Name"
                     className="placeholder:italic"
-                    value={
-                      caseEdit.otherPartyName ||
-                      (selected.otherPartyName as string)
-                    }
+                    value={caseEdit.otherPartyName || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
@@ -792,10 +841,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     id="otherPartyTel"
                     placeholder="opposing-party Pnone Number"
                     className="placeholder:italic"
-                    value={
-                      caseEdit.otherPartyTel ||
-                      (selected.otherPartyTel as string)
-                    }
+                    value={caseEdit.otherPartyTel || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
@@ -816,10 +862,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                     id="otherPartyEmail"
                     placeholder="opposing-party Email"
                     className="placeholder:italic"
-                    value={
-                      caseEdit.otherPartyEmail ||
-                      (selected.otherPartyEmail as string)
-                    }
+                    value={caseEdit.otherPartyEmail || ""}
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
                         ...prev,
@@ -837,10 +880,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                   </Label>
 
                   <Textarea
-                    value={
-                      caseEdit.otherPartyDescription ||
-                      (selected.otherPartyDescription as string)
-                    }
+                    value={caseEdit.otherPartyDescription || ""}
                     className="placeholder:italic "
                     onChange={(e) =>
                       setCaseEdit((prev) => ({
@@ -873,82 +913,16 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                             due Date
                           </TableHead>
                           <TableHead className="text-center">
-                            {/* <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline">New Task</Button>
-                              </DialogTrigger>
-                              <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                  <DialogTitle>New Task</DialogTitle>
-                                  <DialogDescription>
-                                    Create a new task in
-                                    <span className="italic">
-                                      {" "}
-                                      {selected.name}.{" "}
-                                    </span>
-                                    Click save when you&apos;re done.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                  <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label
-                                      htmlFor="name"
-                                      className="text-right"
-                                    >
-                                      Name
-                                    </Label>
-                                    <Input
-                                      id="name"
-                                      defaultValue="Pedro Duarte"
-                                      className="col-span-3"
-                                    />
-                                  </div>
-                                  <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label
-                                      htmlFor="type"
-                                      className="text-right"
-                                    >
-                                      Type
-                                    </Label>
-                                    <Input
-                                      id="type"
-                                      defaultValue="@peduarte"
-                                      className="col-span-3"
-                                    />
-                                  </div>
-                                  <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label
-                                      htmlFor="dueDate"
-                                      className="text-right"
-                                    >
-                                      Due date
-                                    </Label>
-                                    <Input
-                                      id="dueDate"
-                                      defaultValue="@peduarte"
-                                      className="col-span-3"
-                                    />
-                                  </div>
-                                </div>
-                                <DialogFooter>
-                                  <Button type="submit">Save changes</Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog> */}
                             <TaskModal
-                              // selectedCase={selected}
-                              // refreshData={refreshData}
-                              Obj={{ caseID: selected.id }}
-                              createObj={handleCreateTask}
-                              refresh={refreshData}
+                              _task={{ caseId }}
                             />
                           </TableHead>
                         </TableRow>
                       </TableHeader>
 
                       <TableBody>
-                        {selected.tasks && selected.tasks.length > 0 ? (
-                          selected.tasks.map((task: TaskType) => (
+                        {selectedCase.tasks && selectedCase.tasks.length > 0 ? (
+                          selectedCase.tasks.map((task: TaskType) => (
                             <TableRow
                               key={task.id}
                               className="border-muted hover:bg-muted/25"
@@ -966,7 +940,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                                 <Badge
                                   className={`text-xs ${task.completedById
                                     ? "border-emerald-500"
-                                    : isDatePassed(task.dueDate)
+                                    : isDatePassed(new Date(task.dueDate))
                                       ? "border-destructive"
                                       : "border-border"
                                     }`}
@@ -999,13 +973,13 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                                     className="text-foreground"
                                   >
                                     {/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleCompleteTask(task)}>
                                       Complete
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSelectedTask(task)}>Edit</DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={() =>
-                                        handleDeleteTask(selected.id, task.id)
+                                        handleDeleteTask(task)
                                       }
                                     >
                                       Delete
@@ -1033,9 +1007,16 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
             </AccordionItem>
           </Accordion>
         </form>
+        {selectedTask && <TaskModal
+          _task={selectedTask}
+          isOpen={!!selectedTask}
+          toggleOpen={(open: boolean) => {
+            setSelectedTask(null)
+          }}
+        />}
       </CardContent>
       {(session?.user?.role === "admin" ||
-        selected.assigneeId === session?.user?.id) && (
+        selectedCase.assigneeId === session?.user?.id) && (
           <CardFooter className="border-t px-6 py-4 min-h-20">
             {UIstate === "loading" ? (
               <Loader />
@@ -1051,7 +1032,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                 <Button
                   variant="destructive"
                   onClick={handleDeleteCase}
-                  disabled={!selected?.id}
+                  disabled={!selectedCase?.id}
                 >
                   Delete Case
                 </Button>
@@ -1060,5 +1041,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
           </CardFooter>
         )}
     </Card>
-  ) : null;
+  ) : (
+    <Loader />
+  );
 }

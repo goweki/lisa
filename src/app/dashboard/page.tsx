@@ -7,7 +7,6 @@ import { ButtonPrimary, ButtonSecondary } from "@/components/atoms/buttons";
 import { CardItemsTable } from "@/components/mols/cards";
 import { SVGtime } from "@/components/atoms/svgs";
 import { DataContext } from "@/app/dashboard/providers";
-import { isDatePassed } from "@/helpers/dateHandlers";
 import { useSession, signOut } from "next-auth/react";
 import { Case, Task } from "@/types/models";
 import { CaseStatus, EntityStatus, UserRole } from "@prisma/client";
@@ -52,12 +51,12 @@ export default function UserHome() {
     // institutions
     const institutionsBrief = institutions
       ? institutions.map((inst) => ({
-          id: inst.id,
-          institution: inst.name,
-          location: inst.location,
-          users: inst.users ? inst.users.length : [],
-          cases: inst.cases?.length,
-        }))
+        id: inst.id,
+        institution: inst.name,
+        location: inst.location,
+        users: inst.users ? inst.users.length : [],
+        cases: inst.cases?.length,
+      }))
       : [];
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
@@ -182,13 +181,12 @@ function ProfileCard({
         {!session?.user?.systemAdmin ? (
           <>
             <p
-              className={`font-bold text-xl mt-2 mb-4 text-center ${
-                !data.length
+              className={`font-bold text-xl mt-2 mb-4 text-center ${!data.length
                   ? "text-emerald-500"
                   : data.length < 3
                     ? "text-red-800 dark:text-red-300"
                     : "text-red-500"
-              }`}
+                }`}
             >
               {!data.length
                 ? "Your schedule is clean"
@@ -198,13 +196,12 @@ function ProfileCard({
             </p>
             <div className="text-base text-font-faded dark:text-font-dark-faded">
               <p
-                className={`text-center ${
-                  data.length < 1
+                className={`text-center ${data.length < 1
                     ? ""
                     : data.length < 3
                       ? "text-red-800 dark:text-red-200"
                       : "text-red-500"
-                }`}
+                  }`}
               >
                 {data.length} case{data.length !== 1 && <>s</>} with pending
                 tasks

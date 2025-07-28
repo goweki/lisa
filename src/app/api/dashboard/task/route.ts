@@ -2,33 +2,62 @@ import prisma from "@/lib/prisma/prisma";
 import { httpCodes } from "@/lib/configs";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { SessionUser } from "@/types/next-auth";
+import { ReminderChannels, TimeRegimes } from "@prisma/client";
+import { taskInputSchema } from "@/types/custom";
 
 async function postHandler(request: Request, user: SessionUser) {
-  const { caseID, dueDate, ...doc } = await request.json();
-  console.log("POST REQUEST: new task: ", doc.name);
+  const body = await request.json();
+  console.log(`PATCH REQUEST: case data: `, body);
+  // Validate structure
+  const parsed = taskInputSchema.safeParse(body);
+  if (!parsed.success) {
+    console.error("Validation error:", parsed.error.flatten());
+    return Response.json("Invalid request body", { status: 400 });
+  }
+  const doc = parsed.data;
+  const { caseId, dueDate, name: taskName, type, reminders: _reminders, ...doc_ } = doc;
+
+  if (!caseId || !taskName || !type || !dueDate) {
+    console.error("Invalid task object - ", doc);
+    return Response.json("Invalid request body", { status: 400 });
+  }
+
   try {
-    //
+    // parent case exists?
     if (
       !(await prisma.case.findUnique({
-        where: { id: caseID },
+        where: { id: caseId },
       }))
     ) {
-      // HTTP response - task name exists
       console.log(` > FAILED: Parent Case does not exist.\n..........`);
-      return Response.json({ failed: "Parent Case does not exist" });
-    } else {
-      // insert doc
-      const res_ = await prisma.task.create({
-        data: {
-          ...doc,
-          caseID,
-          dueDate: new Date(dueDate),
-        },
-      });
-      console.log(` > SUCCESS: task inserted.\n..........`);
-      // HTTP response
-      return Response.json({ success: res_ });
+      return Response.json("Parent case does not exist", { status: 404 });
     }
+
+    const reminders: {
+      regime: TimeRegimes;
+      count: number;
+      channel: ReminderChannels;
+    }[] = _reminders || []
+    if (reminders.length === 0) {
+      reminders.push({
+        regime: "hours",
+        count: 2,
+        channel: "whatsapp",
+      })
+    }
+
+    // insert doc
+    const res_ = await prisma.task.create({
+      data: {
+        caseId, name: taskName, type, dueDate, ...doc,
+        reminders: {
+          create: reminders.map((reminder__) => reminder__,),
+        },
+      },
+    });
+    console.log(` > SUCCESS: task inserted.\n..........`);
+    // HTTP response
+    return Response.json(res_);
   } catch (err) {
     console.error(
       " > ERROR: task-document insertion failed.",

@@ -129,12 +129,8 @@ export default function CalendarManageEventDialog() {
   async function handleDelete() {
     if (!selectedEvent) return;
     const res_ = await deleteEvent(selectedEvent);
-    if (res_.status === 200) {
-      toast.success("Task DELETED");
+    if (res_) {
       await refreshData();
-      handleClose();
-    } else {
-      toast.error(httpCodes[res_.status] || "Unknown Error");
     }
     handleClose();
   }
@@ -178,7 +174,7 @@ export default function CalendarManageEventDialog() {
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      // {...field}
+                    // {...field}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a task type..." />

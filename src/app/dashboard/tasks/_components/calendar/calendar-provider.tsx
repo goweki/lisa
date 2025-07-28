@@ -19,13 +19,13 @@ export default function CalendarProvider({
   events: CalendarTask[];
   addEvent: (
     event: Partial<CalendarTask>
-  ) => Promise<{ status: number; message: string }>;
+  ) => Promise<string | null>;
   updateEvent: (
     event: Partial<CalendarTask>
-  ) => Promise<{ status: number; message: string }>;
+  ) => Promise<string | null>;
   deleteEvent: (
     event: Partial<CalendarTask>
-  ) => Promise<{ status: number; message: string }>;
+  ) => Promise<string | null>;
   mode: Mode;
   setMode: (mode: Mode) => void;
   date: Date;

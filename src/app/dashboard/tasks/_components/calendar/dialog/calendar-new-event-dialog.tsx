@@ -139,12 +139,9 @@ export default function CalendarTaskDialog() {
     }
 
     const res = await addEvent(newTask);
-    if (res.status === 201) {
-      toast.success("Task created successfully");
+    if (res) {
       await refreshData();
       handleClose();
-    } else {
-      toast.error(httpCodes[res.status] || "Unknown Error");
     }
   }
 
@@ -203,7 +200,7 @@ export default function CalendarTaskDialog() {
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      // {...field}
+                    // {...field}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a task type..." />
