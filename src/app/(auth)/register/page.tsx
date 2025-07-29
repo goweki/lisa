@@ -38,7 +38,7 @@ export default function RegisterPage() {
       if (error_)
         setUIstate(
           qParamsErrors[error_ as keyof typeof qParamsErrors] ||
-            qParamsErrors.Default
+          qParamsErrors.Default
         );
     } else setUIstate("OK");
   }, [searchParams]);

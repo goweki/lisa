@@ -37,6 +37,7 @@ import MultiSelect, {
 import { TemplateObj } from "@/types/custom";
 import { UserRole as userRoles } from "@prisma/client";
 import parsePhoneNumber from "libphonenumber-js";
+import { showWarningToast } from "@/components/atoms/customToast";
 
 type newUserType = {
   names: TemplateObj;
@@ -155,13 +156,9 @@ export default function UsersPage() {
         setUIstate("OK");
         return;
       }
+      
       // response is truthy
-      if (response.message)
-        toast.custom(
-          <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
-            {response.message}
-          </div>
-        );
+      if (response.message) showWarningToast(response.message)
 
       console.log(
         "SUCCESS: user created\n > ",

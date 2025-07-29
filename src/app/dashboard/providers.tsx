@@ -11,6 +11,7 @@ import { Case, Institution, User } from "@/types/models";
 import { AssigneeRequest, CaseType, Task } from "@prisma/client";
 import { UIstate } from "@/types/custom";
 import PaymentsSection from "@/components/payments";
+import { showWarningToast } from "@/components/atoms/customToast";
 
 export interface UIDATA {
   users: User[];
@@ -65,11 +66,7 @@ export default function UserProviders({
           if (res_.ok) {
             return await res_.json();
           } else if (res_.status === 402) {
-            toast.custom(
-              <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
-                Payment required
-              </div>
-            );
+            showWarningToast('Payment required')
             setUIstate("payment-required");
           } else {
             //CHECKPOINT

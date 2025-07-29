@@ -26,6 +26,7 @@ import { httpCodes } from "@/lib/configs";
 import { useSession } from "next-auth/react";
 import { InputImage } from "@/components/atoms/inputs";
 import { useEdgeStore } from "@/lib/edgestore";
+import { showWarningToast } from "@/components/atoms/customToast";
 
 interface NewInst {
   name: { value: string; error: string };
@@ -106,11 +107,7 @@ export default function InstitutionsPage() {
           logoUrl_ = logoEdgeUpload.url;
         } catch (error) {
           console.error("logo not uploaded:", error);
-          toast.custom(
-            <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
-              Logo not saved
-            </div>
-          );
+          showWarningToast(' Logo not saved')
         }
 
         setNewInstitution((prev) => {

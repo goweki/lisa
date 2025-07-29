@@ -24,7 +24,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             children
           )}
 
-          <Toaster />
+          <Toaster position="top-center"
+            toastOptions={{
+              duration: 5000
+            }} />
         </SessionProvider>
       </React.StrictMode>
     </ThemeProvider>

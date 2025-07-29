@@ -24,6 +24,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { UIstate } from "@/types/custom";
 import { Loader } from "@/components/atoms/loader";
 import { ProfileEdit as _ProfileEdit } from "@/types/custom";
+import { showWarningToast } from "@/components/atoms/customToast";
 
 interface ProfileEdit extends Omit<_ProfileEdit, "id"> {
   photoFile?: File;
@@ -128,8 +129,8 @@ export function ProfileForm() {
           !user.photoUrl
             ? undefined
             : {
-                replaceTargetUrl: user.photoUrl,
-              };
+              replaceTargetUrl: user.photoUrl,
+            };
 
         const photoEdgeUpload = await edgestore.publicFiles.upload({
           file: photoFile,
@@ -158,11 +159,7 @@ export function ProfileForm() {
         if (!photoUrl) {
           console.error("image upload failed");
 
-          toast.custom(
-            <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
-              Photo could not be uploaded
-            </div>
-          );
+          showWarningToast('Photo could not be uploaded')
         }
       }
 
