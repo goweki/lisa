@@ -7,217 +7,48 @@ import {
   UserRole,
   SubscriptionStatus,
   EntityStatus,
-  ContentStatus,
-  Case,
   CaseType,
+  Blogpost,
+  PlanName,
 } from "@prisma/client";
+import {
+  planFeatureAssociations as planFeatures,
+  blogPosts,
+  plans,
+  features,
+  defaultCaseTypes,
+  systemUser,
+} from "./seed-data";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-  // if (process.env.NODE_ENV === "development") {
-  //   console.log("♻️ Clearing existing data...");
-  //   await clearTables(prisma);
-  //   console.log("✅ Tables cleared");
-  // }
-
   console.log("🌱 Starting database seeding...");
-
+  await seedCaseTypes(prisma);
   const plans = await seedPlans(prisma);
   const features = await seedFeatures(prisma);
   await seedPlanFeatures(prisma, plans, features);
 
-  await seedCaseTypes(prisma);
+  const institutions = await seedInstitutions(prisma);
+  const users = await seedUsers(prisma);
 
-  // const institutions = await seedInstitutions(prisma);
-  // const users = await seedUsers(prisma);
+  await seedInstitutionUsers(prisma, users.withInstitution, institutions);
+  await seedSubscriptions(prisma, institutions, plans);
 
-  // await seedInstitutionUsers(prisma, users, institutions);
-  // await seedSubscriptions(prisma, institutions, plans);
-
-  // await seedBlog(prisma, users);
+  if (users.system) {
+    await seedBlog(prisma, users.system);
+  } else {
+    console.log("⚠️  No user with (isSystem===true), skipping seeding blogs");
+  }
 
   console.log("✅ Seeding complete.");
 }
 
 // ---------------- SEED FUNCTIONS ----------------
 
-async function seedPlans(prisma_: PrismaClient): Promise<Plan[]> {
-  const plans: Omit<Plan, "id" | "createdAt" | "updatedAt" | "isActive">[] = [
-    {
-      name: "starter",
-      description: "Starter package for small firms",
-      price: 5000,
-      priceMonthly: 5000,
-      priceAnnual: 50000,
-      currency: "KES",
-      trialDays: 14,
-    },
-    {
-      name: "team",
-      description: "For growing teams with collaboration features",
-      price: 15000,
-      priceMonthly: 15000,
-      priceAnnual: 150000,
-      currency: "KES",
-      trialDays: 30,
-    },
-    {
-      name: "enterprise",
-      description: "Full-scale access and support",
-      price: 50000,
-      priceMonthly: 50000,
-      priceAnnual: 500000,
-      currency: "KES",
-      trialDays: 30,
-    },
-  ];
-
-  const result: Plan[] = [];
-  for (const plan of plans) {
-    const created = await prisma_.plan.upsert({
-      where: { name: plan.name },
-      update: {},
-      create: {
-        ...plan,
-        isActive: true,
-      },
-    });
-    result.push(created);
-  }
-
-  console.log(`📝 Seeded ${result.length} plans`);
-  return result;
-}
-
-async function seedFeatures(prisma_: PrismaClient): Promise<Feature[]> {
-  const features: Omit<Feature, "id" | "limits" | "isActive">[] = [
-    {
-      name: "Case Management",
-      description: "Create, track, and manage cases.",
-    },
-    {
-      name: "User Management",
-      description: "Invite and manage users.",
-    },
-    {
-      name: "Integrations",
-      description: "Email / SMS / WhatsApp integrations.",
-    },
-    {
-      name: "Custom Branding",
-      description: "Brand the system with your firm’s identity.",
-    },
-  ];
-
-  const result: Feature[] = [];
-  for (const feature of features) {
-    const created = await prisma_.feature.upsert({
-      where: { name: feature.name },
-      update: {},
-      create: {
-        ...feature,
-        isActive: true,
-      },
-    });
-    result.push(created);
-  }
-
-  console.log(`📝 Seeded ${result.length} plan features`);
-  return result;
-}
-
-async function seedPlanFeatures(
-  prisma_: PrismaClient,
-  plans: Plan[],
-  features: Feature[]
-): Promise<void> {
-  const associations: Array<{
-    plan: string;
-    featureNames: string[];
-  }> = [
-    {
-      plan: "starter", // ✅ matches name in seedPlans
-      featureNames: ["Case Management"],
-    },
-    {
-      plan: "team",
-      featureNames: ["Case Management", "User Management", "Integrations"],
-    },
-    {
-      plan: "enterprise",
-      featureNames: [
-        "Case Management",
-        "User Management",
-        "Integrations",
-        "Custom Branding",
-      ],
-    },
-  ];
-
-  for (const assoc of associations) {
-    const plan = plans.find((p) => p.name === assoc.plan);
-    if (!plan) {
-      console.warn(`⚠️ Plan not found: ${assoc.plan}`);
-      continue;
-    }
-
-    for (const featureName of assoc.featureNames) {
-      const feature = features.find((f) => f.name === featureName);
-      if (!feature) {
-        console.warn(`⚠️ Feature not found: ${featureName}`);
-        continue;
-      }
-
-      await prisma_.planFeature.upsert({
-        where: {
-          planId_featureId: {
-            planId: plan.id,
-            featureId: feature.id,
-          },
-        },
-        update: {},
-        create: {
-          planId: plan.id,
-          featureId: feature.id,
-        },
-      });
-    }
-  }
-
-  console.log(`🧩 Plan-feature associations created successfully.`);
-}
-
 async function seedCaseTypes(prisma: PrismaClient): Promise<CaseType[]> {
-  const defaultCaseTypes = [
-    {
-      name: "Criminal Case",
-      primaryParty: "Complainant",
-      secondaryParty: "Accused",
-    },
-    {
-      name: "Civil Dispute",
-      primaryParty: "Plaintiff",
-      secondaryParty: "Defendant",
-    },
-    {
-      name: "Family Case",
-      primaryParty: "Petitioner",
-      secondaryParty: "Respondent",
-    },
-    {
-      name: "Land Dispute",
-      primaryParty: "Claimant",
-      secondaryParty: "Objector",
-    },
-    {
-      name: "Employment Dispute",
-      primaryParty: "Employee",
-      secondaryParty: "Employer",
-    },
-  ];
-
+  console.log(` > Seeding case types (VERBOSE=true)`);
   const seededCaseTypes: CaseType[] = [];
 
   for (const caseType of defaultCaseTypes) {
@@ -226,27 +57,93 @@ async function seedCaseTypes(prisma: PrismaClient): Promise<CaseType[]> {
     });
 
     if (!existing) {
-      const created = await prisma.caseType.create({
-        data: caseType,
-      });
-      console.log(`Seeded case type: ${caseType.name}`);
+      const created = await prisma.caseType.create({ data: caseType });
+      console.log(` >> ${caseType.name}`);
       seededCaseTypes.push(created);
     } else {
-      console.log(`Skipped existing case type: ${caseType.name}`);
+      console.warn(` >> Already Exists: - ${caseType.name}`);
     }
   }
 
+  console.log(
+    `${seededCaseTypes.length !== 0 ? "📝 " : "⚠️ "} Inserted ${seededCaseTypes.length} casetypes`
+  );
   return seededCaseTypes;
+}
+
+async function seedPlans(prisma_: PrismaClient): Promise<Plan[]> {
+  const result = await Promise.all(
+    plans.map((plan) =>
+      prisma_.plan.upsert({
+        where: { name: plan.name },
+        update: {},
+        create: { ...plan, isActive: true },
+      })
+    )
+  );
+  console.log(`📝 Seeded plans`);
+  return result;
+}
+
+async function seedFeatures(prisma_: PrismaClient): Promise<Feature[]> {
+  const result = await Promise.all(
+    features.map((feature) =>
+      prisma_.feature.upsert({
+        where: { name: feature.name },
+        update: {},
+        create: { ...feature },
+      })
+    )
+  );
+  console.log(`📝 Seeded plan features`);
+  return result;
+}
+
+async function seedPlanFeatures(
+  prisma_: PrismaClient,
+  plans: Plan[],
+  features: Feature[]
+): Promise<void> {
+  const featureMap = new Map(features.map((f) => [f.name, f]));
+  const planMap = new Map(plans.map((p) => [p.name, p]));
+
+  for (const assoc of planFeatures) {
+    const plan = planMap.get(assoc.plan as PlanName);
+    if (!plan) continue;
+
+    await Promise.all(
+      assoc.featureNames.map(async (featureName) => {
+        const feature = featureMap.get(featureName);
+        if (!feature) return;
+
+        await prisma_.planFeature.upsert({
+          where: {
+            planId_featureId: {
+              planId: plan.id,
+              featureId: feature.id,
+            },
+          },
+          update: {},
+          create: {
+            planId: plan.id,
+            featureId: feature.id,
+          },
+        });
+      })
+    );
+  }
+
+  console.log(`🧩 Plan-feature associations seeded.`);
 }
 
 async function seedInstitutions(
   prisma_: PrismaClient,
-  count = 2
+  count = 1
 ): Promise<Institution[]> {
   const result: Institution[] = [];
 
   for (let i = 0; i < count; i++) {
-    const name = `${faker.company.name()} Advocates`;
+    const name = `Lisa Advocates${i === 0 ? "" : " " + i}`;
     const institution = await prisma_.institution.upsert({
       where: { name },
       update: {},
@@ -254,37 +151,53 @@ async function seedInstitutions(
         name,
         location: faker.location.city(),
         logoUrl: faker.image.avatar(),
-        status: EntityStatus.ACTIVE,
       },
     });
     result.push(institution);
   }
 
-  console.log(`📝 Seeded ${result.length} instittutions`);
+  console.log(`📝 Seeded institutions`);
   return result;
 }
 
-async function seedUsers(prisma_: PrismaClient, count = 3): Promise<User[]> {
-  const result: User[] = [];
+async function seedUsers(
+  prisma_: PrismaClient,
+  count = 2
+): Promise<{ system: User | null; withInstitution: User[] }> {
+  const result: { system: User | null; withInstitution: User[] } = {
+    system: null,
+    withInstitution: [],
+  };
 
-  for (let i = 0; i < count; i++) {
-    const email = `antonio.oweki+${i + 1}@gmail.com`;
-    const user = await prisma_.user.upsert({
-      where: { email },
-      update: {},
-      create: {
-        names: `Test${i + 1} ` + faker.person.lastName(),
-        email,
-        tel: faker.phone.number(),
-        photoUrl: faker.image.avatar(),
-        status: EntityStatus.ACTIVE,
-        systemAdmin: i === 0,
-      },
-    });
-    result.push(user);
-  }
+  // const systemUser_ = await prisma_.user.create({ data: systemUser });
+  const systemUser_ = await prisma_.user.upsert({
+    where: { email: systemUser.email },
+    update: {},
+    create: systemUser,
+  });
+  result.system = systemUser_;
 
-  console.log(`📝 Seeded ${result.length} users`);
+  const users = await Promise.all(
+    Array.from({ length: count }).map((_, i) => {
+      const email = `antonio.oweki+${i + 1}@gmail.com`;
+      return prisma_.user.upsert({
+        where: { email },
+        update: {},
+        create: {
+          names: `User${i + 1} Lisa`,
+          email,
+          tel: faker.phone.number(),
+          photoUrl: faker.image.avatar(),
+          status: EntityStatus.ACTIVE,
+          systemAdmin: false,
+        },
+      });
+    })
+  );
+
+  result.withInstitution = users;
+  const totalUsers = (result.system ? 1 : 0) + result.withInstitution.length;
+  console.log(`📝 Seeded users`);
   return result;
 }
 
@@ -312,6 +225,7 @@ async function seedInstitutionUsers(
       },
     });
   }
+  console.log("🧩 Users Intitutions linkage seeded");
 }
 
 async function seedSubscriptions(
@@ -320,6 +234,14 @@ async function seedSubscriptions(
   plans: Plan[]
 ): Promise<void> {
   for (const institution of institutions) {
+    const existing = await prisma_.subscription.findFirst({
+      where: {
+        institutionId: institution.id,
+        status: SubscriptionStatus.ACTIVE,
+      },
+    });
+    if (existing) continue;
+
     const plan = plans[Math.floor(Math.random() * plans.length)];
     const startDate = faker.date.recent({ days: 10 });
     const endDate = new Date(
@@ -343,49 +265,30 @@ async function seedSubscriptions(
 
 async function seedBlog(
   prisma_: PrismaClient,
-  users: User[],
-  count = 3
+  systemUser: User
 ): Promise<void> {
-  if (users.length === 0) return;
+  console.log(` > Seeding blogposts (VERBOSE=true)`);
+  const seededBlogPosts: Blogpost[] = [];
 
-  const author = users[Math.floor(Math.random() * users.length)];
-
-  for (let i = 0; i < count; i++) {
-    const title = faker.lorem.sentence();
-    const slug =
-      title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "") + faker.string.alphanumeric(6);
-
-    await prisma_.blogpost.create({
-      data: {
-        title,
-        slug,
-        content: faker.lorem.paragraphs(2),
-        authorId: author.id,
-        status: faker.helpers.arrayElement(Object.values(ContentStatus)),
-      },
+  for (const blogpost of blogPosts) {
+    const existing = await prisma.blogpost.findUnique({
+      where: { slug: blogpost.slug },
     });
+
+    if (!existing) {
+      const created = await prisma.blogpost.create({
+        data: { ...blogpost, authorId: systemUser.id },
+      });
+      console.log(` >> Seeded blogpost: ${created.slug}`);
+      seededBlogPosts.push(created);
+    } else {
+      console.log(` >> Already Exists: ${blogpost.slug}`);
+    }
   }
 
-  console.log(`📝 Seeded ${count} blog posts for ${author.email}`);
-}
-
-async function clearTables(prisma_: PrismaClient): Promise<void> {
-  // Order matters due to foreign key constraints
-  await prisma_.document.deleteMany({});
-  await prisma_.reminder.deleteMany({});
-  await prisma_.task.deleteMany({});
-  await prisma_.case.deleteMany({});
-  await prisma_.caseType.deleteMany({});
-  await prisma_.subscription.deleteMany({});
-  await prisma_.institutionUser.deleteMany({});
-  await prisma_.user.deleteMany({});
-  await prisma_.institution.deleteMany({});
-  await prisma_.planFeature.deleteMany({});
-  await prisma_.feature.deleteMany({});
-  await prisma_.plan.deleteMany({});
+  console.log(
+    `${seededBlogPosts.length !== 0 ? "📝 " : "⚠️ "} Inserted ${seededBlogPosts.length} blog posts for ${systemUser.email}`
+  );
 }
 
 // ---------------- RUN SCRIPT ----------------

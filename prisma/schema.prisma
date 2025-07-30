@@ -261,8 +261,8 @@ model Reminder {
   channel   ReminderChannels
   createdAt DateTime         @default(now())
 
-  taskId    String?
-  task Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model Blogpost {

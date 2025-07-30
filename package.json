@@ -22,7 +22,8 @@
     "test:watch": "jest --watch"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
+    "seed:clean": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed-clean.ts"
   },
   "dependencies": {
     "@edgestore/react": "^0.2.1",

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import Image from "next/image";
 import { InputText } from "@/components/atoms/inputs";
 import { strTruncate } from "@/helpers/stringHandlers";
@@ -14,38 +14,56 @@ export default function BlogPage({
   params: { post: string };
   searchParams: { [key: string]: string };
 }) {
-  const [searchPhrase, setSearchPhrase] = useState(def_Input);
-  const blogposts = useContext(BlogContext);
+  const [searchPhrase, setSearchPhrase] = useState("");
+  const [blogposts, setBlogposts] = useState<Blogpost[] | null>(null);
+  const blog = useContext(BlogContext);
+
+  //filter blogposts by searchphrase
+  useEffect(() => {
+    const filtBlogposts = blog?.filter(({ title }) =>
+      title.toLowerCase().includes(searchPhrase.toLowerCase())
+    );
+    setBlogposts(filtBlogposts || []);
+  }, [searchPhrase, blog]);
+
   //render
-  return (
-    <main className="flex flex-col flex-grow items-center px-4">
-      <div className="max-w-screen-lg mx-auto px-4 md:px-6">
+  return blogposts ? (
+    <main className="flex flex-col flex-grow min-h-screen items-center px-4">
+      <div className="max-w-screen-lg w-full mx-auto px-4 md:px-6">
         <div className="space-y-2 pt-6 md:space-y-5 mb-4">
           <h1 className="text-center">BLOG</h1>
           <div className="relative max-w-lg m-auto">
             <InputText
               name="searchPhrase"
-              valObj={searchPhrase}
-              setValue={setSearchPhrase}
-              placeholder="Search for blog-posts"
+              valObj={{ value: searchPhrase, error: "" }}
+              setValue={(valObj) => setSearchPhrase(valObj.value)}
+              placeholder="Search for blog-posts by title"
             />
           </div>
         </div>
-        <ul className="grid grid-cols-1 xl:grid-cols-3 gap-y-10 gap-x-6 items-start p-8">
-          {blogposts.length !== 0 ? (
-            blogposts.map((v) => (
+        {blogposts.length !== 0 ? (
+          <ul className="grid grid-cols-1 xl:grid-cols-3 gap-y-10 gap-x-6 items-start p-8">
+            {blog.map((v) => (
               <li
                 key={v.id}
                 className="relative flex flex-col sm:flex-row xl:flex-col items-start"
               >
                 {renderCard(v)}
               </li>
-            ))
-          ) : (
-            <>Still working on things here... Please check back in later </>
-          )}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-center m-auto italic text-primary">
+            Nothing to show
+          </p>
+        )}
       </div>
+    </main>
+  ) : (
+    <main className="flex flex-col flex-grow items-center px-4">
+      <p className="text-center m-auto italic text-primary">
+        Still working on things here... Please check back in later
+      </p>
     </main>
   );
 }
