@@ -17,6 +17,7 @@ import {
 import { UIstate } from "@/types/custom";
 import PaymentsSection from "@/components/payments";
 import { showWarningToast } from "@/components/atoms/customToast";
+import { signOut } from "next-auth/react";
 
 export interface UIDATA {
   users: User[];
@@ -24,9 +25,9 @@ export interface UIDATA {
   caseTypes: CaseType[];
   cases: Case[];
   tasks: Task[];
+  payments: PaymentTransaction[];
   institutions?: Institution[];
   assignmentRequests?: AssigneeRequest[];
-  transactions?: PaymentTransaction[];
 }
 
 interface DataContext {
@@ -41,7 +42,7 @@ export const defaultDataContext: DataContext = {
     caseTypes: [],
     cases: [],
     tasks: [],
-    transactions: [],
+    payments: [],
   },
   refreshData: async () => {
     console.log(
@@ -114,7 +115,7 @@ export default function UserProviders({
   ) : UIstate === "data-error" ? (
     <MessageLayout message="Couldn't fetch data. Try again later" />
   ) : UIstate === "payment-required" ? (
-    <PaymentsSection />
+    <PaymentsSection exit={signOut} />
   ) : (
     <EdgeStoreProvider>
       <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>

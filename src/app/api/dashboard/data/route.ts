@@ -39,7 +39,7 @@ async function getHandler(req: Request, user: SessionUser) {
       cases,
       caseTypes,
       assignmentRequests,
-      transactions,
+      payments,
     ] = await Promise.all([
       prisma.plan.findMany({}),
       prisma.institution.findMany({
@@ -134,7 +134,7 @@ async function getHandler(req: Request, user: SessionUser) {
       cases,
       tasks,
       assignmentRequests,
-      transactions,
+      payments,
     });
   } catch (error) {
     console.error(`❌ Error at GET /api/dashboard/data:`, error);
