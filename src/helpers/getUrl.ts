@@ -6,7 +6,7 @@ export const BASE_URL: string =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
     ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
     : process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL}`
+      ? `https://${process.env.NEXT_PUBLIC_DOMAIN}`
       : process.env.NODE_ENV === "production"
         ? `https://${process.env.PUBLIC_DOMAIN}`
         : "http://localhost:3000";
