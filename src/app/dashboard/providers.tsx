@@ -8,7 +8,12 @@ import toast from "react-hot-toast";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import { Loader } from "@/components/atoms/loader";
 import { Case, Institution, User } from "@/types/models";
-import { AssigneeRequest, CaseType, Task } from "@prisma/client";
+import {
+  AssigneeRequest,
+  CaseType,
+  PaymentTransaction,
+  Task,
+} from "@prisma/client";
 import { UIstate } from "@/types/custom";
 import PaymentsSection from "@/components/payments";
 import { showWarningToast } from "@/components/atoms/customToast";
@@ -21,6 +26,7 @@ export interface UIDATA {
   tasks: Task[];
   institutions?: Institution[];
   assignmentRequests?: AssigneeRequest[];
+  transactions?: PaymentTransaction[];
 }
 
 interface DataContext {
@@ -35,6 +41,7 @@ export const defaultDataContext: DataContext = {
     caseTypes: [],
     cases: [],
     tasks: [],
+    transactions: [],
   },
   refreshData: async () => {
     console.log(
@@ -66,7 +73,7 @@ export default function UserProviders({
           if (res_.ok) {
             return await res_.json();
           } else if (res_.status === 402) {
-            showWarningToast('Payment required')
+            showWarningToast("Payment required");
             setUIstate("payment-required");
           } else {
             //CHECKPOINT

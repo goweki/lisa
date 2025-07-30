@@ -20,9 +20,7 @@ interface UsersBrief {
 export default function UserHome() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [casesWithDues, setDueCases] = useState<
-    Array<(typeof cases)[0] & { dueTasks: (typeof cases)[0]["tasks"] }>
-  >([]);
+  const [casesWithDues, setDueCases] = useState<Case[]>([]);
   const [briefs, setBriefs] = useState<Record<string, Record<string, any>[]>>({
     institutionsBrief: [],
     usersBrief: [],
@@ -30,7 +28,7 @@ export default function UserHome() {
   const [uiState, setUIstate] = useState("");
   const { date, time, rawDate } = useDate();
   const {
-    data: { cases, institutions, caseTypes, users },
+    data: { cases, institutions, caseTypes, users, transactions },
   } = useContext(DataContext);
 
   //onMount or //cases
@@ -48,15 +46,16 @@ export default function UserHome() {
       })
       .filter((case_) => case_.tasks && case_.tasks?.length > 0);
     setDueCases(_casesWithDues);
+
     // institutions
     const institutionsBrief = institutions
       ? institutions.map((inst) => ({
-        id: inst.id,
-        institution: inst.name,
-        location: inst.location,
-        users: inst.users ? inst.users.length : [],
-        cases: inst.cases?.length,
-      }))
+          id: inst.id,
+          institution: inst.name,
+          location: inst.location,
+          users: inst.users ? inst.users.length : [],
+          cases: inst.cases?.length,
+        }))
       : [];
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
@@ -181,12 +180,13 @@ function ProfileCard({
         {!session?.user?.systemAdmin ? (
           <>
             <p
-              className={`font-bold text-xl mt-2 mb-4 text-center ${!data.length
+              className={`font-bold text-xl mt-2 mb-4 text-center ${
+                !data.length
                   ? "text-emerald-500"
                   : data.length < 3
                     ? "text-red-800 dark:text-red-300"
                     : "text-red-500"
-                }`}
+              }`}
             >
               {!data.length
                 ? "Your schedule is clean"
@@ -196,12 +196,13 @@ function ProfileCard({
             </p>
             <div className="text-base text-font-faded dark:text-font-dark-faded">
               <p
-                className={`text-center ${data.length < 1
+                className={`text-center ${
+                  data.length < 1
                     ? ""
                     : data.length < 3
                       ? "text-red-800 dark:text-red-200"
                       : "text-red-500"
-                  }`}
+                }`}
               >
                 {data.length} case{data.length !== 1 && <>s</>} with pending
                 tasks
