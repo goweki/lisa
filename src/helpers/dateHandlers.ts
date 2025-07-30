@@ -9,6 +9,28 @@ export function dateShort(theDate: Date): string {
 }
 
 /**
+ * Formats a given date as a long string (e.g., "Tuesday, 15 July 2025") using "en-GB" locale.
+ *
+ * @param {Date} theDate - The date to format.
+ * @returns {string} - The formatted date string.
+ */
+export function dateLong(theDate: Date): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).formatToParts(theDate);
+
+  const weekday = parts.find((p) => p.type === "weekday")?.value ?? "";
+  const day = parts.find((p) => p.type === "day")?.value ?? "";
+  const month = parts.find((p) => p.type === "month")?.value ?? "";
+  const year = parts.find((p) => p.type === "year")?.value ?? "";
+
+  return `${weekday}, ${day} ${month} ${year}`;
+}
+
+/**
  * Determines whether a given date has already passed (compared to current time).
  *
  * @param {Date} aDate - The date to check.

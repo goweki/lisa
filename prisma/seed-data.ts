@@ -120,46 +120,46 @@ export const blogPosts: Omit<
 >[] = [
   {
     title:
-      "Legal Management Software for Modern Law Firms: Streamline Casework with AI",
+      "Legal Management Software for Modern Law Firms: Streamline Casework Without the Chaos",
     slug: "legal-management-software-modern-law-firms",
     content:
-      "Looking for the best legal management software to improve how your law firm operates? Today’s legal professionals face increasing pressure to do more with less — faster. Our platform helps law firms automate tasks, manage cases, and centralize client communication with AI-powered workflows.\n\nWhether you're a solo practitioner or part of a large legal team, this system was built to help you work smarter, not harder. With features like automated case tracking, AI assistants, document management, and internal task delegation, our software replaces scattered tools with one secure, user-friendly platform.\n\nStart managing your legal work the modern way — with automation and AI built right in.",
+      "Looking for the best legal management software to improve how your law firm operates? Today’s legal professionals face increasing pressure to do more with less — faster. Our platform helps law firms streamline tasks, manage casework, and centralize client communication — all in one place.\n\nWhether you're a solo practitioner or part of a large legal team, this system was built to help you work smarter, not harder. With features like structured case tracking, document management, and internal task delegation, our software replaces scattered tools with one secure, user-friendly platform.\n\nStart managing your legal work the modern way — and prepare your firm for the future of legal practice.",
     excerpt:
-      "Discover how modern legal management software improves case tracking, task automation, and communication for law firms.",
+      "Discover how modern legal management software improves case tracking, task flow, and communication for law firms.",
     coverImage: null,
     published: true,
     status: "PUBLISHED",
   },
   {
     title:
-      "Why Law Firms Need Better Tools: Goodbye Spreadsheets, Hello Automation",
+      "Why Law Firms Need Better Tools: Goodbye Spreadsheets, Hello Structure",
     slug: "why-law-firms-need-legal-tech-tools",
     content:
-      "Still managing client cases across email threads, spreadsheets, and sticky notes? You're not alone — and there's a better way. Legal tech is evolving fast, and law firms that embrace automation are saving hours each week.\n\nOur platform is designed to bring structure to your workflow: assign cases with clarity, manage deadlines with reminders, and keep your clients informed — all from one dashboard. Built specifically for legal teams, our system supports growing firms who are tired of duct-taping tools together.\n\nUpgrade your workflow. Empower your legal team. Save time. It's that simple.",
+      "Still managing client cases across email threads, spreadsheets, and sticky notes? You're not alone — and there's a better way. Legal operations are evolving, and firms that adopt smarter systems are saving hours each week.\n\nOur platform is designed to bring order to your workflow: assign cases clearly, manage deadlines with built-in reminders, and keep clients informed — all from a single dashboard. Built specifically for legal teams, our system supports growing firms who are tired of duct-taping tools together.\n\nUpgrade your workflow. Empower your team. Reduce risk. It's that simple.",
     excerpt:
-      "Discover why modern law firms are ditching spreadsheets and embracing automation with legal tech tools built for the job.",
+      "Discover why law firms are ditching spreadsheets and embracing smarter systems built for legal teams.",
     coverImage: null,
     published: true,
     status: "PUBLISHED",
   },
   {
-    title: "How We Built AI-Powered Case Automation for Legal Teams",
-    slug: "ai-powered-case-automation-legal-tech",
+    title: "Designing Case Workflow Automation for Legal Teams",
+    slug: "workflow-automation-legal-tech",
     content:
-      "Case triage is one of the most time-consuming parts of legal operations. That’s why we introduced AI-powered automation — designed to classify legal requests, assign tasks, and streamline workflows.\n\nUsing a combination of large language models and our case management engine, the system can analyze new case entries, identify intent, and trigger internal actions like assigning a lawyer, setting up reminders, or generating first drafts. Everything remains auditable, secure, and role-based.\n\nThis post covers the architecture behind our AI agent, the tech stack (TypeScript, Prisma, PostgreSQL), and how we ensure compliance while letting the AI help lawyers do more meaningful work.",
+      "Case intake and task coordination are some of the most repetitive aspects of legal work. That’s why we built automation features that help classify legal requests, assign tasks, and streamline follow-ups.\n\nUsing well-defined logic and our case management engine, the system can guide new case entries, route internal actions, and support compliance requirements. Every step is traceable, secure, and tailored to your legal team's structure.\n\nThis post walks through how we built our workflow automation engine using TypeScript, Prisma, and PostgreSQL — and how it lays the foundation for future AI enhancements launching in 2026.",
     excerpt:
-      "Learn how we built an AI agent to automate case triage, task assignment, and legal workflows — safely and efficiently.",
+      "Learn how we structured workflow automation to streamline legal task management — and what’s coming next.",
     coverImage: null,
     published: true,
     status: "PUBLISHED",
   },
   {
     title: "Reimagining the Legal Workspace: A New Era of Digital Law Practice",
-    slug: "digital-legal-workspace-ai-management",
+    slug: "digital-legal-workspace-management",
     content:
-      "The legal profession is undergoing a quiet revolution. More than ever, law firms are moving away from paper files and toward cloud-based solutions that support remote work, digital documentation, and AI-enhanced task management.\n\nOur legal management system is at the center of this transformation — giving legal professionals a digital workspace that brings together everything they need: smart case organization, AI task assistance, integrated messaging, and powerful team coordination.\n\nThe law office of the future is here. And it's digital, secure, and made to scale.",
+      "The legal profession is shifting. Law firms are increasingly moving away from paper-based systems and toward digital platforms that support remote work, secure documentation, and team coordination.\n\nOur legal management system is built to support this transformation — giving legal professionals a digital workspace that brings together everything they need: structured case organization, task workflows, messaging, and real-time collaboration.\n\nThe law office of the future isn’t in the future anymore. It’s digital, secure, and ready for growth.",
     excerpt:
-      "Explore how AI, cloud tools, and automation are shaping the digital legal workspace for modern law firms.",
+      "Explore how cloud tools and modern platforms are shaping the digital legal workspace for today’s law firms.",
     coverImage: null,
     published: true,
     status: "PUBLISHED",

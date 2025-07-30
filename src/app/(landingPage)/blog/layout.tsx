@@ -21,5 +21,13 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <BlogProvider>{children}</BlogProvider>;
+  return (
+    <BlogProvider>
+      <main className="flex flex-col flex-grow items-center px-4">
+        <div className="max-w-screen-lg w-full mx-auto px-4 md:px-6">
+          {children}
+        </div>
+      </main>
+    </BlogProvider>
+  );
 }

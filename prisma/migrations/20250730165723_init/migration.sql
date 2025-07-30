@@ -1,23 +1,23 @@
 -- CreateEnum
-CREATE TYPE "status" AS ENUM ('ACTIVE', 'DORMANT', 'INACTIVE');
+CREATE TYPE "EntityStatus" AS ENUM ('ACTIVE', 'DORMANT', 'INACTIVE');
 
 -- CreateEnum
-CREATE TYPE "userRole" AS ENUM ('system_admin', 'admin', 'advocate', 'lawyer');
+CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'ADVOCATE', 'LAWYER');
 
 -- CreateEnum
-CREATE TYPE "caseStatus" AS ENUM ('open', 'closed');
+CREATE TYPE "CaseStatus" AS ENUM ('OPEN', 'CLOSED');
 
 -- CreateEnum
-CREATE TYPE "assigneeRequestStatus" AS ENUM ('pending', 'approved', 'rejected');
+CREATE TYPE "AssigneeRequestStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
-CREATE TYPE "reminderChannels" AS ENUM ('email', 'sms', 'whatsapp');
+CREATE TYPE "ReminderChannels" AS ENUM ('email', 'sms', 'whatsapp');
 
 -- CreateEnum
-CREATE TYPE "timeRegimes" AS ENUM ('minutes', 'hours', 'days');
+CREATE TYPE "TimeRegimes" AS ENUM ('minutes', 'hours', 'days');
 
 -- CreateEnum
-CREATE TYPE "taskType" AS ENUM ('event', 'document');
+CREATE TYPE "TaskType" AS ENUM ('EVENT', 'DOCUMENT');
 
 -- CreateEnum
 CREATE TYPE "BillingCycle" AS ENUM ('MONTHLY', 'ANNUAL');
@@ -28,15 +28,25 @@ CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'PAST_DUE', 'CANCELED', 'EXP
 -- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PROCESSING', 'SUCCEEDED', 'FAILED', 'REFUNDED', 'PARTIALLY_REFUNDED');
 
+-- CreateEnum
+CREATE TYPE "ContentStatus" AS ENUM ('DRAFT', 'UNPUBLISHED', 'PUBLISHED', 'ARCHIVED');
+
+-- CreateEnum
+CREATE TYPE "MessageSubject" AS ENUM ('SET_YOUR_PASSWORD', 'PASSWORD_RESET', 'INVOICE', 'SUBSCRIPTION_CONFIRMATION', 'SERVICE_NOTIFICATION', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "VerificationChannel" AS ENUM ('EMAIL', 'WHATSAPP');
+
+-- CreateEnum
+CREATE TYPE "PlanName" AS ENUM ('starter', 'team', 'enterprise');
+
 -- CreateTable
 CREATE TABLE "institutions" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
     "location" TEXT,
-    "tel" TEXT,
     "logoUrl" TEXT,
-    "status" "status" NOT NULL DEFAULT 'DORMANT',
+    "status" "EntityStatus" NOT NULL DEFAULT 'DORMANT',
 
     CONSTRAINT "institutions_pkey" PRIMARY KEY ("id")
 );
@@ -44,17 +54,39 @@ CREATE TABLE "institutions" (
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "names" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "systemAdmin" BOOLEAN NOT NULL DEFAULT false,
     "tel" TEXT,
+    "emailVerification" BOOLEAN NOT NULL DEFAULT false,
+    "telVerification" BOOLEAN NOT NULL DEFAULT false,
+    "resetTokenSentTo" "VerificationChannel",
     "password" TEXT,
     "resetToken" TEXT,
     "resetTokenExpiry" TIMESTAMP(3),
-    "role" "userRole" NOT NULL DEFAULT 'lawyer',
     "photoUrl" TEXT,
-    "status" "status" NOT NULL DEFAULT 'DORMANT',
+    "status" "EntityStatus" NOT NULL DEFAULT 'DORMANT',
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Message" (
+    "id" TEXT NOT NULL,
+    "messageId" TEXT NOT NULL,
+    "userId" TEXT,
+    "subject" "MessageSubject" NOT NULL DEFAULT 'OTHER',
+    "from" TEXT NOT NULL,
+    "to" TEXT NOT NULL,
+    "text" TEXT,
+    "mediaUrl" TEXT,
+    "intent" TEXT,
+    "isDelivered" BOOLEAN NOT NULL DEFAULT false,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -62,6 +94,7 @@ CREATE TABLE "institutionUsers" (
     "id" TEXT NOT NULL,
     "institutionId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "role" "UserRole" NOT NULL DEFAULT 'LAWYER',
 
     CONSTRAINT "institutionUsers_pkey" PRIMARY KEY ("id")
 );
@@ -84,8 +117,8 @@ CREATE TABLE "subscriptions" (
 -- CreateTable
 CREATE TABLE "plans" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
+    "name" "PlanName" NOT NULL,
+    "description" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'KES',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
@@ -153,24 +186,24 @@ CREATE TABLE "cases" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "status" "caseStatus" NOT NULL DEFAULT 'open',
+    "status" "CaseStatus" NOT NULL DEFAULT 'OPEN',
     "caseNumber" TEXT,
     "clientParty" TEXT NOT NULL,
     "clientName" TEXT NOT NULL,
+    "clientIdNumber" TEXT,
     "clientTel" TEXT NOT NULL,
-    "clientID" TEXT,
     "clientEmail" TEXT,
     "otherPartyName" TEXT,
     "otherPartyTel" TEXT,
     "otherPartyEmail" TEXT,
     "otherPartyDescription" TEXT,
     "court" TEXT,
-    "caseTypeID" TEXT NOT NULL,
-    "institutionID" TEXT NOT NULL,
-    "userID" TEXT,
+    "caseTypeId" TEXT NOT NULL,
+    "institutionId" TEXT NOT NULL,
+    "assigneeId" TEXT,
+    "createdById" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "createdBy" TEXT,
 
     CONSTRAINT "cases_pkey" PRIMARY KEY ("id")
 );
@@ -178,9 +211,9 @@ CREATE TABLE "cases" (
 -- CreateTable
 CREATE TABLE "assigneeRequests" (
     "id" TEXT NOT NULL,
-    "caseID" TEXT NOT NULL,
-    "assigneeID" TEXT NOT NULL,
-    "status" "assigneeRequestStatus" NOT NULL DEFAULT 'pending',
+    "caseId" TEXT NOT NULL,
+    "assigneeId" TEXT NOT NULL,
+    "status" "AssigneeRequestStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "assigneeRequests_pkey" PRIMARY KEY ("id")
@@ -190,11 +223,11 @@ CREATE TABLE "assigneeRequests" (
 CREATE TABLE "tasks" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "type" "taskType" NOT NULL,
+    "type" "TaskType" NOT NULL,
     "dueDate" TIMESTAMP(3) NOT NULL,
     "description" TEXT,
-    "completedByID" TEXT,
-    "caseID" TEXT NOT NULL,
+    "completedById" TEXT,
+    "caseId" TEXT NOT NULL,
 
     CONSTRAINT "tasks_pkey" PRIMARY KEY ("id")
 );
@@ -204,7 +237,7 @@ CREATE TABLE "documents" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "link" TEXT NOT NULL,
-    "taskID" TEXT NOT NULL,
+    "taskId" TEXT NOT NULL,
 
     CONSTRAINT "documents_pkey" PRIMARY KEY ("id")
 );
@@ -212,22 +245,40 @@ CREATE TABLE "documents" (
 -- CreateTable
 CREATE TABLE "Reminder" (
     "id" TEXT NOT NULL,
-    "regime" "timeRegimes" NOT NULL,
+    "regime" "TimeRegimes" NOT NULL,
     "count" INTEGER NOT NULL,
-    "channel" "reminderChannels" NOT NULL,
+    "channel" "ReminderChannels" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "taskId" TEXT,
 
     CONSTRAINT "Reminder_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Blog" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "excerpt" TEXT,
+    "coverImage" TEXT,
+    "published" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "status" "ContentStatus" NOT NULL DEFAULT 'DRAFT',
+    "authorId" TEXT NOT NULL,
+
+    CONSTRAINT "Blog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "institutions_name_key" ON "institutions"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_name_key" ON "users"("name");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX "users_tel_key" ON "users"("tel");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "institutionUsers_institutionId_userId_key" ON "institutionUsers"("institutionId", "userId");
@@ -245,6 +296,9 @@ CREATE UNIQUE INDEX "features_name_key" ON "features"("name");
 CREATE UNIQUE INDEX "PlanFeature_planId_featureId_key" ON "PlanFeature"("planId", "featureId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "payments_providerTransactionId_key" ON "payments"("providerTransactionId");
+
+-- CreateIndex
 CREATE INDEX "payments_institutionId_idx" ON "payments"("institutionId");
 
 -- CreateIndex
@@ -252,6 +306,12 @@ CREATE INDEX "payments_subscriptionId_idx" ON "payments"("subscriptionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "caseTypes_name_key" ON "caseTypes"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Blog_slug_key" ON "Blog"("slug");
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "institutionUsers" ADD CONSTRAINT "institutionUsers_institutionId_fkey" FOREIGN KEY ("institutionId") REFERENCES "institutions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -281,28 +341,34 @@ ALTER TABLE "payments" ADD CONSTRAINT "payments_subscriptionId_fkey" FOREIGN KEY
 ALTER TABLE "caseTypes" ADD CONSTRAINT "caseTypes_institutionId_fkey" FOREIGN KEY ("institutionId") REFERENCES "institutions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cases" ADD CONSTRAINT "cases_caseTypeID_fkey" FOREIGN KEY ("caseTypeID") REFERENCES "caseTypes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "cases" ADD CONSTRAINT "cases_caseTypeId_fkey" FOREIGN KEY ("caseTypeId") REFERENCES "caseTypes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cases" ADD CONSTRAINT "cases_institutionID_fkey" FOREIGN KEY ("institutionID") REFERENCES "institutions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "cases" ADD CONSTRAINT "cases_institutionId_fkey" FOREIGN KEY ("institutionId") REFERENCES "institutions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cases" ADD CONSTRAINT "cases_userID_fkey" FOREIGN KEY ("userID") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "cases" ADD CONSTRAINT "cases_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "assigneeRequests" ADD CONSTRAINT "assigneeRequests_caseID_fkey" FOREIGN KEY ("caseID") REFERENCES "cases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "cases" ADD CONSTRAINT "cases_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "assigneeRequests" ADD CONSTRAINT "assigneeRequests_assigneeID_fkey" FOREIGN KEY ("assigneeID") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "assigneeRequests" ADD CONSTRAINT "assigneeRequests_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "cases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tasks" ADD CONSTRAINT "tasks_completedByID_fkey" FOREIGN KEY ("completedByID") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "assigneeRequests" ADD CONSTRAINT "assigneeRequests_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tasks" ADD CONSTRAINT "tasks_caseID_fkey" FOREIGN KEY ("caseID") REFERENCES "cases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "tasks" ADD CONSTRAINT "tasks_completedById_fkey" FOREIGN KEY ("completedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "documents" ADD CONSTRAINT "documents_taskID_fkey" FOREIGN KEY ("taskID") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "tasks" ADD CONSTRAINT "tasks_caseId_fkey" FOREIGN KEY ("caseId") REFERENCES "cases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Reminder" ADD CONSTRAINT "Reminder_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "documents" ADD CONSTRAINT "documents_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reminder" ADD CONSTRAINT "Reminder_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Blog" ADD CONSTRAINT "Blog_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
