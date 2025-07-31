@@ -255,6 +255,7 @@ async function processIncomingMessage(message: any, valueData: any) {
         // Download media if needed
         if (_mediaUrl) {
           // You can implement media download and storage here
+          console.warn("Media processing logic yet to be implemented...");
         }
       }
       const intent = getIntentFromMessage(body);
@@ -299,7 +300,8 @@ async function processIncomingMessage(message: any, valueData: any) {
     } else {
       console.warn(
         ` > Processing incoming message from unregistered user:`,
-        from
+        from,
+        message
       );
 
       // reply
@@ -325,18 +327,18 @@ async function processIncomingMessage(message: any, valueData: any) {
           data: {
             names: "System User",
             systemAdmin: true,
-            email: "lisa-admin@goweki.com",
+            email: "lisa@goweki.com",
           },
         });
       }
 
       await prisma.message.create({
         data: {
-          messageId: sent_message_.whatsappResponse.messages[0].id,
+          messageId: sent_message_.messages[0].id,
           userId: systemUser.id,
           to: from,
           from: "system",
-          text: message_text_,
+          text: "UNREGISTERED",
         },
       });
     }
