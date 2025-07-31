@@ -5,6 +5,7 @@ import { MessageSubject, VerificationChannel } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { sendMessage } from "../_actions";
+import parsePhoneNumberFromString from "libphonenumber-js";
 
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const WHATSAPP_PHONE_NO_ID = process.env.WHATSAPP_PHONE_NO_ID;
@@ -60,8 +61,14 @@ interface SendTemplateDto {
 async function sendTemplate(
   sendTemplateDto: SendTemplateDto
 ): Promise<TemplateObj | null> {
-  const { to, template, languageCode, headerParams, bodyParams, buttonParams } =
-    sendTemplateDto;
+  const {
+    to: _to,
+    template,
+    languageCode,
+    headerParams,
+    bodyParams,
+    buttonParams,
+  } = sendTemplateDto;
 
   // Build components dynamically
   const components: any[] = [];
@@ -99,11 +106,14 @@ async function sendTemplate(
   }
 
   try {
-    // Validate recipient phone number
-    if (!/^\+?[1-9]\d{1,14}$/.test(to)) {
-      console.error("Invalid phone number format:", to);
+    const phoneNumber = parsePhoneNumberFromString(_to);
+
+    if (!phoneNumber || !phoneNumber.isValid()) {
+      console.error("Invalid phone number format:", _to);
       throw new Error("Invalid phone number format");
     }
+
+    const to = phoneNumber.number;
 
     const messageData: any = {
       messaging_product: "whatsapp",
@@ -178,7 +188,7 @@ async function processIncomingMessage(message: any, valueData: any) {
     // message info
     const from = message.from;
     const from_user = await prisma.user.findFirst({
-      where: { tel: from },
+      where: { tel: "+" + from },
       include: { messages: true },
     });
     const to = valueData.metadata?.phone_number_id;
