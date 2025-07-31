@@ -154,7 +154,7 @@ async function sendTemplate(
       if (res_.ok) {
         return await res_.json();
       } else {
-        console.error("Failed to send whatsapp message - ", await res_.json());
+        console.error("Failed to send whatsapp template - ", await res_.json());
         return null;
       }
     });
@@ -168,7 +168,7 @@ async function sendTemplate(
       whatsappResponse: waResponse.data,
     };
   } catch (error) {
-    console.error(`Failed to send WhatsApp message: `, error);
+    console.error(`Error in send WhatsApp template: `, error);
     return null;
   }
 }
@@ -303,7 +303,7 @@ async function processIncomingMessage(message: any, valueData: any) {
       );
 
       // reply
-      const message_text_ = `Hi , \n\nYou need to sign-up to LISA to use this autometed service. Read more here: \n\nhttps://lisa.goweki.com/`;
+      const message_text_ = `Hi , \n\nYou need to sign-up to LISA to use this automated service. Read more here: \n\nhttps://lisa.goweki.com/`;
       const sent_message_ = await sendMessage({
         to: from,
         body: message_text_,
@@ -336,7 +336,7 @@ async function processIncomingMessage(message: any, valueData: any) {
           userId: systemUser.id,
           to: from,
           from: "system",
-          text: `Hi , \n\nYou need to sign-up to use this autometed service. Read more here: \n\nhttps://loci.nlm-tech.com/`,
+          text: message_text_,
         },
       });
     }
@@ -349,7 +349,9 @@ async function processIncomingMessage(message: any, valueData: any) {
   }
 }
 
-async function processWebhook(data: z.infer<typeof WebhookPayloadSchema>) {
+async function processWebhook(
+  data: z.infer<typeof WebhookPayloadSchema>
+): Promise<boolean> {
   console.log("📦 Processing webhook payload:", data);
 
   try {
@@ -376,19 +378,11 @@ async function processWebhook(data: z.infer<typeof WebhookPayloadSchema>) {
       }
     }
 
-    return { success: true };
+    return true;
   } catch (error) {
     console.error(`Failed to process webhook: `, error);
-    return { success: false, error: error };
+    return false;
   }
-
-  // Example processing logic — replace with your real logic
-  for (const entry of data.entry) {
-    console.log("Entry ID:", entry.id);
-    // Handle changes, log or process messages
-  }
-
-  return { status: "success" };
 }
 
 async function processStatusUpdate(status: any): Promise<string | null> {
@@ -458,8 +452,9 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await processWebhook(parsed.data);
+    // console.log('RESULT - ', result);
 
-    return Response.json(result);
+    return Response.json("");
   } catch (err) {
     console.error("🔥 Error processing webhook:", err);
     return new Response("Internal Server Error", { status: 500 });
