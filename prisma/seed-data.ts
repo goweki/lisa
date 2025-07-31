@@ -1,5 +1,4 @@
-import { PrismaClient, Plan, Feature, Blogpost, User } from "@prisma/client";
-const prisma = new PrismaClient();
+import { Plan, Feature, Blogpost, User } from "@prisma/client";
 
 export const plans: Omit<
   Plan,
@@ -169,7 +168,7 @@ export const blogPosts: Omit<
 export const systemUser: Omit<User, "id" | "photoUrl"> = {
   names: "System Lisa",
   email: "lisa@goweki.com",
-  tel: "0700833003",
+  tel: null,
   telVerification: false,
   emailVerification: false,
   systemAdmin: true,
