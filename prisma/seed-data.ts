@@ -167,8 +167,8 @@ export const blogPosts: Omit<
 ];
 
 export const systemUser: Omit<User, "id" | "photoUrl"> = {
-  names: "System Loci",
-  email: "loci@goweki.com",
+  names: "System Lisa",
+  email: "lisa@goweki.com",
   tel: "0700833003",
   telVerification: false,
   emailVerification: false,

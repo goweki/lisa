@@ -24,7 +24,7 @@ import { CheckIcon } from "lucide-react";
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import CheckoutForm from "./checkoutForm";
 import { signOut } from "next-auth/react";
-import { Feature, PlanName } from "@prisma/client";
+import { PlanName } from "@prisma/client";
 import toast from "react-hot-toast";
 import { Plan, PlanFeature } from "@/types/models";
 
@@ -38,7 +38,7 @@ export interface Packag {
   regime: DurationRegime;
 }
 
-export default function PaymentsSection() {
+export default function PaymentsSection({ exit }: { exit?: () => any }) {
   const [regime, setRegime] = useState<DurationRegime>("monthly");
   const [packages, setPlans] = useState<Plan[]>([]);
 
@@ -79,16 +79,18 @@ export default function PaymentsSection() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 2xl:max-w-[1400px] py-8 lg:py-16">
-      <nav className="transparent border-none flex">
-        <button
-          onClick={async () => await signOut()}
-          className="ml-auto relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800"
-        >
-          <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-transparent group-hover:dark:bg-transparent">
-            Logout
-          </span>
-        </button>
-      </nav>
+      {exit && (
+        <nav className="transparent border-none flex">
+          <button
+            onClick={exit}
+            className="ml-auto relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-pink-500 to-orange-400 group-hover:from-pink-500 group-hover:to-orange-400 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800"
+          >
+            <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-transparent group-hover:dark:bg-transparent">
+              Exit
+            </span>
+          </button>
+        </nav>
+      )}
       {/* Title */}
       <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">

@@ -39,6 +39,7 @@ async function getHandler(req: Request, user: SessionUser) {
       cases,
       caseTypes,
       assignmentRequests,
+      payments,
     ] = await Promise.all([
       prisma.plan.findMany({}),
       prisma.institution.findMany({
@@ -51,29 +52,29 @@ async function getHandler(req: Request, user: SessionUser) {
 
       isSysAdmin
         ? prisma.user.findMany({
-          include: {
-            institutions: true,
-            caseAssignments: true,
-            completedTasks: true,
-          },
-        })
-        : instIDs_activeSub.length > 0
-          ? prisma.user.findMany({
-            where: {
-              institutions: {
-                some: {
-                  institutionId: { in: instIDs_activeSub },
-                },
-              },
-            },
             include: {
-              institutions: {
-                include: {
-                  institution: true,
-                },
-              },
+              institutions: true,
+              caseAssignments: true,
+              completedTasks: true,
             },
           })
+        : instIDs_activeSub.length > 0
+          ? prisma.user.findMany({
+              where: {
+                institutions: {
+                  some: {
+                    institutionId: { in: instIDs_activeSub },
+                  },
+                },
+              },
+              include: {
+                institutions: {
+                  include: {
+                    institution: true,
+                  },
+                },
+              },
+            })
           : [],
 
       prisma.case.findMany({
@@ -103,6 +104,18 @@ async function getHandler(req: Request, user: SessionUser) {
           assigneeId: user.id,
         },
       }),
+
+      prisma.paymentTransaction.findMany(
+        isSysAdmin
+          ? undefined
+          : {
+              where: {
+                institutionId: {
+                  in: instIDs_activeSub,
+                },
+              },
+            }
+      ),
     ]);
 
     const users = excludeFields(rawUsers, [
@@ -121,6 +134,7 @@ async function getHandler(req: Request, user: SessionUser) {
       cases,
       tasks,
       assignmentRequests,
+      payments,
     });
   } catch (error) {
     console.error(`❌ Error at GET /api/dashboard/data:`, error);

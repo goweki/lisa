@@ -10,19 +10,12 @@ import { DataContext } from "@/app/dashboard/providers";
 import { useSession, signOut } from "next-auth/react";
 import { Case, Task } from "@/types/models";
 import { CaseStatus, EntityStatus, UserRole } from "@prisma/client";
-
-interface UsersBrief {
-  id: string;
-  email: string;
-  name: string;
-}
+import { dateShort } from "@/helpers/dateHandlers";
 
 export default function UserHome() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [casesWithDues, setDueCases] = useState<
-    Array<(typeof cases)[0] & { dueTasks: (typeof cases)[0]["tasks"] }>
-  >([]);
+  const [casesWithDues, setDueCases] = useState<Case[]>([]);
   const [briefs, setBriefs] = useState<Record<string, Record<string, any>[]>>({
     institutionsBrief: [],
     usersBrief: [],
@@ -30,7 +23,7 @@ export default function UserHome() {
   const [uiState, setUIstate] = useState("");
   const { date, time, rawDate } = useDate();
   const {
-    data: { cases, institutions, caseTypes, users },
+    data: { cases, institutions, caseTypes, users, payments: transactions },
   } = useContext(DataContext);
 
   //onMount or //cases
@@ -48,15 +41,16 @@ export default function UserHome() {
       })
       .filter((case_) => case_.tasks && case_.tasks?.length > 0);
     setDueCases(_casesWithDues);
+
     // institutions
     const institutionsBrief = institutions
       ? institutions.map((inst) => ({
-        id: inst.id,
-        institution: inst.name,
-        location: inst.location,
-        users: inst.users ? inst.users.length : [],
-        cases: inst.cases?.length,
-      }))
+          id: inst.id,
+          institution: inst.name,
+          location: inst.location,
+          users: inst.users ? inst.users.length : [],
+          cases: inst.cases?.length,
+        }))
       : [];
     // console.log("INSTITUTIONS", institutionsBrief);
     //cases
@@ -70,8 +64,8 @@ export default function UserHome() {
         client: [_case.clientName, _case.clientParty],
         status: _case.status,
       }));
-    // users
 
+    // users
     const usersBrief = users.map((user_) => {
       const institutions_roles = user_.institutions?.map((instUser) => {
         const institution_ = institutions?.find(
@@ -95,6 +89,7 @@ export default function UserHome() {
         institutions: user_institutions_str,
       };
     });
+
     // casetypes
     const caseTypesBrief = caseTypes.map((_type) => ({
       id: _type.id,
@@ -103,8 +98,45 @@ export default function UserHome() {
       Primary: _type.primaryParty,
       Secondary: _type.secondaryParty,
     }));
+
+    // payments
+    const paymentssBrief = transactions.map((_payment) => {
+      const infoObj = JSON.parse(_payment.metadata as string);
+      console.log(infoObj);
+      const daysToAdd =
+        infoObj.regime === "monthly"
+          ? 32
+          : infoObj.regime === "annually"
+            ? 370
+            : 0;
+      const periodEnding = new Date(
+        new Date(infoObj.submittedAt).getTime() +
+          daysToAdd * 24 * 60 * 60 * 1000
+      );
+
+      return {
+        id: _payment.id,
+        Amount: `${_payment.amount.toLocaleString()} ${_payment.currency}`,
+        date: dateShort(periodEnding),
+        By: _payment.paymentMethod,
+        Status:
+          _payment.status === "SUCCEEDED"
+            ? "✅"
+            : _payment.status === "PENDING"
+              ? '⚠️"'
+              : "❌",
+      };
+    });
+    console.log("transactions", paymentssBrief);
+
     //setState
-    setBriefs({ institutionsBrief, usersBrief, casesBrief, caseTypesBrief });
+    setBriefs({
+      institutionsBrief,
+      usersBrief,
+      casesBrief,
+      caseTypesBrief,
+      transactionsBrief: paymentssBrief,
+    });
     setUIstate("OK");
   }, [institutions, users, cases, caseTypes]);
 
@@ -153,6 +185,14 @@ export default function UserHome() {
             pageLink={"/dashboard/case-types"}
           />
         )}
+
+        {briefs.transactionsBrief && (
+          <CardItemsTable
+            title={"Payments"}
+            data={briefs.transactionsBrief}
+            pageLink={"/dashboard/payments"}
+          />
+        )}
       </div>
     </main>
   ) : null;
@@ -181,12 +221,13 @@ function ProfileCard({
         {!session?.user?.systemAdmin ? (
           <>
             <p
-              className={`font-bold text-xl mt-2 mb-4 text-center ${!data.length
+              className={`font-bold text-xl mt-2 mb-4 text-center ${
+                !data.length
                   ? "text-emerald-500"
                   : data.length < 3
                     ? "text-red-800 dark:text-red-300"
                     : "text-red-500"
-                }`}
+              }`}
             >
               {!data.length
                 ? "Your schedule is clean"
@@ -196,12 +237,13 @@ function ProfileCard({
             </p>
             <div className="text-base text-font-faded dark:text-font-dark-faded">
               <p
-                className={`text-center ${data.length < 1
+                className={`text-center ${
+                  data.length < 1
                     ? ""
                     : data.length < 3
                       ? "text-red-800 dark:text-red-200"
                       : "text-red-500"
-                  }`}
+                }`}
               >
                 {data.length} case{data.length !== 1 && <>s</>} with pending
                 tasks

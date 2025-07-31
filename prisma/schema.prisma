@@ -153,7 +153,7 @@ model PaymentTransaction {
   subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
   paymentMethod         String
   amount                Float
-  currency              String        @default("KES")
+  currency              Currency      @default(KSH)
   status                PaymentStatus @default(PENDING)
   providerTransactionId String        @unique
   description           String?
@@ -367,4 +367,8 @@ enum PlanName {
   starter
   team
   enterprise
+}
+
+enum Currency {
+  KSH
 }

@@ -8,10 +8,16 @@ import toast from "react-hot-toast";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import { Loader } from "@/components/atoms/loader";
 import { Case, Institution, User } from "@/types/models";
-import { AssigneeRequest, CaseType, Task } from "@prisma/client";
+import {
+  AssigneeRequest,
+  CaseType,
+  PaymentTransaction,
+  Task,
+} from "@prisma/client";
 import { UIstate } from "@/types/custom";
 import PaymentsSection from "@/components/payments";
 import { showWarningToast } from "@/components/atoms/customToast";
+import { signOut } from "next-auth/react";
 
 export interface UIDATA {
   users: User[];
@@ -19,6 +25,7 @@ export interface UIDATA {
   caseTypes: CaseType[];
   cases: Case[];
   tasks: Task[];
+  payments: PaymentTransaction[];
   institutions?: Institution[];
   assignmentRequests?: AssigneeRequest[];
 }
@@ -35,6 +42,7 @@ export const defaultDataContext: DataContext = {
     caseTypes: [],
     cases: [],
     tasks: [],
+    payments: [],
   },
   refreshData: async () => {
     console.log(
@@ -66,7 +74,7 @@ export default function UserProviders({
           if (res_.ok) {
             return await res_.json();
           } else if (res_.status === 402) {
-            showWarningToast('Payment required')
+            showWarningToast("Payment required");
             setUIstate("payment-required");
           } else {
             //CHECKPOINT
@@ -107,7 +115,7 @@ export default function UserProviders({
   ) : UIstate === "data-error" ? (
     <MessageLayout message="Couldn't fetch data. Try again later" />
   ) : UIstate === "payment-required" ? (
-    <PaymentsSection />
+    <PaymentsSection exit={signOut} />
   ) : (
     <EdgeStoreProvider>
       <DataContext.Provider value={{ data, refreshData: fetchUIuserData }}>
