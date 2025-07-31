@@ -30,19 +30,20 @@ model Institution {
 }
 
 model User {
-  id                String               @id @default(uuid())
-  names             String
-  email             String               @unique
-  systemAdmin       Boolean              @default(false)
-  tel               String?              @unique
-  emailVerification Boolean              @default(false)
-  telVerification   Boolean              @default(false)
-  resetTokenSentTo  VerificationChannel?
-  password          String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  photoUrl          String?
-  status            EntityStatus         @default(DORMANT)
+  id                  String               @id @default(uuid())
+  names               String
+  email               String               @unique
+  systemAdmin         Boolean              @default(false)
+  tel                 String?              @unique
+  emailVerification   Boolean              @default(false)
+  telVerification     Boolean              @default(false)
+  preferredComChannel MessageChannel       @default(EMAIL)
+  resetTokenSentTo    VerificationChannel?
+  password            String?
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  photoUrl            String?
+  status              EntityStatus         @default(DORMANT)
 
   institutions     InstitutionUser[]
   caseAssignments  Case[]            @relation("assignment")
@@ -383,6 +384,12 @@ enum VerificationChannel {
   WHATSAPP
 }
 
+enum MessageChannel {
+  WHATSAPP
+  EMAIL
+  WEB
+}
+
 enum PlanName {
   starter
   team
@@ -396,10 +403,4 @@ enum Currency {
 enum MessageDirection {
   INBOUND
   OUTBOUND
-}
-
-enum MessageChannel {
-  WHATSAPP
-  EMAIL
-  WEB
 }
