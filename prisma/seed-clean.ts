@@ -3,7 +3,8 @@ import { PrismaClient, User } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
-  cleanUsers;
+  console.warn("Script  yet to be implemented...");
+  // cleanUsers();
 }
 
 // ---------------- SEED FUNCTIONS ----------------
