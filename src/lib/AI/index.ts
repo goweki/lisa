@@ -36,10 +36,10 @@ export async function runAgent({
       : prompt;
   const initialLLMResponse = await agent.callLLM(normalizedPrompt);
   if (!initialLLMResponse.requires_tools) {
-    // If no tools are needed, use the direct response
+    console.log("Lisa AI DOES NOT require tools");
     finalResponse = initialLLMResponse.direct_response || "";
   } else {
-    // If tools are required, execute them
+    console.log("Lisa AI requires tools");
     const toolResults: Record<string, string> = {};
     for (const toolCall of initialLLMResponse.tool_calls) {
       // Execute each tool call and store its result
