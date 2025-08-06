@@ -186,7 +186,10 @@ async function sendTemplate(
   }
 }
 
-async function processIncomingMessage(message: any, valueData: any) {
+async function processIncomingMessage(
+  message: any,
+  valueData: any
+): Promise<boolean> {
   try {
     // message info
     const from = message.from;
@@ -242,7 +245,7 @@ async function processIncomingMessage(message: any, valueData: any) {
         );
         if (!sent_whatsapp_template) {
           console.error("Whatsapp Template not sent");
-          return;
+          return false;
         }
         // save outgoin message to db
         await prisma.message.create({
@@ -255,7 +258,7 @@ async function processIncomingMessage(message: any, valueData: any) {
             text: `verify account`,
           },
         });
-        return;
+        return true;
       }
 
       if (message.type === "text" && message.text) {
@@ -268,14 +271,17 @@ async function processIncomingMessage(message: any, valueData: any) {
         // Download media if needed
         if (_mediaUrl) {
           // You can implement media download and storage here
-          console.warn("Media processing logic yet to be implemented...");
+          console.warn(
+            "Media processing logic yet to be implemented...",
+            _mediaUrl
+          );
         }
       }
 
       const intent = getIntentFromMessage(body);
 
       // save incomin message to db
-      const savedMessage = await prisma.message.create({
+      await prisma.message.create({
         data: {
           messageId,
           userId: from_user.id,
@@ -308,14 +314,41 @@ async function processIncomingMessage(message: any, valueData: any) {
           console.warn(
             ` > Default intent: Consulting lisa AI - ${from_user.names}, ${from_user.tel}`
           );
-          await consultLisa({
+
+          const reply = await consultLisa({
             prompt: body,
             user: from_user,
           });
+
+          // reply
+          if (reply) {
+            const sent_message_ = await sendMessage({
+              to: from,
+              body: reply,
+            });
+
+            if (!sent_message_) {
+              console.warn(`Reply was not sent to user ${from} : ${reply} `);
+              return false;
+            }
+
+            await prisma.message.create({
+              data: {
+                messageId: sent_message_.messages[0].id,
+                userId: from_user.id,
+                to: from,
+                from: "system",
+                text: reply,
+              },
+            });
+          } else {
+            console.warn(`No response from lisa AI : prompt -`, body);
+            return false;
+          }
           break;
       }
 
-      return;
+      return true;
     } else {
       console.warn(
         ` > Processing incoming message from unregistered user:`,
@@ -331,7 +364,11 @@ async function processIncomingMessage(message: any, valueData: any) {
       });
 
       if (!sent_message_) {
-        return null;
+        console.warn("Message not sent - ", {
+          to: from,
+          body: message_text_,
+        });
+        return false;
       }
 
       //save to db
@@ -363,7 +400,7 @@ async function processIncomingMessage(message: any, valueData: any) {
     }
 
     console.log(`Processed and saved incoming message: ${messageId}`);
-    return messageId;
+    return true;
   } catch (error) {
     console.error(`Failed to process incoming message: `, error);
     throw error;
@@ -497,6 +534,6 @@ async function consultLisa({
       { role: "user", parts: [{ text: prompt }] },
     ],
   });
-  console.log("Lisa AI says: ", reply);
+  // console.log("Lisa AI says: ", reply);
   return reply;
 }
