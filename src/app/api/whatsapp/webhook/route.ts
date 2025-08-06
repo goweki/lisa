@@ -6,6 +6,9 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { sendMessage } from "../_actions";
 import parsePhoneNumberFromString from "libphonenumber-js";
+import { runAgent } from "@/lib/AI";
+import { User } from "@/types/models";
+import { generateModelHistoryFromMessages } from "@/lib/AI/utils/generateHistory";
 
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const WHATSAPP_PHONE_NO_ID = process.env.WHATSAPP_PHONE_NO_ID;
@@ -189,7 +192,7 @@ async function processIncomingMessage(message: any, valueData: any) {
     const from = message.from;
     const from_user = await prisma.user.findFirst({
       where: { tel: "+" + from },
-      include: { messages: true },
+      include: { messages: true, Session: true },
     });
     const to = valueData.metadata?.phone_number_id;
     const messageId = message.id;
@@ -268,10 +271,11 @@ async function processIncomingMessage(message: any, valueData: any) {
           console.warn("Media processing logic yet to be implemented...");
         }
       }
+
       const intent = getIntentFromMessage(body);
 
       // save incomin message to db
-      await prisma.message.create({
+      const savedMessage = await prisma.message.create({
         data: {
           messageId,
           userId: from_user.id,
@@ -301,8 +305,13 @@ async function processIncomingMessage(message: any, valueData: any) {
           // Handle help logic here
           break;
         default:
-          console.warn(` > Unimplemented intent: default`);
-          // Handle unknown intent logic here
+          console.warn(
+            ` > Default intent: Consulting lisa AI - ${from_user.names}, ${from_user.tel}`
+          );
+          await consultLisa({
+            prompt: body,
+            user: from_user,
+          });
           break;
       }
 
@@ -397,10 +406,10 @@ async function processWebhook(
   }
 }
 
-async function processStatusUpdate(status: any): Promise<string | null> {
+async function processStatusUpdate(status: any): Promise<boolean> {
   try {
     const messageId = status.id;
-    const statusValue = status.status; // sent, delivered, read, etc.
+    const statusValue = status.status;
 
     const status_ =
       statusValue === "delivered"
@@ -417,10 +426,10 @@ async function processStatusUpdate(status: any): Promise<string | null> {
 
     console.log(`Message status updated: ${messageId} -> ${statusValue}`);
 
-    return messageId;
+    return true;
   } catch (error) {
-    console.error(`Failed to process status update: ${error}`);
-    return null;
+    console.error(`Error processing status update:`, error);
+    return false;
   }
 }
 
@@ -471,4 +480,23 @@ export async function POST(req: NextRequest) {
     console.error("🔥 Error processing webhook:", err);
     return new Response("Internal Server Error", { status: 500 });
   }
+}
+
+// CHECKPOINT
+
+async function consultLisa({
+  prompt,
+  user,
+}: {
+  prompt: string;
+  user: User;
+}): Promise<string | null> {
+  const reply = await runAgent({
+    prompt: [
+      ...(await generateModelHistoryFromMessages(user.messages || [])),
+      { role: "user", parts: [{ text: prompt }] },
+    ],
+  });
+  console.log("Lisa AI says: ", reply);
+  return reply;
 }

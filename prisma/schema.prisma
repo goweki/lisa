@@ -30,19 +30,20 @@ model Institution {
 }
 
 model User {
-  id                String               @id @default(uuid())
-  names             String
-  email             String               @unique
-  systemAdmin       Boolean              @default(false)
-  tel               String?              @unique
-  emailVerification Boolean              @default(false)
-  telVerification   Boolean              @default(false)
-  resetTokenSentTo  VerificationChannel?
-  password          String?
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  photoUrl          String?
-  status            EntityStatus         @default(DORMANT)
+  id                  String               @id @default(uuid())
+  names               String
+  email               String               @unique
+  systemAdmin         Boolean              @default(false)
+  tel                 String?              @unique
+  emailVerification   Boolean              @default(false)
+  telVerification     Boolean              @default(false)
+  preferredComChannel MessageChannel       @default(EMAIL)
+  resetTokenSentTo    VerificationChannel?
+  password            String?
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  photoUrl            String?
+  status              EntityStatus         @default(DORMANT)
 
   institutions     InstitutionUser[]
   caseAssignments  Case[]            @relation("assignment")
@@ -51,25 +52,45 @@ model User {
   blogposts        Blogpost[]
   messages         Message[]
   casesCreated     Case[]            @relation("creator")
+  Session          Session[]
 
   @@map("users")
 }
 
 model Message {
-  id          String         @id @default(uuid())
+  id          String           @id @default(uuid())
   messageId   String
   userId      String?
-  user        User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject     MessageSubject @default(OTHER)
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     MessageSubject   @default(OTHER)
   from        String
   to          String
   text        String?
   mediaUrl    String?
   intent      String?
-  isDelivered Boolean        @default(false)
-  isRead      Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  channel     MessageChannel   @default(WHATSAPP)
+  direction   MessageDirection @default(INBOUND) // INBOUND / OUTBOUND
+  sessionId   String? // For tracking ongoing conversation threads
+  session     Session?         @relation(fields: [sessionId], references: [id])
+  isDelivered Boolean          @default(false)
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("messages")
+}
+
+model Session {
+  id             String    @id @default(uuid())
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  whatsAppNumber String
+  context        Json?
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  Message        Message[]
+
+  @@map("sessions")
 }
 
 model InstitutionUser {
@@ -263,6 +284,8 @@ model Reminder {
 
   taskId String?
   task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
 }
 
 model Blogpost {
@@ -280,7 +303,7 @@ model Blogpost {
   authorId String
   author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  @@map("Blog")
+  @@map("blog")
 }
 
 // ENUMS
@@ -363,6 +386,12 @@ enum VerificationChannel {
   WHATSAPP
 }
 
+enum MessageChannel {
+  WHATSAPP
+  EMAIL
+  WEB
+}
+
 enum PlanName {
   starter
   team
@@ -371,4 +400,9 @@ enum PlanName {
 
 enum Currency {
   KSH
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
 }

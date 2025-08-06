@@ -165,16 +165,17 @@ export const blogPosts: Omit<
   },
 ];
 
-export const systemUser: Omit<User, "id" | "photoUrl"> = {
-  names: "System Lisa",
-  email: "lisa@goweki.com",
-  tel: null,
-  telVerification: false,
-  emailVerification: false,
-  systemAdmin: true,
-  status: "ACTIVE",
-  resetTokenSentTo: null,
-  password: null,
-  resetToken: null,
-  resetTokenExpiry: null,
-};
+export const systemUser: Omit<User, "id" | "photoUrl" | "preferredComChannel"> =
+  {
+    names: "System Lisa",
+    email: "lisa@goweki.com",
+    tel: null,
+    telVerification: false,
+    emailVerification: false,
+    systemAdmin: true,
+    status: "ACTIVE",
+    resetTokenSentTo: null,
+    password: null,
+    resetToken: null,
+    resetTokenExpiry: null,
+  };

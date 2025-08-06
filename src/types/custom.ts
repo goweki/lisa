@@ -1,12 +1,4 @@
 import { z } from "zod";
-import {
-  CaseStatus,
-  CaseType,
-  Institution,
-  User,
-  Task,
-  AssigneeRequest,
-} from "@prisma/client"; // or your local types
 
 export interface TemplateObj {
   [key: string]: any;
@@ -76,3 +68,8 @@ export const taskInputSchema = z.object({
 
 export type taskInput = z.infer<typeof taskInputSchema>;
 
+// export const sessionContextSchema = z.object({
+// role: ,
+// });
+
+// export type SessionContext = z.infer<typeof sessionContextSchema>;
