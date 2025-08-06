@@ -10,6 +10,7 @@ import {
   PlanFeature as _PlanFeature,
   Subscription as _Subscription,
   Feature as _Feature,
+  Message,
 } from "@prisma/client";
 
 export interface Plan extends _Plan {
@@ -44,6 +45,7 @@ export function isInstitution(obj: any): obj is Institution {
 export interface User extends _User {
   institutions?: _InstitutionUser[];
   cases?: _Case[];
+  messages?: Message[];
 }
 
 export function isUser(obj: any): obj is User {

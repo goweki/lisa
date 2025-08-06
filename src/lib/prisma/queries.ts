@@ -2,6 +2,7 @@ import { hash, generateRandom } from "@/helpers/passwordHandlers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { PrismaClient, UserRole } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+
 const prisma = new PrismaClient();
 
 /**
@@ -164,4 +165,22 @@ export async function hasActiveSubscription(
   });
 
   return !!subscription;
+}
+
+export async function ensureSession({ from }: { from: string }) {
+  let session = await prisma.session.findFirst({
+    where: { whatsAppNumber: from },
+  });
+
+  if (!session || session.expiresAt < new Date()) {
+    session = await prisma.session.create({
+      data: {
+        whatsAppNumber: from,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        context: {},
+      },
+    });
+  }
+
+  return session;
 }

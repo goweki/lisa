@@ -71,6 +71,7 @@ model Message {
   channel     MessageChannel   @default(WHATSAPP)
   direction   MessageDirection @default(INBOUND) // INBOUND / OUTBOUND
   sessionId   String? // For tracking ongoing conversation threads
+  session     Session?         @relation(fields: [sessionId], references: [id])
   isDelivered Boolean          @default(false)
   isRead      Boolean          @default(false)
   createdAt   DateTime         @default(now())
@@ -80,13 +81,14 @@ model Message {
 }
 
 model Session {
-  id        String   @id @default(uuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  phone     String
-  context   Json?
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id             String    @id @default(uuid())
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  whatsAppNumber String
+  context        Json?
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  Message        Message[]
 
   @@map("sessions")
 }
