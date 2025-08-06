@@ -1,4 +1,5 @@
 import { WebSearchTool } from "./providers/WebSearchTool"; // Import new tool
+import { TaskTools } from "./providers/TaskTools";
 import { ToolsManager } from "./agent/ToolsManager";
 import { Agent } from "./agent/Agent";
 import { GeminiLLMProvider } from "./llm/GeminiLLMProvider";
@@ -14,14 +15,16 @@ export async function runAgent({
 }) {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
   const searchProvider = new WebSearchTool();
+  const taskProvider = new TaskTools();
   const searchTools = ToolsManager.registerToolsFrom(searchProvider);
+  const taskTools = ToolsManager.registerToolsFrom(taskProvider);
+  //
   // Initialize LLM Provider
   // Normalize the prompt
-
   const llmProvider = new GeminiLLMProvider();
   const agent = new Agent(llmProvider);
   // Register all tools with the agent
-  [...searchTools].forEach((tool) => agent.addTool(tool));
+  [...searchTools, ...taskTools].forEach((tool) => agent.addTool(tool));
   // --- End Agent Initialization ---
 
   let finalResponse = "";

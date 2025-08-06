@@ -8,7 +8,7 @@ import { resetPasswordEmail as resetPasswordEmailTemplate } from "@/lib/emailRen
 //generates password-reset link and emails user
 export async function POST(request: Request) {
   const { userEmail } = await request.json();
-  console.log("...............\nemail-", userEmail);
+  // console.log("...............\nemail-", userEmail);
   try {
     console.log("users-", await prisma.user.count());
     const userExists = await prisma.user.findUnique({
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const email = searchParams.get("email") as string;
     const token = searchParams.get("token") as string;
-    console.log("email-", email, "\ntoken-", token);
+    // console.log("email-", email, "\ntoken-", token);
 
     const userExists = await prisma.user.findUnique({
       where: {
