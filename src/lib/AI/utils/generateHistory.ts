@@ -12,11 +12,13 @@ export async function generateModelHistoryFromMessages(
   messages.sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
+  // Take only the latest 5 or fewer messages
+  const latestMessages = messages.slice(-5);
 
   let currentRole: "user" | "model" | null = null;
   let currentParts: { text: string }[] = [];
 
-  for (const msg of messages) {
+  for (const msg of latestMessages) {
     // Map direction to Gemini role
     const role = msg.direction === "INBOUND" ? "user" : "model";
     // Text fallback if mediaUrl exists and text doesn't
