@@ -70,9 +70,9 @@ export function createSystemPrompt(tools: Tool[]): SystemPrompt {
             plan: ["Call get_today_tasks with user_id 123", "Return the tasks"],
             tool_calls: [
               {
-                tool: "get_today_tasks",
+                tool: "get_due_tasks",
                 args: {
-                  user_id: "123",
+                  user_id: "email",
                 },
               },
             ],
@@ -86,8 +86,8 @@ export function createSystemPrompt(tools: Tool[]): SystemPrompt {
               "I need to fetch tasks for the user but has not provided their email or tel.",
             plan: [
               "Request for users email or tel",
-              "Call get_due_tasks with user's email and filter out those due today and in the near future",
-              "Return tasks",
+              "Call get_due_tasks with user's email/tel, then filter out those due today and in the near future",
+              "Return the tasks and a summary",
             ],
             tool_calls: [
               {
