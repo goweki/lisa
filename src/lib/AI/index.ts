@@ -36,7 +36,7 @@ export async function runAgent({
       : prompt;
   const initialLLMResponse = await agent.callLLM(normalizedPrompt);
   if (!initialLLMResponse.requires_tools) {
-    console.log("Lisa AI DOES NOT require tools");
+    console.log("Lisa AI DOES NOT require tools for this response");
     finalResponse = initialLLMResponse.direct_response || "";
   } else {
     console.log("Lisa AI requires tools");
@@ -71,11 +71,11 @@ export async function runAgent({
             Respond in JSON no additional text.
 
             Format:
-            ### Actions taken:
+            Actions taken:
             1. **[Action taken]** - (description)
             2. **[action taken]** - (description)
 
-            ### Final Summary:
+            Final Summary:
             (Concise summary of actions taken and steps moving forward)
         `;
 
