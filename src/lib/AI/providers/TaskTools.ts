@@ -26,8 +26,11 @@ export class TaskTools {
 Parameters:
 - action: One of "add", "edit", or "delete".
 - id: (Required for edit/delete) ID of the task.
+- name: (Required for add/edit) Task name.
+- type: (Required for add/edit) Task type (enum from TaskType).
+- caseId: (Required for add/edit) Related case ID.
 - description: (Optional) Task description.
-- dueDate: (Optional) Due date in YYYY-MM-DD format.
+- dueDate: (Required for add, optional for edit) Due date in YYYY-MM-DD format.
 - status: (Optional) Task status (e.g., "pending", "completed").`,
     parameters: {
       action: {
@@ -38,17 +41,31 @@ Parameters:
         type: "string",
         description: "Task ID (required for edit or delete)",
       },
+      name: {
+        type: "string",
+        description: "Task name (required for add/edit)",
+      },
+      type: {
+        type: "string",
+        description:
+          "Task type (enum value from TaskType, required for add/edit)",
+      },
+      caseId: {
+        type: "string",
+        description: "Case ID associated with the task (required for add/edit)",
+      },
       description: {
         type: "string",
         description: "Task description (optional)",
       },
       dueDate: {
         type: "string",
-        description: "Due date (YYYY-MM-DD) (optional)",
+        description:
+          "Due date in YYYY-MM-DD format (required for add, optional for edit)",
       },
       status: {
         type: "string",
-        description: "Task status (optional)",
+        description: "Task status (optional, e.g., 'pending', 'completed')",
       },
     },
   })
