@@ -53,10 +53,10 @@ export class Agent {
    * It builds the input object (using a system prompt, user prompt, and other parameters)
    * and passes it to the LLMProvider.
    */
-  async callLLM(content: Content[] | string): Promise<any> {
+  async callLLM(content: Content[] | string, user: any): Promise<any> {
     const toolsArray = Object.values(this.tools);
     const systemPrompt = JSON.stringify(
-      createSystemPrompt(toolsArray),
+      createSystemPrompt(toolsArray, user),
       null,
       2
     );

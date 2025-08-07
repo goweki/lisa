@@ -28,6 +28,10 @@ export interface Institution extends _Institution {
   caseTypes?: _CaseType[];
 }
 
+export interface InstitutionUser extends _InstitutionUser {
+  institution?: _Institution;
+}
+
 export function isInstitution(obj: any): obj is Institution {
   if (obj === null || typeof obj !== "object") return false;
   const allowedKeys = ["id", "name", "location", "logoUrl"];

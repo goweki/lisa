@@ -1,13 +1,17 @@
 import { strFirstWord } from "@/helpers/stringHandlers";
 import prisma from "@/lib/prisma/prisma";
 import { TemplateObj } from "@/types/custom";
-import { MessageSubject, VerificationChannel } from "@prisma/client";
+import {
+  Institution,
+  MessageSubject,
+  VerificationChannel,
+} from "@prisma/client";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { sendMessage } from "../_actions";
 import parsePhoneNumberFromString from "libphonenumber-js";
 import { runAgent } from "@/lib/AI";
-import { User } from "@/types/models";
+import { User, InstitutionUser } from "@/types/models";
 import { generateModelHistoryFromMessages } from "@/lib/AI/utils/generateHistory";
 
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -195,7 +199,11 @@ async function processIncomingMessage(
     const from = message.from;
     const from_user = await prisma.user.findFirst({
       where: { tel: "+" + from },
-      include: { messages: true, Session: true },
+      include: {
+        messages: true,
+        Session: true,
+        institutions: { include: { institution: true } },
+      },
     });
     const to = valueData.metadata?.phone_number_id;
     const messageId = message.id;
@@ -528,7 +536,15 @@ async function consultLisa({
   prompt: string;
   user: User;
 }): Promise<string | null> {
+  const institutions =
+    user.institutions?.map((userInst: InstitutionUser) => ({
+      name: userInst.institution?.name || "<NULL>",
+      id: userInst.institutionId,
+      role: userInst.role,
+    })) || [];
+
   const reply = await runAgent({
+    user: { ...user, institutions },
     prompt: [
       ...(await generateModelHistoryFromMessages(user.messages || [])),
       { role: "user", parts: [{ text: prompt }] },

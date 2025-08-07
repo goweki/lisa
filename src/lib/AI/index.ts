@@ -4,13 +4,24 @@ import { ToolsManager } from "./agent/ToolsManager";
 import { Agent } from "./agent/Agent";
 import { GeminiLLMProvider } from "./llm/GeminiLLMProvider";
 import { Content } from "@google/genai";
+import { User, UserRole } from "@prisma/client";
+
+export type CustomUser = User & {
+  institutions: {
+    id: string;
+    name: string;
+    role: UserRole;
+  }[];
+};
 
 const dummyPrompt =
   "Find the latest trends in AI for 2025 specifically related to Large Language Models and summarize them search the web. Just return Json no additional text.";
 
 export async function runAgent({
+  user,
   prompt = dummyPrompt,
 }: {
+  user: CustomUser;
   prompt: Content[] | string;
 }) {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
@@ -34,7 +45,7 @@ export async function runAgent({
     typeof prompt === "string"
       ? [{ role: "user", parts: [{ text: prompt }] }]
       : prompt;
-  const initialLLMResponse = await agent.callLLM(normalizedPrompt);
+  const initialLLMResponse = await agent.callLLM(normalizedPrompt, user);
   if (!initialLLMResponse.requires_tools) {
     console.log("Lisa AI DOES NOT require tools for this response");
     finalResponse = initialLLMResponse.direct_response || "";
@@ -80,7 +91,7 @@ export async function runAgent({
         `;
 
     // Step 3: Call LLM again for final summarization
-    const finalLLMResponse = await agent.callLLM(finalPrompt);
+    const finalLLMResponse = await agent.callLLM(finalPrompt, user);
     console.log("Final response - ", finalLLMResponse);
     if (!finalLLMResponse.direct_response) {
       console.error("Could not generate final summary after tool use.");

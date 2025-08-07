@@ -8,12 +8,21 @@ export async function generateModelHistoryFromMessages(
 
   if (!messages || messages.length === 0) return history;
 
-  // Sort messages chronologically if not already sorted
-  messages.sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
-  // Take only the latest 5 or fewer messages
-  const latestMessages = messages.slice(-5);
+  const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+  const now = Date.now();
+
+  // filter messages created within the last 15 minutes
+  const recentMessages = messages.filter((message) => {
+    const messageTime = new Date(message.createdAt).getTime();
+    return now - messageTime <= FIFTEEN_MINUTES_MS;
+  });
+
+  // sort chronologically
+  recentMessages.sort((a, b) => {
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+  // latest 5 or fewer messages
+  const latestMessages = recentMessages.slice(-5);
 
   let currentRole: "user" | "model" | null = null;
   let currentParts: { text: string }[] = [];

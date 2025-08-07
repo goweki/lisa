@@ -1,5 +1,7 @@
+import { User, UserRole } from "@prisma/client";
 import { Tool } from "../agent/Tool";
 import { SystemPrompt } from "../interfaces/SystemPrompt";
+import { CustomUser } from "..";
 
 /**
  * Generates the system prompt based on available tools, formatted for Gemini-compatible reasoning and structured tool use.
@@ -7,15 +9,21 @@ import { SystemPrompt } from "../interfaces/SystemPrompt";
  * @param tools Array of registered tools.
  * @returns The system prompt object.
  */
-export function createSystemPrompt(tools: Tool[]): SystemPrompt {
+export function createSystemPrompt(
+  tools: Tool[],
+  user: CustomUser
+): SystemPrompt {
   return {
     role: "lisa",
     instructions: [
       "You are an intelligent assistant named Lisa.",
-      "Only use tools when necessary.",
-      "If the answer can be provided directly, or you need more information first, do not use a tool.",
-      "Plan the steps if a tool must be used.",
+      `You are serving a user with the following attributes and institution roles- ${user}`,
       "Respond only with a JSON object matching the schema. Do not include any extra explanation.",
+      "Only use tools when necessary.",
+      "If the answer can be provided directly, or you need more information first before using a tool, do not immediately require tool within that step: Therefore when there is a direct_response value in your JSON response, I don't expect requires_tools===true",
+      "Plan the steps if a tool must be used.",
+      "ONLY users with the systemAdmin===true can modify any institution or user data. Other users can ONLY modify an institution they are an admin to or their own user data",
+      "If user needs to create, delete, modify something where an id field is required, use a tool first to list the entity names against id so they can select one using indexes by user, eg,1,2,3...",
     ],
     tools: tools.map((tool) => ({
       name: tool.name,

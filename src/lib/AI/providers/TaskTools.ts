@@ -1,41 +1,24 @@
-//     async listTasks(): Promise<string> {
-//         const { data, error } = await supabase
-//             .from("tasks")
-//             .select("*");
-//         if (error) {
-//             return `Error listing tasks: ${error.message}`;
-//         }
-//         if (!data || data.length === 0) {
-//             return "No tasks found.";
-//         }
-//         let summary = `Found ${data.length} tasks:\n`;
-//         data.forEach((task: any) => {
-//             summary += `ID: ${task.id}, Description: ${task.description}, Due: ${task.due_date || "N/A"}, Status: ${task.status}\n`;
-//         });
-//         return summary;
-//     }
-
 import { TaskType } from "@prisma/client";
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
 
 export class TaskTools {
   @ToolDecorator({
-    docstring: `Adds, edits, or deletes a task based on the action provided.
+    docstring: `Adds, edits, deletes, or lists tasks associated with cases.
 
 Parameters:
-- action: One of "add", "edit", or "delete".
-- id: (Required for edit/delete) ID of the task.
+- action: One of "list", "add", "edit", or "delete".
+- id: (Required for edit/delete) Task ID.
 - name: (Required for add/edit) Task name.
 - type: (Required for add/edit) Task type (enum from TaskType).
 - caseId: (Required for add/edit) Related case ID.
 - description: (Optional) Task description.
 - dueDate: (Required for add, optional for edit) Due date in YYYY-MM-DD format.
-- status: (Optional) Task status (e.g., "pending", "completed").`,
+- completedById: (Optional) ID of user who completed the task.`,
     parameters: {
       action: {
         type: "string",
-        description: `"add", "edit", or "delete"`,
+        description: `"list", "add", "edit", or "delete"`,
       },
       id: {
         type: "string",
@@ -52,7 +35,7 @@ Parameters:
       },
       caseId: {
         type: "string",
-        description: "Case ID associated with the task (required for add/edit)",
+        description: "Associated case ID (required for add/edit)",
       },
       description: {
         type: "string",
@@ -63,9 +46,9 @@ Parameters:
         description:
           "Due date in YYYY-MM-DD format (required for add, optional for edit)",
       },
-      status: {
+      completedById: {
         type: "string",
-        description: "Task status (optional, e.g., 'pending', 'completed')",
+        description: "User ID who completed the task (optional)",
       },
     },
   })
@@ -77,23 +60,27 @@ Parameters:
     caseId?: string,
     description?: string,
     dueDate?: string,
-    status?: string
+    completedById?: string
   ): Promise<string> {
     try {
       switch (action.toLowerCase()) {
         case "add": {
-          if (!name || !type || !caseId || !dueDate)
-            return `Required parameters missing`;
+          if (!name || !type || !caseId || !dueDate) {
+            return "Missing required fields for adding a task.";
+          }
+
           const newTask = await prisma.task.create({
             data: {
               name,
               type,
               caseId,
-              description: description || "",
               dueDate: new Date(dueDate),
+              description: description || "",
+              completedById: completedById || null,
             },
           });
-          return `Task added with ID: ${newTask.id}`;
+
+          return `✅ Task "${newTask.name}" created with ID: ${newTask.id}`;
         }
 
         case "edit": {
@@ -107,10 +94,11 @@ Parameters:
               caseId: caseId || undefined,
               dueDate: dueDate ? new Date(dueDate) : undefined,
               description: description ?? undefined,
+              completedById: completedById ?? undefined,
             },
           });
 
-          return `Task ${updatedTask.id} updated successfully.`;
+          return `✅ Task "${updatedTask.name}" updated successfully.`;
         }
 
         case "delete": {
@@ -120,14 +108,38 @@ Parameters:
             where: { id },
           });
 
-          return `Task ${id} deleted successfully.`;
+          return `🗑️ Task ${id} deleted successfully.`;
+        }
+
+        case "list": {
+          const tasks = await prisma.task.findMany({
+            orderBy: { dueDate: "asc" },
+            include: {
+              case: { select: { name: true } },
+              completedBy: { select: { names: true } },
+            },
+          });
+
+          if (!tasks.length) return "No tasks found.";
+
+          let output = `📝 Found ${tasks.length} tasks:\n`;
+          for (const task of tasks) {
+            output += `• [${task.id}] ${task.name} (${task.type}) — due ${task.dueDate.toISOString().split("T")[0]}`;
+            output += ` | Case: ${task.case?.name || "N/A"}`;
+            output += task.completedBy
+              ? ` | Completed by: ${task.completedBy.names}`
+              : "";
+            output += `\n`;
+          }
+
+          return output;
         }
 
         default:
-          return `Invalid action: ${action}. Must be one of "add", "edit", or "delete".`;
+          return `❌ Invalid action "${action}". Must be one of "add", "edit", "delete", or "list".`;
       }
     } catch (error: any) {
-      return `Unexpected error: ${error.message}`;
+      return `❗ Error: ${error.message}`;
     }
   }
 }
