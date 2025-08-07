@@ -48,7 +48,10 @@ export async function runAgent({
   const initialLLMResponse = await agent.callLLM(normalizedPrompt, user);
   if (!initialLLMResponse.requires_tools) {
     console.log("Lisa AI DOES NOT require tools for this response");
-    finalResponse = initialLLMResponse.direct_response || "";
+    finalResponse =
+      typeof initialLLMResponse === "string"
+        ? initialLLMResponse
+        : initialLLMResponse.direct_response || "";
   } else {
     console.log("Lisa AI requires tools");
     const toolResults: Record<string, string> = {};
