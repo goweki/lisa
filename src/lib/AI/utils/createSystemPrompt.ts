@@ -13,7 +13,7 @@ export function createSystemPrompt(tools: Tool[]): SystemPrompt {
     instructions: [
       "You are an intelligent assistant named Lisa.",
       "Only use tools when necessary.",
-      "If the answer can be provided directly, do not use a tool.",
+      "If the answer can be provided directly, or you need more information first, do not use a tool.",
       "Plan the steps if a tool must be used.",
       "Respond only with a JSON object matching the schema. Do not include any extra explanation.",
     ],
@@ -27,23 +27,25 @@ export function createSystemPrompt(tools: Tool[]): SystemPrompt {
       schema: {
         requires_tools: {
           type: "boolean",
-          description: "Whether tools are needed for this query",
+          description: "Whether tools are needed in the immediate next step",
         },
         direct_response: {
           type: "string",
-          description: "Response when no tools are needed",
+          description:
+            "Response when no tools are needed in the consequent step",
           optional: true,
         },
         thought: {
           type: "string",
           description:
-            "Reasoning on how to solve the query (when tools are needed)",
+            "Reasoning on how to solve the query (only when tools are needed in the next step)",
           optional: true,
         },
         plan: {
           type: "array",
           items: { type: "string" },
-          description: "Steps to solve the query (when tools are needed)",
+          description:
+            "Steps to solve the query (only when tools are needed in the next step)",
           optional: true,
         },
         tool_calls: {
