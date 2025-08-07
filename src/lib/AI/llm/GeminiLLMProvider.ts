@@ -49,7 +49,8 @@ export class GeminiLLMProvider implements LLMProvider {
   }
 
   async callLLM(input: LLMInput): Promise<any> {
-    await writeToLog("llm_input.log: ", JSON.stringify(input));
+    // await writeToLog("llm_input.log: ", JSON.stringify(input));
+    console.log("llm_input.log: ", JSON.stringify(input));
 
     const response = await this.gemini.models.generateContent({
       model: this.modelName,
@@ -64,7 +65,8 @@ export class GeminiLLMProvider implements LLMProvider {
     });
     const fullResponse = response.text || "";
 
-    await writeToLog("llm_response.log: ", fullResponse);
+    // await writeToLog("llm_response.log: ", fullResponse);
+    console.log("llm_response.log: ", fullResponse);
 
     if (isValidJson(fullResponse)) {
       return JSON.parse(fullResponse);
