@@ -79,6 +79,27 @@ export function createSystemPrompt(tools: Tool[]): SystemPrompt {
           },
         },
         {
+          query: "Get today's tasks",
+          response: {
+            requires_tools: false,
+            thought:
+              "I need to fetch tasks for the user but has not provided their email or tel.",
+            plan: [
+              "Request for users email or tel",
+              "Call get_due_tasks with user's email and filter out those due today and in the near future",
+              "Return tasks",
+            ],
+            tool_calls: [
+              {
+                tool: "get_due_tasks",
+                args: {
+                  user_id: "123",
+                },
+              },
+            ],
+          },
+        },
+        {
           query: "Tell me a fun fact.",
           response: {
             requires_tools: false,
