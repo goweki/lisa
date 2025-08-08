@@ -1,7 +1,7 @@
 import { InstitutionTools } from "./providers/InstitutionTools";
 import { UsersTools } from "./providers/UserTools";
 import { CasesTools } from "./providers/CaseTools";
-import { TaskTools } from "./providers/TaskTools";
+import { TasksTools } from "./providers/TaskTools";
 import { ToolsManager } from "./agent/ToolsManager";
 import { Agent } from "./agent/Agent";
 import { GeminiLLMProvider } from "./llm/GeminiLLMProvider";
@@ -22,7 +22,7 @@ export async function runAgent({
   const institutionProvider = new InstitutionTools(user);
   const usersProvider = new UsersTools(user);
   const caseProvider = new CasesTools(user);
-  const taskProvider = new TaskTools();
+  const taskProvider = new TasksTools(user);
 
   const institutionTools = ToolsManager.registerToolsFrom(institutionProvider);
   const userTools = ToolsManager.registerToolsFrom(usersProvider);
