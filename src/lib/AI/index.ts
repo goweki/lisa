@@ -103,7 +103,6 @@ export async function runAgent({
             1. *[Action taken]* - (description)
             2. *[action taken]* - (description)
 
-            Final Summary:
             (Concise summary of actions taken and steps moving forward)
         `;
 
