@@ -1,79 +1,60 @@
-import { CaseStatus } from "@prisma/client";
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
+import type { UserContext } from "../types/UserContext";
 
-export class CaseTools {
+export class CasesTools {
+  constructor(private user: UserContext) {
+    if (!user) {
+      throw new Error("User context is required to initialize CasesTools.");
+    }
+  }
+
   @ToolDecorator({
-    docstring: `Lists, adds, edits, or deletes a legal case.
+    docstring: `Creates a new case. 
+System admins can create cases for any institution.
+Institution admins can create cases only for their institution.
 
 Parameters:
-- action: One of "list", "add", "edit", or "delete".
-- id: (Required for edit/delete) ID of the case.
-- name: (Required for add/edit) Case name.
-- caseNumber: (Optional) Case number.
-- description: (Optional) Case description.
-- status: (Optional for edit) Case status (e.g., "OPEN", "CLOSED").
-- clientName: (Required for add/edit) Client full name.
-- clientParty: (Required for add/edit) Client party description.
-- clientIdNumber, clientTel, clientEmail: (Optional) Client contact info.
-- otherPartyName, otherPartyTel, otherPartyEmail, otherPartyDescription: (Optional) Opposing party info.
-- court: (Optional) Court name.
-- caseTypeId: (Required for add/edit) ID of the related case type.
-- institutionId: (Required for add/edit) ID of the institution.
-- createdById: (Required for add) User ID of the creator.
-- assigneeId: (Optional for add/edit) User ID of the assignee.`,
+- institutionId: Institution ID (required)
+- caseTypeId: Case type ID (required)
+- name: Name of the case (required)
+- description: Optional case description
+- clientParty: Name of client party (required)
+- clientName: Name of the client (required)
+- clientIdNumber: Client ID number (optional)
+- clientTel: Client telephone number (required)
+- clientEmail: Client email (optional)
+- otherPartyName: Name of other party (optional)
+- otherPartyTel: Telephone of other party (optional)
+- otherPartyEmail: Email of other party (optional)
+- otherPartyDescription: Description of other party (optional)
+- court: Court name (optional)`,
     parameters: {
-      action: {
+      institutionId: {
         type: "string",
-        description: `"list", "add", "edit", or "delete"`,
+        description: "Institution ID (required)",
       },
-      id: {
-        type: "string",
-        description: "Case ID (required for edit or delete)",
-      },
-      name: {
-        type: "string",
-        description: "Case name (required for add/edit)",
-      },
-      caseNumber: {
-        type: "string",
-        description: "Case number (optional)",
-      },
-      description: {
-        type: "string",
-        description: "Case description (optional)",
-      },
-      status: {
-        type: "string",
-        description: "Case status (optional, e.g., OPEN, CLOSED)",
-      },
+      caseTypeId: { type: "string", description: "Case type ID (required)" },
+      name: { type: "string", description: "Name of the case (required)" },
+      description: { type: "string", description: "Description (optional)" },
       clientParty: {
         type: "string",
-        description: "Client party (required for add/edit)",
+        description: "Client party name (required)",
       },
-      clientName: {
-        type: "string",
-        description: "Client name (required for add/edit)",
-      },
+      clientName: { type: "string", description: "Client name (required)" },
       clientIdNumber: {
         type: "string",
         description: "Client ID number (optional)",
       },
-      clientTel: {
-        type: "string",
-        description: "Client phone number (optional)",
-      },
-      clientEmail: {
-        type: "string",
-        description: "Client email (optional)",
-      },
+      clientTel: { type: "string", description: "Client telephone (required)" },
+      clientEmail: { type: "string", description: "Client email (optional)" },
       otherPartyName: {
         type: "string",
         description: "Other party name (optional)",
       },
       otherPartyTel: {
         type: "string",
-        description: "Other party phone (optional)",
+        description: "Other party telephone (optional)",
       },
       otherPartyEmail: {
         type: "string",
@@ -83,151 +64,178 @@ Parameters:
         type: "string",
         description: "Other party description (optional)",
       },
-      court: {
-        type: "string",
-        description: "Court name (optional)",
-      },
-      caseTypeId: {
-        type: "string",
-        description: "Case type ID (required for add/edit)",
-      },
-      institutionId: {
-        type: "string",
-        description: "Institution ID (required for add/edit)",
-      },
-      createdById: {
-        type: "string",
-        description: "Creator user ID (required for add)",
-      },
-      assigneeId: {
-        type: "string",
-        description: "Assignee user ID (optional)",
-      },
+      court: { type: "string", description: "Court name (optional)" },
     },
   })
-  async modifyCase(
-    action: string,
-    id?: string,
-    name?: string,
-    caseNumber?: string,
-    description?: string,
-    status?: CaseStatus,
-    clientName?: string,
-    clientParty?: string,
-    clientIdNumber?: string,
-    clientTel?: string,
-    clientEmail?: string,
-    otherPartyName?: string,
-    otherPartyTel?: string,
-    otherPartyEmail?: string,
-    otherPartyDescription?: string,
-    court?: string,
-    caseTypeId?: string,
-    institutionId?: string,
-    createdById?: string,
-    assigneeId?: string
-  ): Promise<string> {
-    try {
-      switch (action.toLowerCase()) {
-        case "add": {
-          if (
-            !name ||
-            !clientName ||
-            !clientParty ||
-            !caseTypeId ||
-            !institutionId ||
-            !createdById ||
-            !clientTel
-          ) {
-            return "Missing required fields for case creation.";
-          }
-
-          const newCase = await prisma.case.create({
-            data: {
-              name,
-              caseNumber,
-              description,
-              status: status ?? "OPEN",
-              clientName,
-              clientParty,
-              clientIdNumber,
-              clientTel,
-              clientEmail,
-              otherPartyName,
-              otherPartyTel,
-              otherPartyEmail,
-              otherPartyDescription,
-              court,
-              caseTypeId,
-              institutionId,
-              createdById,
-              assigneeId,
-            },
-          });
-
-          return `✅ Case "${newCase.name}" created with ID: ${newCase.id}`;
-        }
-
-        case "edit": {
-          if (!id) return "Case ID is required to edit a case.";
-
-          const updatedCase = await prisma.case.update({
-            where: { id },
-            data: {
-              name: name || undefined,
-              caseNumber,
-              description,
-              status,
-              clientName,
-              clientParty,
-              clientIdNumber,
-              clientTel,
-              clientEmail,
-              otherPartyName,
-              otherPartyTel,
-              otherPartyEmail,
-              otherPartyDescription,
-              court,
-              caseTypeId,
-              institutionId,
-              assigneeId,
-            },
-          });
-
-          return `✅ Case "${updatedCase.name}" updated successfully.`;
-        }
-
-        case "delete": {
-          if (!id) return "Case ID is required to delete a case.";
-
-          await prisma.case.delete({
-            where: { id },
-          });
-
-          return `🗑️ Case ${id} deleted successfully.`;
-        }
-
-        case "list": {
-          const cases = await prisma.case.findMany({
-            include: { tasks: true },
-            orderBy: { createdAt: "desc" },
-          });
-
-          if (!cases.length) return "No cases found.";
-
-          let output = `📁 Found ${cases.length} cases:\n`;
-          for (const c of cases) {
-            output += `• [${c.id}] ${c.name} (${c.status}) - ${c.tasks.length} task(s)\n`;
-          }
-
-          return output;
-        }
-
-        default:
-          return `❌ Invalid action "${action}". Must be one of "add", "edit", "delete", or "list".`;
-      }
-    } catch (error: any) {
-      return `❗ Error: ${error.message}`;
+  async addCase(params: any): Promise<string> {
+    const requiredFields = [
+      "institutionId",
+      "caseTypeId",
+      "name",
+      "clientParty",
+      "clientName",
+      "clientTel",
+    ];
+    for (const field of requiredFields) {
+      if (!params[field]) return `${field} is required.`;
     }
+
+    if (!this.user.systemAdmin) {
+      const institutionRole = this.user.institutions.find(
+        ({ id }) => id === params.institutionId
+      )?.role;
+      if (institutionRole !== "ADMIN") {
+        return "You do not have permission to create cases for this institution.";
+      }
+    }
+
+    const caseRecord = await prisma.case.create({
+      data: {
+        ...params,
+        createdById: this.user.id,
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: "CREATE",
+        entity: `Case: ${caseRecord.name}`,
+        entityId: caseRecord.id,
+        userId: this.user.id,
+        details: params,
+      },
+    });
+
+    return `Case created with ID: ${caseRecord.id}`;
+  }
+
+  @ToolDecorator({
+    docstring: `Edits an existing case.
+System admins can edit any case.
+Institution admins can edit cases in their institution.
+Assignees can only update case status.
+
+Parameters:
+- id: Case ID (required)
+- name: New case name (optional)
+- description: New description (optional)
+- status: New case status (optional)
+- assigneeId: Assign to a user (optional)
+- court: Court name (optional)`,
+    parameters: {
+      id: { type: "string", description: "Case ID (required)" },
+      name: { type: "string", description: "New name (optional)" },
+      description: {
+        type: "string",
+        description: "New description (optional)",
+      },
+      status: { type: "string", description: "New case status (optional)" },
+      assigneeId: {
+        type: "string",
+        description: "Assign to user ID (optional)",
+      },
+      court: { type: "string", description: "Court name (optional)" },
+    },
+  })
+  async editCase(id?: string, updates: any = {}): Promise<string> {
+    if (!id) return "Case ID is required.";
+
+    const caseRecord = await prisma.case.findUnique({ where: { id } });
+    if (!caseRecord) return "Case not found.";
+
+    if (!this.user.systemAdmin) {
+      const institutionRole = this.user.institutions.find(
+        ({ id }) => id === caseRecord.institutionId
+      )?.role;
+
+      if (institutionRole === "ADMIN") {
+        // Admin can edit anything
+      } else if (caseRecord.assigneeId === this.user.id) {
+        // Assignee can only change status
+        const allowedKeys = ["status"];
+        updates = Object.fromEntries(
+          Object.entries(updates).filter(([k]) => allowedKeys.includes(k))
+        );
+      } else {
+        return "You do not have permission to edit this case.";
+      }
+    }
+
+    const updatedCase = await prisma.case.update({
+      where: { id },
+      data: updates,
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: "UPDATE",
+        entity: `Case: ${updatedCase.name}`,
+        entityId: updatedCase.id,
+        userId: this.user.id,
+        details: updates,
+      },
+    });
+
+    return `Case ${updatedCase.id} updated successfully.`;
+  }
+
+  @ToolDecorator({
+    docstring: `Deletes a case permanently.
+Only system admins can delete cases.
+
+Parameters:
+- id: Case ID (required)`,
+    parameters: {
+      id: { type: "string", description: "Case ID (required)" },
+    },
+  })
+  async deleteCase(id?: string): Promise<string> {
+    if (!id) return "Case ID is required.";
+
+    if (!this.user.systemAdmin) {
+      return "Only system administrators can delete cases.";
+    }
+
+    const caseRecord = await prisma.case.delete({ where: { id } });
+
+    await prisma.auditLog.create({
+      data: {
+        action: "DELETE",
+        entity: `Case: ${caseRecord.name}`,
+        entityId: caseRecord.id,
+        userId: this.user.id,
+      },
+    });
+
+    return `Case ${caseRecord.id} permanently deleted.`;
+  }
+
+  @ToolDecorator({
+    docstring: `Lists all cases visible to the current user.
+System admins see all cases.
+Institution admins see all cases in their institution.
+Regular users see only cases they are assigned to.`,
+    parameters: {},
+  })
+  async listCases(): Promise<string> {
+    let cases;
+
+    if (this.user.systemAdmin) {
+      cases = await prisma.case.findMany();
+    } else {
+      const institutionIds = this.user.institutions.map((i) => i.id);
+      cases = await prisma.case.findMany({
+        where: {
+          OR: [
+            { institutionId: { in: institutionIds } },
+            { assigneeId: this.user.id },
+          ],
+        },
+      });
+    }
+
+    if (!cases.length) return "No cases found.";
+
+    return cases.map((c) => `- ${c.name} (${c.status}) [${c.id}]`).join("\n");
   }
 }

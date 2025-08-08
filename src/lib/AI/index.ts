@@ -1,7 +1,7 @@
 import { WebSearchTool } from "./providers/WebSearchTool"; // Import new tool
 import { InstitutionTools } from "./providers/InstitutionTools";
-import { UserTools } from "./providers/UserTools";
-import { CaseTools } from "./providers/CaseTools";
+import { UsersTools } from "./providers/UserTools";
+import { CasesTools } from "./providers/CaseTools";
 import { TaskTools } from "./providers/TaskTools";
 import { ToolsManager } from "./agent/ToolsManager";
 import { Agent } from "./agent/Agent";
@@ -21,13 +21,13 @@ export async function runAgent({
 }): Promise<string | null> {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
   const institutionProvider = new InstitutionTools(user);
-  const userProvider = new UserTools();
-  const caseProvider = new CaseTools();
+  const usersProvider = new UsersTools(user);
+  const caseProvider = new CasesTools(user);
   const taskProvider = new TaskTools();
   const searchProvider = new WebSearchTool();
 
   const institutionTools = ToolsManager.registerToolsFrom(institutionProvider);
-  const userTools = ToolsManager.registerToolsFrom(userProvider);
+  const userTools = ToolsManager.registerToolsFrom(usersProvider);
   const caseTools = ToolsManager.registerToolsFrom(caseProvider);
   const taskTools = ToolsManager.registerToolsFrom(taskProvider);
   const searchTools = ToolsManager.registerToolsFrom(searchProvider);

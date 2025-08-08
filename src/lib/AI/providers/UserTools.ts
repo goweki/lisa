@@ -1,91 +1,236 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
+import prisma from "@/lib/prisma/prisma";
+import type { UserContext } from "../types/UserContext";
+import { UserRole } from "@prisma/client";
 
-export class UserTools {
+export class UsersTools {
+  constructor(private user: UserContext) {
+    if (!user) {
+      throw new Error("User context is required to initialize UsersTools.");
+    }
+  }
+
   @ToolDecorator({
-    docstring: `Adds, edits, or deletes a user in the system.
+    docstring: `Creates a new user within an institution. 
+System admins can create users in any institution.
+Admins can create users only in their institution.
 
 Parameters:
-- action: One of "add", "edit", or "delete".
-- id: (Required for edit/delete) User ID.
-- names: (Optional) Full name of the user.
-- email: (Optional) User email address.
-- tel: (Optional) Phone number.
-- password: (Optional) Password.
-- status: (Optional) Account status (e.g., "ACTIVE", "DORMANT").
-- systemAdmin: (Optional) Whether the user is an admin (true/false).`,
+- institutionId: ID of the institution (required)
+- name: Full name of the user (required)
+- email: Email address of the user (required)
+- role: Role for the user in the institution ("USER" or "ADMIN") (required)`,
     parameters: {
-      action: { type: "string", description: `"add", "edit", or "delete"` },
-      id: { type: "string", description: "User ID (required for edit/delete)" },
-      names: { type: "string", description: "User's full name (optional)" },
-      email: { type: "string", description: "Email address (optional)" },
-      tel: { type: "string", description: "Phone number (optional)" },
-      password: { type: "string", description: "User password (optional)" },
-      status: { type: "string", description: "Account status (optional)" },
-      systemAdmin: {
-        type: "boolean",
-        description: "Whether the user is a system admin (optional)",
+      institutionId: {
+        type: "string",
+        description: "Institution ID (required)",
+      },
+      name: { type: "string", description: "Full name of the user (required)" },
+      email: {
+        type: "string",
+        description: "Email address of the user (required)",
+      },
+      role: {
+        type: "string",
+        description: `User role in the institution ("USER" or "ADMIN") (required)`,
       },
     },
   })
-  async modifyUser(
-    action: string,
-    id?: string,
+  async addUser(
+    institutionId?: string,
     names?: string,
     email?: string,
-    tel?: string,
-    password?: string,
-    status?: string,
-    systemAdmin?: boolean
+    role?: string
   ): Promise<string> {
-    try {
-      const payload = {
+    if (!institutionId || !names || !email || !role) {
+      return "Institution ID, name, email, and role are required.";
+    }
+
+    if (!this.user.systemAdmin) {
+      const institutionRole = this.user.institutions.find(
+        ({ id }) => id === institutionId
+      )?.role;
+      if (institutionRole !== "ADMIN") {
+        return "You do not have permission to create users in this institution.";
+      }
+    }
+
+    const newUser = await prisma.user.create({
+      data: {
         names,
         email,
-        tel,
-        password,
-        status,
-        systemAdmin,
-      };
+        institutions: {
+          create: {
+            institutionId,
+            role: role.toUpperCase() as UserRole,
+          },
+        },
+      },
+    });
 
-      switch (action.toLowerCase()) {
-        case "add": {
-          const res = await fetch("/api/dashboard/user", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const result = await res.json();
-          if (!res.ok) return `Error adding user: ${result.message}`;
-          return `User added with ID: ${result.id}`;
-        }
+    await prisma.auditLog.create({
+      data: {
+        action: "CREATE",
+        entity: `User: ${newUser.names}`,
+        entityId: newUser.id,
+        userId: this.user.id,
+        details: { institutionId, names, email, role },
+      },
+    });
 
-        case "edit": {
-          if (!id) return "User ID is required to edit.";
-          const res = await fetch(`/api/dashboard/user/${id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const result = await res.json();
-          if (!res.ok) return `Error updating user: ${result.message}`;
-          return `User ${id} updated successfully.`;
-        }
+    return `User ${newUser.names} created with ID: ${newUser.id}`;
+  }
 
-        case "delete": {
-          if (!id) return "User ID is required to delete.";
-          const res = await fetch(`/api/dashboard/user/${id}`, {
-            method: "DELETE",
-          });
-          const result = await res.json();
-          if (!res.ok) return `Error deleting user: ${result.message}`;
-          return `User ${id} deleted successfully.`;
-        }
+  @ToolDecorator({
+    docstring: `Edits an existing user's name, email, or role.
+System admins can edit any user. Admins can only edit users in their institution.
 
-        default:
-          return `Invalid action: ${action}. Must be one of "add", "edit", or "delete".`;
+Parameters:
+- userId: ID of the user to edit (required)
+- name: New name (optional)
+- email: New email (optional)
+- role: New role ("USER" or "ADMIN") (optional)`,
+    parameters: {
+      userId: { type: "string", description: "User ID (required)" },
+      name: { type: "string", description: "New name (optional)" },
+      email: { type: "string", description: "New email (optional)" },
+      role: {
+        type: "string",
+        description: `New role ("USER" or "ADMIN") (optional)`,
+      },
+    },
+  })
+  async editUser(
+    userId?: string,
+    names?: string,
+    email?: string,
+    role?: string
+  ): Promise<string> {
+    if (!userId) return "User ID is required.";
+
+    if (!this.user.systemAdmin) {
+      const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { institutions: true },
+      });
+      if (!targetUser) return "User not found.";
+
+      const hasPermission = targetUser.institutions.some((inst) =>
+        this.user.institutions.some(
+          (uInst) => uInst.id === inst.institutionId && uInst.role === "ADMIN"
+        )
+      );
+      if (!hasPermission) {
+        return "You do not have permission to edit this user.";
       }
-    } catch (error: any) {
-      return `Unexpected error: ${error.message}`;
     }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        names: names || undefined,
+        email: email || undefined,
+        institutions: role
+          ? {
+              updateMany: {
+                where: {},
+                data: { role: role.toUpperCase() as UserRole },
+              },
+            }
+          : undefined,
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: "UPDATE",
+        entity: `User: ${updatedUser.names}`,
+        entityId: updatedUser.id,
+        userId: this.user.id,
+        details: { names, email, role },
+      },
+    });
+
+    return `User ${updatedUser.id} updated successfully.`;
+  }
+
+  @ToolDecorator({
+    docstring: `Deletes a user permanently. 
+System admins can delete any user.
+Admins can only delete users in their institution.
+
+Parameters:
+- userId: ID of the user to delete (required)`,
+    parameters: {
+      userId: { type: "string", description: "User ID (required)" },
+    },
+  })
+  async deleteUser(userId?: string): Promise<string> {
+    if (!userId) return "User ID is required.";
+
+    if (!this.user.systemAdmin) {
+      const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { institutions: true },
+      });
+      if (!targetUser) return "User not found.";
+
+      const hasPermission = targetUser.institutions.some((inst) =>
+        this.user.institutions.some(
+          (uInst) => uInst.id === inst.institutionId && uInst.role === "ADMIN"
+        )
+      );
+      if (!hasPermission) {
+        return "You do not have permission to delete this user.";
+      }
+    }
+
+    const deletedUser = await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: "DELETE",
+        entity: `User: ${deletedUser.names}`,
+        entityId: deletedUser.id,
+        userId: this.user.id,
+      },
+    });
+
+    return `User ${deletedUser.id} permanently deleted.`;
+  }
+
+  @ToolDecorator({
+    docstring: `Lists all users visible to the current user.
+System admins see all users. Admins and regular users see only users in their institution(s).`,
+    parameters: {},
+  })
+  async listUsers(): Promise<string> {
+    const users = this.user.systemAdmin
+      ? await prisma.user.findMany({
+          include: { institutions: true },
+        })
+      : await prisma.user.findMany({
+          where: {
+            institutions: {
+              some: {
+                institutionId: { in: this.user.institutions.map((i) => i.id) },
+              },
+            },
+          },
+          include: { institutions: true },
+        });
+
+    if (users.length === 0) return "No users found.";
+
+    return users
+      .map(
+        (u) =>
+          `- ${u.names} (${u.email}) [${u.id}] - Institutions: ${u.institutions
+            .map((inst) => `${inst.institutionId}:${inst.role}`)
+            .join(", ")}`
+      )
+      .join("\n");
   }
 }
