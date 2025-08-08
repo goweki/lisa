@@ -220,6 +220,7 @@ export function createSystemPrompt(
   user: CustomUser
 ): SystemPrompt {
   const permissions = getUserPermissions(user);
+  console.log("Permissions - ", permissions);
 
   return {
     role: "lisa",
