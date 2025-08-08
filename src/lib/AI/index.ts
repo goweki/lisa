@@ -21,7 +21,7 @@ export async function runAgent({
   prompt: Content[] | string;
 }) {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
-  const institutionProvider = new InstitutionTools();
+  const institutionProvider = new InstitutionTools(user);
   const userProvider = new UserTools();
   const caseProvider = new CaseTools();
   const taskProvider = new TaskTools();

@@ -3,6 +3,17 @@ import prisma from "@/lib/prisma/prisma";
 import type { UserContext } from "../types/UserContext";
 
 export class InstitutionTools {
+  private user: UserContext;
+
+  constructor(user: UserContext) {
+    if (!user) {
+      throw new Error(
+        "User context is required to initialize InstitutionTools."
+      );
+    }
+    this.user = user;
+  }
+
   @ToolDecorator({
     docstring: `Adds, edits, or deletes an institution with permission checks and audit logging.`,
     parameters: {
@@ -28,17 +39,15 @@ export class InstitutionTools {
     action: string,
     id?: string,
     name?: string,
-    address?: string,
-    user?: UserContext
+    address?: string
   ): Promise<string> {
-    if (!user) return "User context is required.";
-
     try {
+      const { user } = this;
+
       switch (action.toLowerCase()) {
         case "add": {
           if (!name) return "Institution name is required.";
 
-          // Permission check: assume all users can add
           const institution = await prisma.institution.create({
             data: {
               name,
@@ -65,8 +74,10 @@ export class InstitutionTools {
           const institutionRole = user.institutions.find(
             ({ id: _id }) => _id === id
           )?.role;
-          if (institutionRole !== "ADMIN")
+
+          if (institutionRole !== "ADMIN") {
             return "You do not have permission to edit this institution.";
+          }
 
           const institution = await prisma.institution.update({
             where: { id },
@@ -92,9 +103,9 @@ export class InstitutionTools {
         case "delete": {
           if (!id) return "Institution ID is required.";
 
-          // Permission check: only system admin can delete
-          if (!user.systemAdmin)
+          if (!user.systemAdmin) {
             return "Only system administrators can delete institutions.";
+          }
 
           const institution = await prisma.institution.delete({
             where: { id },

@@ -226,7 +226,7 @@ export function createSystemPrompt(
     role: "lisa",
     instructions: [
       ...BASE_INSTRUCTIONS.slice(0, 1),
-      `User permissions:\n${JSON.stringify(permissions, null, 2)}`,
+      `You must respect the user's permissions when executing actions. The user has the following permissions:\n- ${permissions.join("\n- ")}`,
       ...BASE_INSTRUCTIONS.slice(1),
     ],
     tools: tools.map(({ name, description, parameters }) => ({

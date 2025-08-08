@@ -1,27 +1,28 @@
-import { UserContext } from "../types/UserContext";
+import type { UserContext } from "../types/UserContext";
 
-type UserPermissions = {
-  isSystemAdmin: boolean;
-  canMakeSystemChanges: boolean;
-  institutions: {
-    id: string;
-    name: string;
-    role: string;
-    canCreateCases: boolean;
-    canEditInstitution: boolean;
-  }[];
-};
+export function getUserPermissions(user: UserContext): string[] {
+  const permissions: string[] = [];
 
-export function getUserPermissions(user: UserContext): UserPermissions {
-  return {
-    isSystemAdmin: user.systemAdmin,
-    canMakeSystemChanges: user.systemAdmin,
-    institutions: user.institutions.map((inst) => ({
-      id: inst.id,
-      name: inst.name,
-      role: inst.role,
-      canCreateCases: true,
-      canEditInstitution: inst.role === "ADMIN",
-    })),
-  };
+  // System admin flag
+  if (user.systemAdmin) {
+    permissions.push("SYSTEM_ADMIN");
+  }
+
+  // Users in any institution can create cases
+  if (user.institutions.length > 0) {
+    permissions.push("CREATE_CASE");
+  }
+
+  for (const institution of user.institutions) {
+    if (institution.role === "ADMIN") {
+      permissions.push(`EDIT_INSTITUTION:${institution.id}`);
+    }
+  }
+
+  // You could also include a general flag:
+  if (permissions.some((p) => p.startsWith("EDIT_INSTITUTION:"))) {
+    permissions.push("CAN_EDIT_SOME_INSTITUTION");
+  }
+
+  return permissions;
 }
