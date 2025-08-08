@@ -57,6 +57,8 @@ export async function runAgent({
       : prompt;
   const initialLLMResponse = await agent.callLLM(normalizedPrompt, user);
 
+  console.log("Agent response from callLLM:", initialLLMResponse);
+
   if (!initialLLMResponse.requires_tools) {
     console.log("Lisa AI DOES NOT require tools for this response");
     finalResponse = initialLLMResponse.direct_response
