@@ -1,145 +1,119 @@
-import { TaskType } from "@prisma/client";
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
+import type { UserContext } from "../types/UserContext";
+import { TaskType } from "@prisma/client";
 
-export class TaskTools {
+export class TasksTools {
+  constructor(private user: UserContext) {
+    if (!user) {
+      throw new Error("User context is required to initialize TasksTools.");
+    }
+  }
+
+  private async canAccessCase(caseId: string) {
+    const caseData = await prisma.case.findUnique({
+      where: { id: caseId },
+      select: { institutionId: true, assigneeId: true, createdById: true },
+    });
+
+    if (!caseData) return false;
+
+    if (this.user.systemAdmin) return true;
+    if (
+      this.user.institutions.some(
+        (i) => i.id === caseData.institutionId && i.role === "ADMIN"
+      )
+    )
+      return true;
+    if (caseData.assigneeId === this.user.id) return true;
+    if (caseData.createdById === this.user.id) return true;
+
+    return false;
+  }
+
   @ToolDecorator({
-    docstring: `Adds, edits, deletes, or lists tasks associated with cases.
-
-Parameters:
-- action: One of "list", "add", "edit", or "delete".
-- id: (Required for edit/delete) Task ID.
-- name: (Required for add/edit) Task name.
-- type: (Required for add/edit) Task type (enum from TaskType).
-- caseId: (Required for add/edit) Related case ID.
-- description: (Optional) Task description.
-- dueDate: (Required for add, optional for edit) Due date in YYYY-MM-DD format.
-- completedById: (Optional) ID of user who completed the task.`,
+    docstring: `Lists all tasks for a specific case.`,
     parameters: {
-      action: {
-        type: "string",
-        description: `"list", "add", "edit", or "delete"`,
-      },
-      id: {
-        type: "string",
-        description: "Task ID (required for edit or delete)",
-      },
-      name: {
-        type: "string",
-        description: "Task name (required for add/edit)",
-      },
+      caseId: { type: "string", description: "The case ID to list tasks for" },
+    },
+  })
+  async listTasks(caseId: string): Promise<string> {
+    if (!caseId) return "Case ID is required.";
+    if (!(await this.canAccessCase(caseId)))
+      return "You do not have permission to view this case.";
+
+    const tasks = await prisma.task.findMany({ where: { caseId } });
+
+    if (!tasks.length) return "No tasks found for this case.";
+
+    return tasks
+      .map(
+        (t) =>
+          `- ${t.name} [${t.type}] Due: ${t.dueDate.toDateString()} ${t.description ? `- ${t.description}` : ""}`
+      )
+      .join("\n");
+  }
+
+  @ToolDecorator({
+    docstring: `Adds a task to a case.`,
+    parameters: {
+      caseId: { type: "string", description: "Case ID (required)" },
+      name: { type: "string", description: "Task name (required)" },
       type: {
         type: "string",
-        description:
-          "Task type (enum value from TaskType, required for add/edit)",
-      },
-      caseId: {
-        type: "string",
-        description: "Associated case ID (required for add/edit)",
-      },
-      description: {
-        type: "string",
-        description: "Task description (optional)",
+        description: "Task type (required): EVENT or DOCUMENT",
       },
       dueDate: {
         type: "string",
-        description:
-          "Due date in YYYY-MM-DD format (required for add, optional for edit)",
+        description: "Due date in ISO format (required)",
       },
-      completedById: {
-        type: "string",
-        description: "User ID who completed the task (optional)",
-      },
+      description: { type: "string", description: "Optional task details" },
     },
   })
-  async modifyTask(
-    action: string,
-    id?: string,
-    name?: string,
-    type?: TaskType,
-    caseId?: string,
-    description?: string,
-    dueDate?: string,
-    completedById?: string
+  async addTask(
+    caseId: string,
+    name: string,
+    type: string,
+    dueDate: string,
+    description?: string
   ): Promise<string> {
-    try {
-      switch (action.toLowerCase()) {
-        case "add": {
-          if (!name || !type || !caseId || !dueDate) {
-            return "Missing required fields for adding a task.";
-          }
+    if (!(await this.canAccessCase(caseId)))
+      return "You do not have permission to add tasks to this case.";
 
-          const newTask = await prisma.task.create({
-            data: {
-              name,
-              type,
-              caseId,
-              dueDate: new Date(dueDate),
-              description: description || "",
-              completedById: completedById || null,
-            },
-          });
+    const task = await prisma.task.create({
+      data: {
+        caseId,
+        name,
+        type: type as TaskType,
+        dueDate: new Date(dueDate),
+        description,
+      },
+    });
 
-          return `✅ Task "${newTask.name}" created with ID: ${newTask.id}`;
-        }
+    return `Task '${task.name}' added to case ${caseId}.`;
+  }
 
-        case "edit": {
-          if (!id) return "Task ID is required to edit a task.";
+  @ToolDecorator({
+    docstring: `Marks a task as completed.`,
+    parameters: {
+      taskId: { type: "string", description: "Task ID (required)" },
+    },
+  })
+  async completeTask(taskId: string): Promise<string> {
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: { caseId: true },
+    });
 
-          const updatedTask = await prisma.task.update({
-            where: { id },
-            data: {
-              name: name || undefined,
-              type: type || undefined,
-              caseId: caseId || undefined,
-              dueDate: dueDate ? new Date(dueDate) : undefined,
-              description: description ?? undefined,
-              completedById: completedById ?? undefined,
-            },
-          });
+    if (!task) return "Task not found.";
+    if (!(await this.canAccessCase(task.caseId)))
+      return "You do not have permission to complete this task.";
 
-          return `✅ Task "${updatedTask.name}" updated successfully.`;
-        }
+    await prisma.task.update({
+      where: { id: taskId },
+      data: { completedById: this.user.id },
+    });
 
-        case "delete": {
-          if (!id) return "Task ID is required to delete a task.";
-
-          await prisma.task.delete({
-            where: { id },
-          });
-
-          return `🗑️ Task ${id} deleted successfully.`;
-        }
-
-        case "list": {
-          const tasks = await prisma.task.findMany({
-            orderBy: { dueDate: "asc" },
-            include: {
-              case: { select: { name: true } },
-              completedBy: { select: { names: true } },
-            },
-          });
-
-          if (!tasks.length) return "No tasks found.";
-
-          let output = `📝 Found ${tasks.length} tasks:\n`;
-          for (const task of tasks) {
-            output += `• [${task.id}] ${task.name} (${task.type}) — due ${task.dueDate.toISOString().split("T")[0]}`;
-            output += ` | Case: ${task.case?.name || "N/A"}`;
-            output += task.completedBy
-              ? ` | Completed by: ${task.completedBy.names}`
-              : "";
-            output += `\n`;
-          }
-
-          return output;
-        }
-
-        default:
-          return `❌ Invalid action "${action}". Must be one of "add", "edit", "delete", or "list".`;
-      }
-    } catch (error: any) {
-      return `❗ Error: ${error.message}`;
-    }
+    return `Task ${taskId} marked as completed.`;
   }
 }

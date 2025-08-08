@@ -1,4 +1,3 @@
-import { WebSearchTool } from "./providers/WebSearchTool"; // Import new tool
 import { InstitutionTools } from "./providers/InstitutionTools";
 import { UsersTools } from "./providers/UserTools";
 import { CasesTools } from "./providers/CaseTools";
@@ -24,17 +23,12 @@ export async function runAgent({
   const usersProvider = new UsersTools(user);
   const caseProvider = new CasesTools(user);
   const taskProvider = new TaskTools();
-  const searchProvider = new WebSearchTool();
 
   const institutionTools = ToolsManager.registerToolsFrom(institutionProvider);
   const userTools = ToolsManager.registerToolsFrom(usersProvider);
   const caseTools = ToolsManager.registerToolsFrom(caseProvider);
   const taskTools = ToolsManager.registerToolsFrom(taskProvider);
-  const searchTools = ToolsManager.registerToolsFrom(searchProvider);
-
-  //
   // Initialize LLM Provider
-  // Normalize the prompt
   const llmProvider = new GeminiLLMProvider();
   const agent = new Agent(llmProvider);
   // Register all tools with the agent
@@ -43,7 +37,7 @@ export async function runAgent({
     ...userTools,
     ...caseTools,
     ...taskTools,
-    ...searchTools,
+    // ...searchTools,
   ].forEach((tool) => agent.addTool(tool));
   // --- End Agent Initialization ---
 
