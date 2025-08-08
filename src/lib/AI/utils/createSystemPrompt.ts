@@ -124,7 +124,7 @@
 
 import { Tool } from "../agent/Tool";
 import { SystemPrompt } from "../interfaces/SystemPrompt";
-import { CustomUser } from "..";
+import { UserContext } from "../types/UserContext";
 import { getUserPermissions } from "./getUserPermissions";
 
 const BASE_INSTRUCTIONS: string[] = [
@@ -133,7 +133,7 @@ const BASE_INSTRUCTIONS: string[] = [
   "Use tools only when necessary.",
   "If a direct answer is possible or more information is needed first, do NOT trigger a tool. Only set requires_tools=true if a tool is actually needed.",
   "Always plan the required steps before using any tool.",
-  "Respect permissions strictly based on the provided permissions structure.",
+  "Respect permissions strictly based on the provided permissions structure. Only ",
   "If a user lacks permission for the requested operation, respond with an appropriate error message in the JSON (do not use tools).",
   "When an ID is required for create, delete, or modify actions, use a tool first to list relevant entities with indexes (e.g., 1, 2, 3...) so the user can select one by index.",
 ];
@@ -217,7 +217,7 @@ const RESPONSE_SCHEMA = {
  */
 export function createSystemPrompt(
   tools: Tool[],
-  user: CustomUser
+  user: UserContext
 ): SystemPrompt {
   const permissions = getUserPermissions(user);
   console.log("Permissions - ", permissions);

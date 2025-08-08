@@ -1,15 +1,10 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
+import prisma from "@/lib/prisma/prisma";
+import type { UserContext } from "../types/UserContext";
 
 export class InstitutionTools {
   @ToolDecorator({
-    docstring: `Adds, edits, or deletes an institution based on the provided action.
-
-Parameters:
-- action: One of "add", "edit", or "delete".
-- id: (Required for edit/delete) Institution ID.
-- name: (Optional) Name of the institution.
-- type: (Optional) Type/category of the institution.
-- address: (Optional) Physical address of the institution.`,
+    docstring: `Adds, edits, or deletes an institution with permission checks and audit logging.`,
     parameters: {
       action: {
         type: "string",
@@ -21,11 +16,7 @@ Parameters:
       },
       name: {
         type: "string",
-        description: "Institution name (optional)",
-      },
-      type: {
-        type: "string",
-        description: "Institution type or category (optional)",
+        description: "Institution name (required for add)",
       },
       address: {
         type: "string",
@@ -37,56 +28,97 @@ Parameters:
     action: string,
     id?: string,
     name?: string,
-    type?: string,
-    address?: string
+    address?: string,
+    user?: UserContext
   ): Promise<string> {
+    if (!user) return "User context is required.";
+
     try {
       switch (action.toLowerCase()) {
         case "add": {
-          const res = await fetch("/api/dashboard/institution", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          if (!name) return "Institution name is required.";
+
+          // Permission check: assume all users can add
+          const institution = await prisma.institution.create({
+            data: {
               name,
-              type,
-              address,
-            }),
+              location: address || undefined,
+            },
           });
-          const result = await res.json();
-          if (!res.ok) return `Error adding institution: ${result.message}`;
-          return `Institution added with ID: ${result.id}`;
+
+          await prisma.auditLog.create({
+            data: {
+              action: "CREATE",
+              entity: "Institution",
+              entityId: institution.id,
+              userId: user.id,
+              details: { name, address },
+            },
+          });
+
+          return `Institution added with ID: ${institution.id}`;
         }
 
         case "edit": {
-          if (!id) return "Institution ID is required to edit.";
-          const res = await fetch(`/api/dashboard/institution/${id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name,
-              type,
-              address,
-            }),
+          if (!id) return "Institution ID is required.";
+
+          const institutionRole = user.institutions.find(
+            ({ id: _id }) => _id === id
+          )?.role;
+          if (institutionRole !== "ADMIN")
+            return "You do not have permission to edit this institution.";
+
+          const institution = await prisma.institution.update({
+            where: { id },
+            data: {
+              name: name || undefined,
+              location: address || undefined,
+            },
           });
-          const result = await res.json();
-          if (!res.ok) return `Error updating institution: ${result.message}`;
-          return `Institution ${id} updated successfully.`;
+
+          await prisma.auditLog.create({
+            data: {
+              action: "UPDATE",
+              entity: "Institution",
+              entityId: institution.id,
+              userId: user.id,
+              details: { name, address },
+            },
+          });
+
+          return `Institution ${institution.id} updated successfully.`;
         }
 
         case "delete": {
-          if (!id) return "Institution ID is required to delete.";
-          const res = await fetch(`/api/dashboard/institution/${id}`, {
-            method: "DELETE",
+          if (!id) return "Institution ID is required.";
+
+          // Permission check: only system admin can delete
+          if (!user.systemAdmin)
+            return "Only system administrators can delete institutions.";
+
+          const institution = await prisma.institution.delete({
+            where: { id },
           });
-          const result = await res.json();
-          if (!res.ok) return `Error deleting institution: ${result.message}`;
-          return `Institution ${id} deleted successfully.`;
+
+          await prisma.auditLog.create({
+            data: {
+              action: "DELETE",
+              entity: "Institution",
+              entityId: institution.id,
+              userId: user.id,
+            },
+          });
+
+          return `Institution ${institution.id} permanently deleted`;
         }
 
         default:
-          return `Invalid action: ${action}. Must be one of "add", "edit", or "delete".`;
+          return `Invalid action: ${action}`;
       }
     } catch (error: any) {
+      if (error.code === "P2025") {
+        return `Institution with ID ${id} not found.`;
+      }
       return `Unexpected error: ${error.message}`;
     }
   }

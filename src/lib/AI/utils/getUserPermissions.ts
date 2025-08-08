@@ -1,4 +1,4 @@
-import { CustomUser } from "..";
+import { UserContext } from "../types/UserContext";
 
 type UserPermissions = {
   isSystemAdmin: boolean;
@@ -12,7 +12,7 @@ type UserPermissions = {
   }[];
 };
 
-export function getUserPermissions(user: CustomUser): UserPermissions {
+export function getUserPermissions(user: UserContext): UserPermissions {
   return {
     isSystemAdmin: user.systemAdmin,
     canMakeSystemChanges: user.systemAdmin,

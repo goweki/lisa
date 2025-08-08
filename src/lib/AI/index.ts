@@ -8,14 +8,7 @@ import { Agent } from "./agent/Agent";
 import { GeminiLLMProvider } from "./llm/GeminiLLMProvider";
 import { Content } from "@google/genai";
 import { User, UserRole } from "@prisma/client";
-
-export type CustomUser = User & {
-  institutions: {
-    id: string;
-    name: string;
-    role: UserRole;
-  }[];
-};
+import { UserContext } from "./types/UserContext";
 
 const dummyPrompt =
   "Find the latest trends in AI for 2025 specifically related to Large Language Models and summarize them search the web. Just return Json no additional text.";
@@ -24,7 +17,7 @@ export async function runAgent({
   user,
   prompt = dummyPrompt,
 }: {
-  user: CustomUser;
+  user: UserContext;
   prompt: Content[] | string;
 }) {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---

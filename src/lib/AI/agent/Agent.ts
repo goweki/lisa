@@ -4,6 +4,7 @@ import { createSystemPrompt } from "../utils/createSystemPrompt";
 import { Tool } from "./Tool";
 import { Message } from "@prisma/client";
 import { generateModelHistoryFromMessages } from "../utils/generateHistory";
+import { UserContext } from "../types/UserContext";
 
 export type LLMInput = {
   prompt: Content[] | string;
@@ -53,7 +54,7 @@ export class Agent {
    * It builds the input object (using a system prompt, user prompt, and other parameters)
    * and passes it to the LLMProvider.
    */
-  async callLLM(content: Content[] | string, user: any): Promise<any> {
+  async callLLM(content: Content[] | string, user: UserContext): Promise<any> {
     const toolsArray = Object.values(this.tools);
     const systemPrompt = JSON.stringify(
       createSystemPrompt(toolsArray, user),

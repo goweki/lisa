@@ -306,6 +306,16 @@ model Blogpost {
   @@map("blog")
 }
 
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  userId    String
+  timestamp DateTime @default(now())
+  details   Json?
+}
+
 // ENUMS
 
 enum UserRole {
