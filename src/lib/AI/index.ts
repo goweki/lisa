@@ -1,4 +1,7 @@
 import { WebSearchTool } from "./providers/WebSearchTool"; // Import new tool
+import { InstitutionTools } from "./providers/InstitutionTools";
+import { UserTools } from "./providers/UserTools";
+import { CaseTools } from "./providers/CaseTools";
 import { TaskTools } from "./providers/TaskTools";
 import { ToolsManager } from "./agent/ToolsManager";
 import { Agent } from "./agent/Agent";
@@ -25,17 +28,31 @@ export async function runAgent({
   prompt: Content[] | string;
 }) {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
-  const searchProvider = new WebSearchTool();
+  const institutionProvider = new InstitutionTools();
+  const userProvider = new UserTools();
+  const caseProvider = new CaseTools();
   const taskProvider = new TaskTools();
-  const searchTools = ToolsManager.registerToolsFrom(searchProvider);
+  const searchProvider = new WebSearchTool();
+
+  const institutionTools = ToolsManager.registerToolsFrom(institutionProvider);
+  const userTools = ToolsManager.registerToolsFrom(userProvider);
+  const caseTools = ToolsManager.registerToolsFrom(caseProvider);
   const taskTools = ToolsManager.registerToolsFrom(taskProvider);
+  const searchTools = ToolsManager.registerToolsFrom(searchProvider);
+
   //
   // Initialize LLM Provider
   // Normalize the prompt
   const llmProvider = new GeminiLLMProvider();
   const agent = new Agent(llmProvider);
   // Register all tools with the agent
-  [...searchTools, ...taskTools].forEach((tool) => agent.addTool(tool));
+  [
+    ...institutionTools,
+    ...userTools,
+    ...caseTools,
+    ...taskTools,
+    ...searchTools,
+  ].forEach((tool) => agent.addTool(tool));
   // --- End Agent Initialization ---
 
   let finalResponse = "";
@@ -46,12 +63,12 @@ export async function runAgent({
       ? [{ role: "user", parts: [{ text: prompt }] }]
       : prompt;
   const initialLLMResponse = await agent.callLLM(normalizedPrompt, user);
+
   if (!initialLLMResponse.requires_tools) {
     console.log("Lisa AI DOES NOT require tools for this response");
-    finalResponse =
-      typeof initialLLMResponse === "string"
-        ? initialLLMResponse
-        : initialLLMResponse.direct_response || "";
+    finalResponse = initialLLMResponse.direct_response
+      ? initialLLMResponse.direct_response
+      : initialLLMResponse || "";
   } else {
     console.log("Lisa AI requires tools");
     const toolResults: Record<string, string> = {};
