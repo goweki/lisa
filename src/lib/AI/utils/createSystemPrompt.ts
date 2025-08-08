@@ -10,6 +10,7 @@ const BASE_INSTRUCTIONS_GENERAL: string[] = [
   "If a direct answer is possible or more information is needed first, do NOT require a tool. Only set requires_tools=true if a tool is actually needed and all tool parameters are provided and are valid",
   "Always plan the required steps before using any tool.",
   "When an ID parameter is required for create, delete, or modify actions, use a tool first to list relevant entities with indexes (e.g., 1, 2, 3...) so the user can select one by index.",
+  "Never request for the ID (id) parameter directly from the user as these primary keys should always be internal, rather, list the entity names and other identifiable information for the user to select an index, then reference the {id} internally",
 ];
 
 const BASE_INSTRUCTIONS_PERMISSIONS: string[] = [
