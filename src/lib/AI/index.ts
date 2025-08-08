@@ -95,12 +95,13 @@ export async function runAgent({
             2. For each result, generate a short response (2-3 sentences).
             3. Use clear, informative language. Do not generate any additional text beyond the required summaries.
             No tool usage required.
-            Respond in JSON with no additional text, the direct response wshould be in the 'direct_response' attribute.
+            Respond ONLY with a valid JSON object that matches the specified schema. Do not include any additional explanation, comment, markdown formatting, or any surrounding text. Do not wrap it in any punctuations, descriptors or triple backticks.
+            The direct response should be in the 'direct_response' attribute in the JSON response.
 
             Format:
             Actions taken:
-            1. **[Action taken]** - (description)
-            2. **[action taken]** - (description)
+            1. *[Action taken]* - (description)
+            2. *[action taken]* - (description)
 
             Final Summary:
             (Concise summary of actions taken and steps moving forward)
