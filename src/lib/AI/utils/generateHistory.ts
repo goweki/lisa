@@ -22,7 +22,7 @@ export async function generateModelHistoryFromMessages(
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
   // latest 5 or fewer messages
-  const latestMessages = recentMessages.slice(-5);
+  const latestMessages = recentMessages.slice(-10);
 
   let currentRole: "user" | "model" | null = null;
   let currentParts: { text: string }[] = [];
