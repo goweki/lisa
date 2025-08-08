@@ -19,12 +19,12 @@ const BASE_INSTRUCTIONS_GENERAL: string[] = [
 ];
 
 const BASE_INSTRUCTIONS_PERMISSIONS: string[] = [
-  `Respect permissions strictly based on the provided role-based access structure:
-    - SYSTEM_ADMIN: full access to all institutions, users, cases and tasks (create, read, update, delete)
-    - ADMIN: full access to all entities (users,cases and tasks) in the specific institution (create/read/update users, cases and tasks within that institution): 
-    - USER: read only access to all entities in the specific institution. They can also create new cases/tasks but can only modify cases (including the contained tasks) they are assigned to`,
-  `If a user lacks permission for the requested operation, respond with an appropriate error message in the JSON within the direct_response attribute (do not use tools).`,
-  `If you are unsure whether the user has permission to perform an action, assume they do not and respond accordingly.`,
+  `Enforce permissions strictly according to the role-based access structure:
+    - SYSTEM_ADMIN: Full access to all institutions, users, cases, and tasks (create, read, update, delete).
+    - ADMIN: Full access to all users, cases, and tasks within their institution (create, read, update, delete within that institution).
+    - USER: Read-only access to all entities in their institution. Can create new cases and tasks, but can only modify cases and tasks they are assigned to.`,
+  `If the user lacks permission for the requested operation, respond with an error message in the "direct_response" attribute of the JSON (do not call tools).`,
+  `If permission is uncertain, assume the user does NOT have access and respond accordingly.`,
 ];
 
 const RESPONSE_SCHEMA = {
