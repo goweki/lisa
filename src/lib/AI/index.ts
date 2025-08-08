@@ -105,11 +105,13 @@ export async function runAgent({
             (Concise summary of actions taken and steps moving forward)
         `;
 
-    // Step 3: Call LLM again for final summarization
+    // Step 3: Call LLM again for final summary
     const finalLLMResponse = await agent.callLLM(finalPrompt, user);
-    console.log("Final response - ", finalLLMResponse);
     if (!finalLLMResponse.direct_response) {
-      console.error("Could not generate final summary after tool use.");
+      console.error(
+        "Could not generate final summary after tool use. No direct_response in:"
+      );
+      console.error(finalLLMResponse);
     }
     finalResponse = finalLLMResponse.direct_response || "";
   }
