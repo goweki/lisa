@@ -9,6 +9,7 @@ import { GeminiLLMProvider } from "./llm/GeminiLLMProvider";
 import { Content } from "@google/genai";
 import { User, UserRole } from "@prisma/client";
 import { UserContext } from "./types/UserContext";
+import { LLMResponse } from "./utils/createSystemPrompt";
 
 const dummyPrompt =
   "Find the latest trends in AI for 2025 specifically related to Large Language Models and summarize them search the web. Just return Json no additional text.";
@@ -19,7 +20,7 @@ export async function runAgent({
 }: {
   user: UserContext;
   prompt: Content[] | string;
-}) {
+}): Promise<string | null> {
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
   const institutionProvider = new InstitutionTools(user);
   const userProvider = new UserTools();
@@ -48,7 +49,7 @@ export async function runAgent({
   ].forEach((tool) => agent.addTool(tool));
   // --- End Agent Initialization ---
 
-  let finalResponse = "";
+  let finalResponse: string | null = null;
 
   // Step 1: Call LLM to determine if tools are needed
   const normalizedPrompt: Content[] =
@@ -59,11 +60,13 @@ export async function runAgent({
 
   console.log("Agent response from callLLM:", initialLLMResponse);
 
+  if (!initialLLMResponse) {
+    return null;
+  }
+
   if (!initialLLMResponse.requires_tools) {
     console.log("Lisa AI DOES NOT require tools for this response");
-    finalResponse = initialLLMResponse.direct_response
-      ? initialLLMResponse.direct_response
-      : initialLLMResponse || "";
+    finalResponse = initialLLMResponse.direct_response || initialLLMResponse;
   } else {
     console.log("Lisa AI requires tools");
     const toolResults: Record<string, string> = {};
@@ -94,7 +97,7 @@ export async function runAgent({
             2. For each result, generate a short response (2-3 sentences).
             3. Use clear, informative language. Do not generate any additional text beyond the required summaries.
             No tool usage required.
-            Respond in JSON no additional text.
+            Respond in JSON with no additional text, the direct response wshould be in the 'direct_response' attribute.
 
             Format:
             Actions taken:
@@ -107,13 +110,20 @@ export async function runAgent({
 
     // Step 3: Call LLM again for final summary
     const finalLLMResponse = await agent.callLLM(finalPrompt, user);
-    if (!finalLLMResponse.direct_response) {
+    // if (!finalLLMResponse.direct_response) {
+    //   console.error(
+    //     "Could not generate final summary after tool use. No direct_response in:"
+    //   );
+    //   console.error(finalLLMResponse);
+    // }
+    // finalResponse = finalLLMResponse.direct_response || "";
+    if (finalLLMResponse?.direct_response) {
+      finalResponse = finalLLMResponse.direct_response as string;
+    } else {
       console.error(
         "Could not generate final summary after tool use. No direct_response in:"
       );
-      console.error(finalLLMResponse);
     }
-    finalResponse = finalLLMResponse.direct_response || "";
   }
 
   return finalResponse;

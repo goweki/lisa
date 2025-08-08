@@ -7,9 +7,9 @@ import {
   type Part,
 } from "@google/genai";
 import { LLMProvider } from "./LLMProvider";
-import { writeToLog } from "../utils/writeToLog";
 import { isValidJson } from "../utils/isValidJson";
 import { LLMInput } from "../agent/Agent";
+import { LLMResponse } from "../utils/createSystemPrompt";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const safetySettings: SafetySetting[] = [
@@ -41,15 +41,14 @@ export class GeminiLLMProvider implements LLMProvider {
 
   constructor(modelName?: string) {
     if (!GEMINI_API_KEY) {
-      throw new Error("missiing .env variable - GEMINI_API_KEY");
+      throw new Error("missing .env variable - GEMINI_API_KEY");
     }
 
     this.gemini = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
     this.modelName = modelName || "gemini-2.5-flash";
   }
 
-  async callLLM(input: LLMInput): Promise<any> {
-    // await writeToLog("llm_input.log: ", JSON.stringify(input));
+  async callLLM(input: LLMInput): Promise<LLMResponse | string> {
     console.log("llm_input.log: ", JSON.stringify(input));
 
     const response = await this.gemini.models.generateContent({
@@ -65,13 +64,14 @@ export class GeminiLLMProvider implements LLMProvider {
     });
     const fullResponse = response.text || "";
 
-    // await writeToLog("llm_response.log: ", fullResponse);
     console.log("llm_response.log: ", fullResponse);
 
     if (isValidJson(fullResponse)) {
       return JSON.parse(fullResponse);
     } else {
-      return fullResponse;
+      const err = "Invalid LLMResponse, expected it to be parsable to JSON";
+      console.error(` ${err} \n> LLMResponse: `, fullResponse);
+      throw new Error(err);
     }
   }
 }

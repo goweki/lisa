@@ -1,6 +1,6 @@
 import { Content } from "@google/genai";
 import { LLMProvider } from "../llm/LLMProvider";
-import { createSystemPrompt } from "../utils/createSystemPrompt";
+import { createSystemPrompt, LLMResponse } from "../utils/createSystemPrompt";
 import { Tool } from "./Tool";
 import { Message } from "@prisma/client";
 import { generateModelHistoryFromMessages } from "../utils/generateHistory";
@@ -54,7 +54,11 @@ export class Agent {
    * It builds the input object (using a system prompt, user prompt, and other parameters)
    * and passes it to the LLMProvider.
    */
-  async callLLM(content: Content[] | string, user: UserContext): Promise<any> {
+
+  async callLLM(
+    content: Content[] | string,
+    user: UserContext
+  ): Promise<LLMResponse | null> {
     const toolsArray = Object.values(this.tools);
     const systemPrompt = JSON.stringify(
       createSystemPrompt(toolsArray, user),
@@ -73,6 +77,11 @@ export class Agent {
       prompt_template: promptTemplate,
     };
 
-    return await this.llmProvider.callLLM(input);
+    try {
+      return await this.llmProvider.callLLM(input);
+    } catch (err: any) {
+      console.error(err);
+      return null;
+    }
   }
 }

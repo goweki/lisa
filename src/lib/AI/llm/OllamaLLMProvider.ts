@@ -1,5 +1,4 @@
 import { LLMProvider } from "./LLMProvider";
-import { writeToLog } from "../utils/writeToLog";
 import ollama, { Tool } from "ollama";
 
 export class OllamaLLMProvider implements LLMProvider {
@@ -10,7 +9,7 @@ export class OllamaLLMProvider implements LLMProvider {
   }
 
   async callLLM(input: any): Promise<any> {
-    await writeToLog("llm_input.log", JSON.stringify(input));
+    console.log("llm_input.log", JSON.stringify(input));
     const tools: Tool[] = [];
 
     const request = {
