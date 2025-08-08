@@ -110,18 +110,12 @@ export async function runAgent({
 
     // Step 3: Call LLM again for final summary
     const finalLLMResponse = await agent.callLLM(finalPrompt, user);
-    // if (!finalLLMResponse.direct_response) {
-    //   console.error(
-    //     "Could not generate final summary after tool use. No direct_response in:"
-    //   );
-    //   console.error(finalLLMResponse);
-    // }
-    // finalResponse = finalLLMResponse.direct_response || "";
+
     if (finalLLMResponse?.direct_response) {
       finalResponse = finalLLMResponse.direct_response as string;
     } else {
       console.error(
-        "Could not generate final summary after tool use. No direct_response in:"
+        "Could not generate final summary after tool use. No direct_response attribute DOES NOT exist"
       );
     }
   }

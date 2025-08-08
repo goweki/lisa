@@ -142,4 +142,30 @@ Parameters:
 
     return `Institution ${institution.id} permanently deleted.`;
   }
+
+  @ToolDecorator({
+    docstring: `Lists all institutions visible to the user.
+System admins will see all institutions. Regular users only see their associated institutions.`,
+    parameters: {},
+  })
+  async listInstitutions(): Promise<string> {
+    const institutions = this.user.systemAdmin
+      ? await prisma.institution.findMany()
+      : await prisma.institution.findMany({
+          where: {
+            id: {
+              in: this.user.institutions.map((inst) => inst.id),
+            },
+          },
+        });
+
+    if (institutions.length === 0) return "No institutions found.";
+
+    return institutions
+      .map(
+        (inst) =>
+          `- ${inst.name} (${inst.id})${inst.location ? ` - ${inst.location}` : ""}`
+      )
+      .join("\n");
+  }
 }
