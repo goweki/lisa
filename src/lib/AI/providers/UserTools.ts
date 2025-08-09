@@ -12,9 +12,6 @@ export class UsersTools {
 
   @ToolDecorator({
     docstring: `Creates a new user within an institution. 
-    SYSTEM_ADMIN role can create a user in any institution.
-    ADMIN role can create a user only in their institution.
-    USER role cannot create a new user
 
     Parameters:
     - institutionId: ID of the institution (required)
@@ -77,7 +74,6 @@ export class UsersTools {
 
   @ToolDecorator({
     docstring: `Edits an existing user's name, email, or role.
-System admins can edit any user. Admins can only edit users in their institution.
 
 Parameters:
 - userId: ID of the user to edit (required)
@@ -136,8 +132,6 @@ Parameters:
 
   @ToolDecorator({
     docstring: `Deletes a user permanently. 
-System admins can delete any user.
-Admins can only delete users in their institution.
 
 Parameters:
 - userId: ID of the user to delete (required)`,
@@ -182,8 +176,7 @@ Parameters:
   }
 
   @ToolDecorator({
-    docstring: `Lists all users visible to the current user.
-System admins see all users. Admins and regular users see only users in their institution(s).`,
+    docstring: `Lists all users visible to the current user.`,
     parameters: {},
   })
   async listUsers(): Promise<string> {
@@ -207,8 +200,8 @@ System admins see all users. Admins and regular users see only users in their in
     return users
       .map(
         (u) =>
-          `- ${u.names} (${u.email}) [${u.id}] - Institutions: ${u.institutions
-            .map((inst) => `${inst.institutionId}:${inst.role}`)
+          `- ${u.names} (${u.email}) with id ${u.id} - Institutions: ${u.institutions
+            .map((inst) => `institutionId-${inst.institutionId}:${inst.role}`)
             .join(", ")}`
       )
       .join("\n");
