@@ -10,6 +10,7 @@ import { LLMProvider } from "./LLMProvider";
 import { isValidJson } from "../utils/isValidJson";
 import { LLMInput } from "../agent/Agent";
 import { LLMResponse } from "../utils/createSystemPrompt";
+import { jsonrepair } from "jsonrepair";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const safetySettings: SafetySetting[] = [
@@ -69,7 +70,25 @@ export class GeminiLLMProvider implements LLMProvider {
     if (isValidJson(fullResponse)) {
       return JSON.parse(fullResponse);
     } else {
-      const err = "Invalid LLMResponse, expected it to be parsable to JSON";
+      const brokenJson = fullResponse; // broken
+      const fixedJson = jsonrepair(brokenJson);
+      const parsedFixedJson = JSON.parse(fixedJson);
+
+      if (parsedFixedJson && typeof parsedFixedJson === "object") {
+        console.log("✅ Fixed response to valid JSON - ", parsedFixedJson);
+        return parsedFixedJson;
+      } else if (Array.isArray(parsedFixedJson)) {
+        console.warn(
+          "Tried fixing LLMResponse object, but got array!",
+          parsedFixedJson
+        );
+        if (parsedFixedJson.length === 1) {
+          return parsedFixedJson[0];
+        }
+      }
+
+      const err =
+        "❌ Invalid LLMResponse, expected it to be parsable to JSON, could not repair";
       console.error(` ${err} \n> LLMResponse: `, fullResponse);
       throw new Error(err);
     }
