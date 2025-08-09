@@ -10,7 +10,7 @@ export class CasesTools {
   }
 
   @ToolDecorator({
-    docstring: `Lists institutions the current user can create cases for.`,
+    docstring: `Lists institutions the current user can create cases for, with corresponding id`,
     parameters: {},
   })
   async listInstitutions(): Promise<string> {
@@ -28,7 +28,9 @@ export class CasesTools {
 
     if (!institutions.length) return "No institutions found.";
 
-    return institutions.map((inst) => `- ${inst.name} [${inst.id}]`).join("\n");
+    return institutions
+      .map((inst) => `- ${inst.name} with id ${inst.id}`)
+      .join("\n");
   }
 
   /**
@@ -37,12 +39,12 @@ export class CasesTools {
    * Institution admins and regular users see only case types for their institutions.
    */
   @ToolDecorator({
-    docstring: `Lists available case types for the current user's institution(s).
-SYSTEM_ADMIN see all case types.
-Institution ADMIN and USER see only case types in their institution(s).
+    docstring: `Lists available case types for the current user's institution(s) with corresponding id.
+    SYSTEM_ADMIN see all case types.
+    Institution ADMIN and USER see only case types in their institution(s).
 
-Returns:
-- name, id, primary party, secondary party`,
+    Returns:
+    - name, id, primary party, secondary party`,
     parameters: {},
   })
   async listCaseTypes(): Promise<string> {
@@ -67,12 +69,7 @@ Returns:
 
     if (!caseTypes.length) return "No case types found.";
 
-    return caseTypes
-      .map(
-        (ct) =>
-          `- ${ct.name} [${ct.id}] (${ct.primaryParty} vs ${ct.secondaryParty})`
-      )
-      .join("\n");
+    return caseTypes.map((ct) => `- ${ct.name} with id ${ct.id}`).join("\n");
   }
 
   /**
@@ -81,26 +78,27 @@ Returns:
    */
   @ToolDecorator({
     docstring: `Creates a new case. 
-System admins can create cases for any institution.
-Institution admins can create cases only for their institution.
+    System admins can create cases for any institution.
+    Institution admins can create cases only for their institution.
 
-IMPORTANT: Before calling this, first call listCaseTypes() to find the correct caseTypeId.
+    IMPORTANT: Before calling this, first call listCaseTypes() to find the correct caseTypeId;
+    call listInstitutions() to find the correct institutionId
 
-Parameters:
-- institutionId: Institution ID (required)
-- caseTypeId: Case type ID (required) — use listCaseTypes() to retrieve valid options
-- name: Name of the case (required)
-- description: Optional case description
-- clientParty: Name of client party (required)
-- clientName: Name of the client (required)
-- clientIdNumber: Client ID number (optional)
-- clientTel: Client telephone number (required)
-- clientEmail: Client email (optional)
-- otherPartyName: Name of other party (optional)
-- otherPartyTel: Telephone of other party (optional)
-- otherPartyEmail: Email of other party (optional)
-- otherPartyDescription: Description of other party (optional)
-- court: Court name (optional)`,
+    Parameters:
+    - institutionId: Institution ID (Foreign key & required) - use listInstitutions() to retrieve valid options
+    - caseTypeId: Case type ID (Foreign key & required) — use listCaseTypes() to retrieve valid options
+    - name: Name of the case (required)
+    - description: Optional case description
+    - clientParty: Name of client party (required)
+    - clientName: Name of the client (required)
+    - clientIdNumber: Client ID number (optional)
+    - clientTel: Client telephone number (required)
+    - clientEmail: Client email (optional)
+    - otherPartyName: Name of other party (optional)
+    - otherPartyTel: Telephone of other party (optional)
+    - otherPartyEmail: Email of other party (optional)
+    - otherPartyDescription: Description of other party (optional)
+    - court: Court name (optional)`,
     parameters: {
       institutionId: {
         type: "string",
@@ -109,7 +107,7 @@ Parameters:
       caseTypeId: {
         type: "string",
         description:
-          "Case type ID (required) — use listCaseTypes() to see available values",
+          "Case type ID (Foreign key & required) — use listCaseTypes() to see available values",
       },
       name: { type: "string", description: "Name of the case (required)" },
       description: { type: "string", description: "Description (optional)" },
