@@ -27,8 +27,8 @@ const BASE_INSTRUCTIONS_PERMISSIONS: string[] = [
 
 const BASE_INSTRUCTIONS_QUERY_LOGIC: string[] = [
   "When an ID parameter is required for delete, or modify actions, first call a tool to list relevant entities with numbered indexes (1, 2, 3...).",
-  "Never request the ID value directly from the user. Instead, present the numbered list, let the user select an index, and map that index internally to the corresponding {id}.",
-  "Before calling addCase, always call listInstitutions and listCaseTypes in sequence, present the numbered options to the user, collect their selections, and then map them to the correct IDs internally before calling addCase.",
+  "Never request the ID value directly from the user. Instead, present the numbered list with the corresponding id(s), let the user select an index",
+  "Before calling addCase, always call listInstitutions and listCaseTypes in sequence, present the numbered options to the user with corresponding id then collect their selections, before calling addCase.",
 ];
 
 const RESPONSE_SCHEMA = {
