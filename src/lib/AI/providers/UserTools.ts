@@ -39,11 +39,10 @@ Parameters:
   async addUser(
     institutionId?: string,
     names?: string,
-    email?: string,
-    role?: string
+    email?: string
   ): Promise<string> {
-    if (!institutionId || !names || !email || !role) {
-      return "Institution ID, name, email, and role are required.";
+    if (!institutionId || !names || !email) {
+      return "Institution ID, name, email are required.";
     }
 
     if (!this.user.systemAdmin) {
@@ -62,7 +61,6 @@ Parameters:
         institutions: {
           create: {
             institutionId,
-            role: role.toUpperCase() as UserRole,
           },
         },
       },
@@ -74,7 +72,7 @@ Parameters:
         entity: `User: ${newUser.names}`,
         entityId: newUser.id,
         userId: this.user.id,
-        details: { institutionId, names, email, role },
+        details: { institutionId, names, email },
       },
     });
 
@@ -88,23 +86,17 @@ System admins can edit any user. Admins can only edit users in their institution
 Parameters:
 - userId: ID of the user to edit (required)
 - name: New name (optional)
-- email: New email (optional)
-- role: New role ("USER" or "ADMIN") (optional)`,
+- email: New email (optional)`,
     parameters: {
       userId: { type: "string", description: "User ID (required)" },
       name: { type: "string", description: "New name (optional)" },
       email: { type: "string", description: "New email (optional)" },
-      role: {
-        type: "string",
-        description: `New role ("USER" or "ADMIN") (optional)`,
-      },
     },
   })
   async editUser(
     userId?: string,
     names?: string,
-    email?: string,
-    role?: string
+    email?: string
   ): Promise<string> {
     if (!userId) return "User ID is required.";
 
@@ -130,14 +122,6 @@ Parameters:
       data: {
         names: names || undefined,
         email: email || undefined,
-        institutions: role
-          ? {
-              updateMany: {
-                where: {},
-                data: { role: role.toUpperCase() as UserRole },
-              },
-            }
-          : undefined,
       },
     });
 
@@ -147,7 +131,7 @@ Parameters:
         entity: `User: ${updatedUser.names}`,
         entityId: updatedUser.id,
         userId: this.user.id,
-        details: { names, email, role },
+        details: { names, email },
       },
     });
 
