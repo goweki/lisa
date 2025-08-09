@@ -1,7 +1,6 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
 import type { UserContext } from "../types/UserContext";
-import { UserRole } from "@prisma/client";
 
 export class UsersTools {
   constructor(private user: UserContext) {
@@ -182,7 +181,7 @@ Parameters:
   async listUsers(): Promise<string> {
     const users = this.user.systemAdmin
       ? await prisma.user.findMany({
-          include: { institutions: true },
+          include: { institutions: { include: { institution: true } } },
         })
       : await prisma.user.findMany({
           where: {
@@ -192,7 +191,7 @@ Parameters:
               },
             },
           },
-          include: { institutions: true },
+          include: { institutions: { include: { institution: true } } },
         });
 
     if (users.length === 0) return "No users found.";
@@ -201,7 +200,10 @@ Parameters:
       .map(
         (u) =>
           `- ${u.names} (${u.email}) with id ${u.id} - Institutions: ${u.institutions
-            .map((inst) => `institutionId-${inst.institutionId}:${inst.role}`)
+            .map(
+              (inst) =>
+                `${inst.role} in institution with id ${inst.institutionId} (${inst.institution.name})`
+            )
             .join(", ")}`
       )
       .join("\n");
