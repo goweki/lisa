@@ -12,8 +12,9 @@ export class UsersTools {
 
   @ToolDecorator({
     docstring: `Creates a new user within an institution. 
-    System admins can create users in any institution.
-    Admins can create users only in their institution.
+    SYSTEM_ADMIN role can create a user in any institution.
+    ADMIN role can create a user only in their institution.
+    USER role cannot create a new user
 
     Parameters:
     - institutionId: ID of the institution (required)
