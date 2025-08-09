@@ -91,14 +91,7 @@ export class CasesTools {
     - description: Optional case description
     - clientParty: Name of client party (required)
     - clientName: Name of the client (required)
-    - clientIdNumber: Client ID number (optional)
-    - clientTel: Client telephone number (required)
-    - clientEmail: Client email (optional)
-    - otherPartyName: Name of other party (optional)
-    - otherPartyTel: Telephone of other party (optional)
-    - otherPartyEmail: Email of other party (optional)
-    - otherPartyDescription: Description of other party (optional)
-    - court: Court name (optional)`,
+    - clientTel: Client telephone number (required)`,
     parameters: {
       institutionId: {
         type: "string",
@@ -116,29 +109,7 @@ export class CasesTools {
         description: "Client party name (required)",
       },
       clientName: { type: "string", description: "Client name (required)" },
-      clientIdNumber: {
-        type: "string",
-        description: "Client ID number (optional)",
-      },
       clientTel: { type: "string", description: "Client telephone (required)" },
-      clientEmail: { type: "string", description: "Client email (optional)" },
-      otherPartyName: {
-        type: "string",
-        description: "Other party name (optional)",
-      },
-      otherPartyTel: {
-        type: "string",
-        description: "Other party telephone (optional)",
-      },
-      otherPartyEmail: {
-        type: "string",
-        description: "Other party email (optional)",
-      },
-      otherPartyDescription: {
-        type: "string",
-        description: "Other party description (optional)",
-      },
-      court: { type: "string", description: "Court name (optional)" },
     },
   })
   async addCase(params: any): Promise<string> {
