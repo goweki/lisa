@@ -1,7 +1,7 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
 import type { UserContext } from "../types/UserContext";
-import { TaskType } from "@prisma/client";
+import { TaskType, UserRole } from "@prisma/client";
 
 export class TasksTools {
   constructor(private user: UserContext) {
@@ -11,6 +11,8 @@ export class TasksTools {
   }
 
   private async canAccessCase(caseId: string) {
+    if (this.user.systemAdmin) return true;
+
     const caseData = await prisma.case.findUnique({
       where: { id: caseId },
       select: { institutionId: true, assigneeId: true, createdById: true },
@@ -18,10 +20,10 @@ export class TasksTools {
 
     if (!caseData) return false;
 
-    if (this.user.systemAdmin) return true;
     if (
       this.user.institutions.some(
-        (i) => i.id === caseData.institutionId && i.role === "ADMIN"
+        (inst) =>
+          inst.id === caseData.institutionId && inst.role === UserRole.ADMIN
       )
     )
       return true;

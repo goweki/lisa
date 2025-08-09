@@ -13,9 +13,6 @@ const BASE_INSTRUCTIONS_GENERAL: string[] = [
   "Set requires_tools=true only if a tool is genuinely needed AND all required parameters are valid and present.",
   "If the answer can be provided directly or more information is still needed, do NOT use a tool.",
   "Always determine the required steps internally before calling any tool.",
-  // ID handling rules
-  "When an ID parameter is required for create, delete, or modify actions, first call a tool to list relevant entities with numbered indexes (1, 2, 3...).",
-  "Never request the ID value directly from the user. Instead, present the numbered list, let the user select an index, and map that index internally to the corresponding {id}.",
 ];
 
 const BASE_INSTRUCTIONS_PERMISSIONS: string[] = [
@@ -25,6 +22,12 @@ const BASE_INSTRUCTIONS_PERMISSIONS: string[] = [
     - USER: Read-only access to all entities in their institution. Can create new cases and tasks, but can only modify cases and tasks they are assigned to.`,
   `If the user lacks permission for the requested operation, respond with an error message in the "direct_response" attribute of the JSON (do not call tools).`,
   `If permission is uncertain, assume the user does NOT have access and respond accordingly.`,
+];
+
+const BASE_INSTRUCTIONS_QUERY_LOGIC: string[] = [
+  "When an ID parameter is required for delete, or modify actions, first call a tool to list relevant entities with numbered indexes (1, 2, 3...).",
+  "Never request the ID value directly from the user. Instead, present the numbered list, let the user select an index, and map that index internally to the corresponding {id}.",
+  "Before calling addCase, always call listInstitutions and listCaseTypes in sequence, present the numbered options to the user, collect their selections, and then map them to the correct IDs internally before calling addCase.",
 ];
 
 const RESPONSE_SCHEMA = {
@@ -124,6 +127,7 @@ export function createSystemPrompt(
       ...BASE_INSTRUCTIONS_GENERAL,
       roleLine,
       ...BASE_INSTRUCTIONS_PERMISSIONS,
+      ...BASE_INSTRUCTIONS_QUERY_LOGIC,
     ],
     tools: tools.map(({ name, description, parameters }) => ({
       name,

@@ -10,13 +10,80 @@ export class CasesTools {
   }
 
   @ToolDecorator({
+    docstring: `Lists institutions the current user can create cases for.`,
+    parameters: {},
+  })
+  async listInstitutions(): Promise<string> {
+    let institutions;
+    if (this.user.systemAdmin) {
+      institutions = await prisma.institution.findMany({
+        select: { id: true, name: true },
+      });
+    } else {
+      institutions = this.user.institutions.map((i) => ({
+        id: i.id,
+        name: i.name,
+      }));
+    }
+
+    if (!institutions.length) return "No institutions found.";
+
+    return institutions.map((inst) => `- ${inst.name} [${inst.id}]`).join("\n");
+  }
+
+  /**
+   * Lists all case types visible to the current user.
+   * System admins see all case types.
+   * Institution admins and regular users see only case types for their institutions.
+   */
+  @ToolDecorator({
+    docstring: `Lists available case types for the current user's institution(s).
+SYSTEM_ADMIN see all case types.
+Institution ADMIN and USER see only case types in their institution(s).
+
+Returns:
+- name, id, primary party, secondary party`,
+    parameters: {},
+  })
+  async listCaseTypes(): Promise<string> {
+    const whereClause = this.user.systemAdmin
+      ? {}
+      : { institutionId: { in: this.user.institutions.map((i) => i.id) } };
+
+    const caseTypes = await prisma.caseType.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        primaryParty: true,
+        secondaryParty: true,
+      },
+    });
+
+    if (!caseTypes.length) return "No case types found.";
+
+    return caseTypes
+      .map(
+        (ct) =>
+          `- ${ct.name} [${ct.id}] (${ct.primaryParty} vs ${ct.secondaryParty})`
+      )
+      .join("\n");
+  }
+
+  /**
+   * Creates a new case.
+   * Requires a valid caseTypeId from listCaseTypes().
+   */
+  @ToolDecorator({
     docstring: `Creates a new case. 
 System admins can create cases for any institution.
 Institution admins can create cases only for their institution.
 
+IMPORTANT: Before calling this, first call listCaseTypes() to find the correct caseTypeId.
+
 Parameters:
 - institutionId: Institution ID (required)
-- caseTypeId: Case type ID (required)
+- caseTypeId: Case type ID (required) — use listCaseTypes() to retrieve valid options
 - name: Name of the case (required)
 - description: Optional case description
 - clientParty: Name of client party (required)
@@ -34,7 +101,11 @@ Parameters:
         type: "string",
         description: "Institution ID (required)",
       },
-      caseTypeId: { type: "string", description: "Case type ID (required)" },
+      caseTypeId: {
+        type: "string",
+        description:
+          "Case type ID (required) — use listCaseTypes() to see available values",
+      },
       name: { type: "string", description: "Name of the case (required)" },
       description: { type: "string", description: "Description (optional)" },
       clientParty: {
@@ -80,6 +151,15 @@ Parameters:
       if (!params[field]) return `${field} is required.`;
     }
 
+    // Check if caseTypeId is valid
+    const caseType = await prisma.caseType.findUnique({
+      where: { id: params.caseTypeId },
+    });
+    if (!caseType) {
+      return `Invalid caseTypeId. Please use listCaseTypes() to find valid values.`;
+    }
+
+    // Permission check
     if (!this.user.systemAdmin) {
       const institutionRole = this.user.institutions.find(
         ({ id }) => id === params.institutionId
@@ -89,6 +169,7 @@ Parameters:
       }
     }
 
+    // Create the case
     const caseRecord = await prisma.case.create({
       data: {
         ...params,
@@ -96,6 +177,7 @@ Parameters:
       },
     });
 
+    // Audit log
     await prisma.auditLog.create({
       data: {
         action: "CREATE",
