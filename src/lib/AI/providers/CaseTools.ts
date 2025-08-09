@@ -48,7 +48,12 @@ Returns:
   async listCaseTypes(): Promise<string> {
     const whereClause = this.user.systemAdmin
       ? {}
-      : { institutionId: { in: this.user.institutions.map((i) => i.id) } };
+      : {
+          OR: [
+            { institutionId: { in: this.user.institutions.map((i) => i.id) } },
+            { institutionId: null },
+          ],
+        };
 
     const caseTypes = await prisma.caseType.findMany({
       where: whereClause,
