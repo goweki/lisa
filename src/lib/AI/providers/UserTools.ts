@@ -12,14 +12,13 @@ export class UsersTools {
 
   @ToolDecorator({
     docstring: `Creates a new user within an institution. 
-System admins can create users in any institution.
-Admins can create users only in their institution.
+    System admins can create users in any institution.
+    Admins can create users only in their institution.
 
-Parameters:
-- institutionId: ID of the institution (required)
-- name: Full name of the user (required)
-- email: Email address of the user (required)
-- role: Role for the user in the institution ("USER" or "ADMIN") (required)`,
+    Parameters:
+    - institutionId: ID of the institution (required)
+    - name: Full name of the user (required)
+    - email: Email address of the user (required)`,
     parameters: {
       institutionId: {
         type: "string",
@@ -29,10 +28,6 @@ Parameters:
       email: {
         type: "string",
         description: "Email address of the user (required)",
-      },
-      role: {
-        type: "string",
-        description: `User role in the institution ("USER" or "ADMIN") (required)`,
       },
     },
   })
