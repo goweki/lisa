@@ -98,6 +98,8 @@ export async function runAgent({
             2. *[action taken]* - (description)
 
             (Concise summary of actions taken and steps moving forward)
+
+            (Any lists the user may be required to select from or reference for next steps)
         `;
 
     // Step 3: Call LLM again for final summary
