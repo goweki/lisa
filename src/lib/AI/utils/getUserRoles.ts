@@ -1,26 +1,22 @@
 import type { UserContext } from "../types/UserContext";
 
 export function getUserRoles(user: UserContext): string[] {
-  const permissions: string[] = [];
+  const roles: string[] = [];
 
   // System admin flag
   if (user.systemAdmin) {
-    permissions.push("SYSTEM_ADMIN");
-    return permissions;
+    roles.push("SYSTEM_ADMIN");
+    return roles;
   }
 
   // institution roles
   for (const institution of user.institutions) {
     if (institution.role === "ADMIN") {
-      permissions.push(
-        JSON.stringify({ role: "ADMIN", institution_id: institution.id })
-      );
+      roles.push(`ADMIN of institution with id ${institution.id}`);
     } else {
-      permissions.push(
-        JSON.stringify({ role: "USER", institution_id: institution.id })
-      );
+      roles.push(`USER of institution with id ${institution.id}`);
     }
   }
 
-  return permissions;
+  return roles;
 }

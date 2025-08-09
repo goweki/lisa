@@ -120,7 +120,7 @@ export function createSystemPrompt(
   console.log("ROLES - ", roles);
   const roleLine =
     roles.length > 0
-      ? `You must enforce permissions based strictly on the user's role(s):\n- ${roles.join("\n- ")}`
+      ? `This are the user's role(s):\n- ${roles.join("\n- ")}`
       : `No roles were assigned. Deny all privileged actions.`;
 
   return {
