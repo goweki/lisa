@@ -49,10 +49,6 @@ export class CasesTools {
       .join("\n");
   }
 
-  /**
-   * Creates a new case.
-   * Requires a valid caseTypeId from listCaseTypes().
-   */
   @ToolDecorator({
     docstring: `Creates a new case. 
     System admins can create cases for any institution.
@@ -72,41 +68,46 @@ export class CasesTools {
     parameters: {
       institutionId: {
         type: "string",
-        description: "Institution ID (required)",
+        description:
+          "Institution ID (optional if user has access to only one institution)",
       },
       caseTypeId: {
         type: "string",
         description:
-          "Case type ID (Foreign key & required) — use listCaseTypes() to see available values",
+          "Case type ID (Foreign key & required) — listCaseTypes tool lists all available values",
       },
       name: { type: "string", description: "Name of the case (required)" },
-      description: { type: "string", description: "Description (optional)" },
+      description: {
+        type: "string",
+        description:
+          "Description (optional, AI assist should suggest and generate a default description from name and type)",
+      },
       clientParty: {
         type: "string",
-        description: "Client party name (required)",
+        description:
+          "Client party name (required), eg: complainant, defendant, petitioner",
       },
-      clientName: { type: "string", description: "Client name (required)" },
-      clientTel: { type: "string", description: "Client telephone (required)" },
+      clientName: {
+        type: "string",
+        description: "Client name (required) eg. Joahn Doe",
+      },
+      clientTel: {
+        type: "string",
+        description: "Client telephone (required) eg: +254700800800",
+      },
     },
   })
-  async addCase({
-    institutionId,
-    caseTypeId,
-    name,
-    clientParty,
-    clientName,
-    clientTel,
-    description,
-  }: {
-    institutionId: string;
-    caseTypeId: string;
-    name: string;
-    clientParty: string;
-    clientName: string;
-    clientTel: string;
-    description?: string;
-  }): Promise<string> {
-    console.log("add cases - ", {
+  async addCase(
+    caseTypeId: string,
+    name: string,
+    clientParty: string,
+    clientName: string,
+    clientTel: string,
+    description?: string,
+    institutionId?: string
+  ): Promise<string> {
+    // Log input params for debugging
+    console.log("addCase called with:", {
       institutionId,
       name,
       clientParty,
@@ -116,10 +117,11 @@ export class CasesTools {
       createdById: this.user.id,
     });
 
+    // Use institutionId param or fallback to user's single institution if only one assigned
     if (!institutionId && this.user.institutions.length !== 1) {
       return "institutionId is required.";
     }
-    const institutionId_ = institutionId || this.user.institutions[0].id;
+    const institutionId_ = institutionId || this.user.institutions[0]?.id;
 
     if (!caseTypeId) {
       return "caseTypeId is required.";
@@ -137,7 +139,7 @@ export class CasesTools {
       return "clientTel is required.";
     }
 
-    // Check if caseTypeId is valid
+    // Validate caseTypeId exists
     const caseType = await prisma.caseType.findUnique({
       where: { id: caseTypeId },
     });
@@ -145,30 +147,32 @@ export class CasesTools {
       return `Invalid caseTypeId. Please use listCaseTypes() to find valid values.`;
     }
 
-    // Permission check
+    // Permission check: if not systemAdmin, user must be ADMIN for institution
     if (!this.user.systemAdmin) {
       const institutionRole = this.user.institutions.find(
-        ({ id }) => id === institutionId
+        ({ id }) => id === institutionId_
       )?.role;
+
       if (institutionRole !== "ADMIN") {
         return "You do not have permission to create cases for this institution.";
       }
     }
 
-    // Create the case
+    // Create the case (include description if present)
     const caseRecord = await prisma.case.create({
       data: {
-        institutionId: institutionId_,
+        institutionId: institutionId_!,
         name,
         clientParty,
         clientName,
         clientTel,
         caseTypeId,
+        description,
         createdById: this.user.id,
       },
     });
 
-    // Audit log
+    // Create audit log entry
     await prisma.auditLog.create({
       data: {
         action: "CREATE",
