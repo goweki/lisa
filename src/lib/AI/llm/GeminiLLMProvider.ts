@@ -159,18 +159,19 @@ export class GeminiLLMProvider implements LLMProvider {
     } = input;
 
     const messages = [input.systemPrompt, ...toolResults, ...input.prompt];
-    console.log("llm_input.log: ", input);
+    console.log("llm_input.log: ", messages);
 
-    const structuredLlm = this.gemini.withStructuredOutput(LLM_RESPONSE_SCHEMA);
-    const response = await structuredLlm.invoke(messages);
+    // const structuredLlm = this.gemini.withStructuredOutput(LLM_RESPONSE_SCHEMA);
+    const response = await this.gemini.invoke(messages);
+    const responseText = response.text;
 
-    console.log("llm_response.log: ", response);
+    console.log("llm_response.log: ", responseText);
 
-    if (response) {
-      return response;
+    if (isValidJson(responseText)) {
+      return JSON.parse(responseText);
     } else {
       const err = "❌ Invalid LLMResponse, expected it to be JSON object";
-      console.error(` ${err} \n> LLMResponse: `, response);
+      console.error(` ${err} \n> LLMResponse: `, response.text);
       throw new Error(err);
     }
   }
