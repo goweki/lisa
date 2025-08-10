@@ -150,11 +150,18 @@ export class GeminiLLMProvider implements LLMProvider {
   }
 
   async callLLM(input: LLMInput): Promise<LLMResponse | string> {
+    const {
+      systemPrompt,
+      prompt,
+      toolResults = [],
+      prompt_template,
+      ...llmParams
+    } = input;
+
+    const messages = [input.systemPrompt, ...toolResults, ...input.prompt];
     console.log("llm_input.log: ", input);
 
     const structuredLlm = this.gemini.withStructuredOutput(LLM_RESPONSE_SCHEMA);
-
-    const messages = [input.systemPrompt, ...input.prompt];
     const response = await structuredLlm.invoke(messages);
 
     console.log("llm_response.log: ", response);

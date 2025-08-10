@@ -84,9 +84,10 @@ export async function runAgent({
         `;
 
   const initialLLMResponse = await agent.callLLM(
-    [new SystemMessage(toolsPrompt), ...normalizedPrompt],
+    normalizedPrompt,
     user,
-    def_toolResults
+    def_toolResults,
+    toolsPrompt
   );
 
   console.log("Agent response from callLLM:", initialLLMResponse);
