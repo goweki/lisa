@@ -89,24 +89,37 @@ export class CasesTools {
       clientTel: { type: "string", description: "Client telephone (required)" },
     },
   })
-  async addCase(params: any): Promise<string> {
-    console.log("creating new case: ", params);
-
-    const requiredFields = [
-      "institutionId",
-      "caseTypeId",
-      "name",
-      "clientParty",
-      "clientName",
-      "clientTel",
-    ];
-    for (const field of requiredFields) {
-      if (!params[field]) return `${field} is required.`;
+  async addCase(
+    institutionId: string,
+    caseTypeId: string,
+    name: string,
+    clientParty: string,
+    clientName: string,
+    clientTel: string,
+    description?: string
+  ): Promise<string> {
+    if (!institutionId) {
+      return "institutionId is required.";
+    }
+    if (!caseTypeId) {
+      return "caseTypeId is required.";
+    }
+    if (!name) {
+      return "name is required.";
+    }
+    if (!clientParty) {
+      return "clientParty is required.";
+    }
+    if (!clientName) {
+      return "clientName is required.";
+    }
+    if (!clientTel) {
+      return "clientTel is required.";
     }
 
     // Check if caseTypeId is valid
     const caseType = await prisma.caseType.findUnique({
-      where: { id: params.caseTypeId },
+      where: { id: caseTypeId },
     });
     if (!caseType) {
       return `Invalid caseTypeId. Please use listCaseTypes() to find valid values.`;
@@ -115,7 +128,7 @@ export class CasesTools {
     // Permission check
     if (!this.user.systemAdmin) {
       const institutionRole = this.user.institutions.find(
-        ({ id }) => id === params.institutionId
+        ({ id }) => id === institutionId
       )?.role;
       if (institutionRole !== "ADMIN") {
         return "You do not have permission to create cases for this institution.";
@@ -125,7 +138,12 @@ export class CasesTools {
     // Create the case
     const caseRecord = await prisma.case.create({
       data: {
-        ...params,
+        institutionId,
+        name,
+        clientParty,
+        clientName,
+        clientTel,
+        caseTypeId,
         createdById: this.user.id,
       },
     });
@@ -137,7 +155,6 @@ export class CasesTools {
         entity: `Case: ${caseRecord.name}`,
         entityId: caseRecord.id,
         userId: this.user.id,
-        details: params,
       },
     });
 
