@@ -109,6 +109,7 @@ import { LLMInput } from "../agent/Agent";
 import { LLM_RESPONSE_SCHEMA, LLMResponse } from "../utils/createSystemPrompt";
 import { LLMProvider } from "./LLMProvider";
 import { isValidJson } from "../utils/isValidJson";
+import { safeParseJSON } from "../utils/safeParseJSON";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const safetySettings: SafetySetting[] = [
@@ -149,7 +150,7 @@ export class GeminiLLMProvider implements LLMProvider {
     });
   }
 
-  async callLLM(input: LLMInput): Promise<LLMResponse | string> {
+  async callLLM(input: LLMInput): Promise<LLMResponse | void> {
     const {
       systemPrompt,
       prompt,
@@ -167,12 +168,12 @@ export class GeminiLLMProvider implements LLMProvider {
 
     console.log("llm_response.log: ", responseText);
 
-    if (isValidJson(responseText)) {
-      return JSON.parse(responseText);
-    } else {
-      const err = "❌ Invalid LLMResponse, expected it to be JSON object";
+    try {
+      return safeParseJSON(responseText);
+    } catch (error: any) {
+      const err = `❌ Invalid LLMResponse, expected it to be JSON object - ${error.message || JSON.stringify(error)}`;
       console.error(` ${err} \n> LLMResponse: `, response.text);
-      throw new Error(err);
+      return;
     }
   }
 }

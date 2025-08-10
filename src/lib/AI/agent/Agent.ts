@@ -60,7 +60,7 @@ export class Agent {
     user: UserContext,
     tools_prompt?: string,
     toolResults?: Array<ToolMessage>
-  ): Promise<LLMResponse | null> {
+  ): Promise<LLMResponse | void> {
     const toolsArray = Object.values(this.tools);
     const systemPrompt = new SystemMessage(
       JSON.stringify(createSystemPrompt(toolsArray, user), null, 2) +
@@ -89,7 +89,7 @@ export class Agent {
         userId: user?.id,
         promptCount: prompt.length,
       });
-      return null;
+      return;
     }
   }
 }
