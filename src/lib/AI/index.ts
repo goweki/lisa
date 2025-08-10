@@ -47,9 +47,9 @@ export async function runAgent({
     // ...searchTools,
   ].forEach((tool) => agent.addTool(tool));
 
-  const institutions = await agent.useTool("listInstitutions", {});
-  const caseTypes = await agent.useTool("listCaseTypes", {});
-  const cases = await agent.useTool("listCases", {});
+  const institutions = await agent.useTool("listInstitutions");
+  const caseTypes = await agent.useTool("listCaseTypes");
+  const cases = await agent.useTool("listCases");
   const def_toolResults: ToolMessage[] = [
     new ToolMessage({
       content: institutions,
