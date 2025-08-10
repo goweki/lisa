@@ -55,7 +55,7 @@ export const LLM_RESPONSE_SCHEMA = z.object({
     .array(
       z.object({
         tool: z.string().describe("Name of the tool"),
-        args: z.record(z.any()).describe("Parameters for the tool"),
+        args: z.record(z.any()).describe("Parameters for the tool").optional(),
       })
     )
     .describe("Tools to call in sequence (if required)")
@@ -94,7 +94,10 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
         type: "object",
         properties: {
           tool: { type: "string", description: "Name of the tool" },
-          args: { type: "object", description: "Parameters for the tool" },
+          args: {
+            type: "object",
+            description: "Parameters for the tool (optional)",
+          },
         },
       },
       description: "Tools to call in sequence (if required)",
