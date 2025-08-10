@@ -143,11 +143,13 @@ async function seedInstitutions(
   const result: Institution[] = [];
 
   for (let i = 0; i < count; i++) {
+    const code = `LISA${i + 1}`;
     const name = `Lisa Advocates ${i + 1}`;
     const institution = await prisma_.institution.upsert({
-      where: { name },
+      where: { code },
       update: {},
       create: {
+        code,
         name,
         location: faker.location.city(),
         logoUrl: faker.image.avatar(),

@@ -31,6 +31,8 @@
     "@google/genai": "^1.12.0",
     "@headlessui/react": "^2.0.4",
     "@hookform/resolvers": "^3.9.0",
+    "@langchain/core": "^0.3.68",
+    "@langchain/google-genai": "^0.2.16",
     "@modelcontextprotocol/sdk": "^1.17.1",
     "@nlpjs/basic": "^4.27.0",
     "@prisma/client": "^5.18.0",

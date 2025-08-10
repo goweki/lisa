@@ -9,39 +9,11 @@ export class CasesTools {
     }
   }
 
-  @ToolDecorator({
-    docstring: `Lists institutions the current user can create cases for, with corresponding id`,
-    parameters: {},
-  })
-  async listInstitutions(): Promise<string> {
-    let institutions;
-    if (this.user.systemAdmin) {
-      institutions = await prisma.institution.findMany({
-        select: { id: true, name: true },
-      });
-    } else {
-      institutions = this.user.institutions.map((i) => ({
-        id: i.id,
-        name: i.name,
-      }));
-    }
-
-    if (!institutions.length) return "No institutions found.";
-
-    return institutions
-      .map((inst) => `- ${inst.name} with id ${inst.id}`)
-      .join("\n");
-  }
-
   /**
-   * Lists all case types visible to the current user.
-   * System admins see all case types.
-   * Institution admins and regular users see only case types for their institutions.
+   * Lists all case types.
    */
   @ToolDecorator({
-    docstring: `Lists available case types for the current user's institution(s) with corresponding id.
-    SYSTEM_ADMIN see all case types.
-    Institution ADMIN and USER see only case types in their institution(s).
+    docstring: `Lists valid Case Type options for reference in Cases.
 
     Returns:
     - name, id, primary party, secondary party`,
@@ -69,7 +41,12 @@ export class CasesTools {
 
     if (!caseTypes.length) return "No case types found.";
 
-    return caseTypes.map((ct) => `- ${ct.name} with id ${ct.id}`).join("\n");
+    return caseTypes
+      .map(
+        (ct) =>
+          `- ${ct.name} with id:${ct.id}, primary party:${ct.primaryParty}, secondary party:${ct.secondaryParty}`
+      )
+      .join("\n");
   }
 
   /**
@@ -81,8 +58,8 @@ export class CasesTools {
     System admins can create cases for any institution.
     Institution admins can create cases only for their institution.
 
-    IMPORTANT: Before calling this, first call listCaseTypes() to find the correct caseTypeId;
-    call listInstitutions() to find the correct institutionId
+    IMPORTANT: Before calling this, first call listCaseTypes() to reference the foreign key caseTypeIds and
+    call listInstitutions() to get valid institutionIds
 
     Parameters:
     - institutionId: Institution ID (Foreign key & required) - use listInstitutions() to retrieve valid options
@@ -248,8 +225,22 @@ Parameters:
   async deleteCase(id?: string): Promise<string> {
     if (!id) return "Case ID is required.";
 
+    const targetCase = await prisma.case.findUnique({
+      where: {
+        id,
+        institutionId: { in: this.user.institutions.map(({ id }) => id) },
+      },
+    });
+    if (!targetCase) return "Case not found.";
+
     if (!this.user.systemAdmin) {
-      return "Only system administrators can delete cases.";
+      const hasPermission = this.user.institutions.some(
+        ({ id, role }) => id === targetCase.institutionId && role === "ADMIN"
+      );
+
+      if (!hasPermission) {
+        return "You do not have permission to edit this user.";
+      }
     }
 
     const caseRecord = await prisma.case.delete({ where: { id } });
@@ -277,7 +268,11 @@ Regular users see only cases they are assigned to.`,
     let cases;
 
     if (this.user.systemAdmin) {
-      cases = await prisma.case.findMany();
+      cases = await prisma.case.findMany({
+        include: {
+          tasks: { select: { id: true } }, // Include only task IDs
+        },
+      });
     } else {
       const institutionIds = this.user.institutions.map((i) => i.id);
       cases = await prisma.case.findMany({
@@ -287,11 +282,22 @@ Regular users see only cases they are assigned to.`,
             { assigneeId: this.user.id },
           ],
         },
+        include: {
+          tasks: { select: { id: true } }, // Include only task IDs
+        },
       });
     }
 
     if (!cases.length) return "No cases found.";
 
-    return cases.map((c) => `- ${c.name} (${c.status}) [${c.id}]`).join("\n");
+    return cases
+      .map((c) => {
+        const tasksOutput = c.tasks.length
+          ? JSON.stringify(c.tasks)
+          : "No tasks";
+
+        return `- name:${c.name}, id:${c.id}, status:${c.status}, tasks: ${tasksOutput}`;
+      })
+      .join("\n");
   }
 }

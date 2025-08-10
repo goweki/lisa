@@ -1,6 +1,7 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
 import type { UserContext } from "../types/UserContext";
+import { generateUniqueInstitutionCode } from "@/helpers/stringHandlers";
 
 export class InstitutionTools {
   constructor(private user: UserContext) {
@@ -31,9 +32,19 @@ export class InstitutionTools {
   async addInstitution(name?: string, address?: string): Promise<string> {
     if (!name) return "Institution name is required.";
 
+    let institutionCode = "";
+
+    try {
+      institutionCode = await generateUniqueInstitutionCode(name);
+    } catch (error: any) {
+      console.error(error);
+      return "could not generate unique institution CODE, try another name or contact admin";
+    }
+
     const institution = await prisma.institution.create({
       data: {
         name,
+        code: institutionCode,
         location: address || undefined,
       },
     });

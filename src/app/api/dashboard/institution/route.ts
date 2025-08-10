@@ -3,6 +3,7 @@ import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
 import { SessionUser } from "@/types/next-auth";
 import { Institution, InstitutionUser } from "@prisma/client";
+import { generateUniqueInstitutionCode } from "@/helpers/stringHandlers";
 
 // create institution
 async function postHandler(
@@ -25,8 +26,18 @@ async function postHandler(
       });
     }
 
+    let institutionCode = "";
+    try {
+      institutionCode = await generateUniqueInstitutionCode(name);
+    } catch (error: any) {
+      console.error(error);
+      return Response.json("could not generate unique institution CODE", {
+        status: 409,
+      });
+    }
+
     const newInst = await prisma.institution.create({
-      data: { name, ...doc_ },
+      data: { name, code: institutionCode, ...doc_ },
     });
     if (!newInst) {
       console.error("FAILED: didn't save new institution.\n > ", doc);

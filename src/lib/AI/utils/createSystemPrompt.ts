@@ -2,6 +2,7 @@ import { Tool } from "../agent/Tool";
 import { SystemPrompt } from "../interfaces/SystemPrompt";
 import { UserContext } from "../types/UserContext";
 import { getUserRoles } from "./getUserRoles";
+import { z } from "zod";
 
 const BASE_INSTRUCTIONS_GENERAL: string[] = [
   // Role & context
@@ -32,7 +33,37 @@ const BASE_INSTRUCTIONS_QUERY_LOGIC: string[] = [
   "Before calling addCase, always call listInstitutions and listCaseTypes in sequence, present the numbered options to the user with corresponding id then collect their selections, before calling addCase.",
 ];
 
-const RESPONSE_SCHEMA = {
+export const LLM_RESPONSE_SCHEMA = z.object({
+  requires_tools: z
+    .boolean()
+    .describe("Whether tools are needed in the immediate next step"),
+  direct_response: z
+    .string()
+    .describe("Response when no tools are needed in the consequent step")
+    .optional(),
+  thought: z
+    .string()
+    .describe(
+      "Reasoning on how to solve the query (only when tools are needed)"
+    )
+    .optional(),
+  plan: z
+    .array(z.string())
+    .describe("Steps to solve the query (only when tools are needed)")
+    .optional(),
+  tool_calls: z
+    .array(
+      z.object({
+        tool: z.string().describe("Name of the tool"),
+        args: z.record(z.any()).describe("Parameters for the tool"),
+      })
+    )
+    .describe("Tools to call in sequence (if required)")
+    .optional(),
+});
+export type LLMResponse = z.infer<typeof LLM_RESPONSE_SCHEMA>;
+
+const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
   type: "json",
   schema: {
     requires_tools: {
@@ -41,7 +72,8 @@ const RESPONSE_SCHEMA = {
     },
     direct_response: {
       type: "string",
-      description: "Response when no tools are needed in the consequent step",
+      description:
+        "Response when no tools are needed in the immediate consequent step",
       optional: true,
     },
     thought: {
@@ -79,35 +111,39 @@ const RESPONSE_SCHEMA = {
       },
     },
     {
-      query: "Create a case",
+      query: "Create an Institution",
       response: {
         requires_tools: false,
-        direct_response: "You do not have permission to create a new case.",
+        direct_response: "Please provide the name of institution to create it",
+      },
+    },
+    {
+      query: "Create an Institution named Lisa Advocates",
+      response: {
+        requires_tools: true,
+        tool_calls: [
+          {
+            tool: "addInstitution",
+            args: { name: "Lisa Advocates" },
+          },
+        ],
       },
     },
     {
       query: "Get upcoming tasks for me",
       response: {
         requires_tools: true,
-        thought: "I need to fetch tasks associated with the user.",
-        plan: [
-          "Call get_due_tasks",
-          "Filter for upcoming tasks",
-          "Return result",
-        ],
+        thought: "I need to fetch upcoming tasks associated with the user.",
+        plan: ["Call listTasks", "filter upcoming tasks"],
         tool_calls: [
           {
-            tool: "get_due_tasks",
-            args: { user_id: "123" },
+            tool: "listTasks",
           },
         ],
       },
     },
   ],
 };
-
-type LLMResponseKey = keyof typeof RESPONSE_SCHEMA.schema;
-export type LLMResponse = Record<LLMResponseKey, any>;
 
 /**
  * Builds a system prompt for the LLM with clearly defined user permissions and tool access.
@@ -120,11 +156,11 @@ export function createSystemPrompt(
   console.log("ROLES - ", roles);
   const roleLine =
     roles.length > 0
-      ? `This are the user's role(s):\n- ${roles.join("\n- ")}`
+      ? `This are the current user's role(s):\n- ${roles.join("\n- ")}`
       : `No roles were assigned. Deny all privileged actions.`;
 
   return {
-    role: "lisa",
+    role: "assistant",
     instructions: [
       ...BASE_INSTRUCTIONS_GENERAL,
       roleLine,
@@ -136,6 +172,6 @@ export function createSystemPrompt(
       description,
       parameters,
     })),
-    response_format: RESPONSE_SCHEMA,
+    response_format: LLM_RESPONSE_SCHEMA_DESCRIPTION,
   };
 }

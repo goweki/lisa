@@ -13,7 +13,7 @@ export class UsersTools {
     docstring: `Creates a new user within an institution. 
 
     Parameters:
-    - institutionId: ID of the institution (required)
+    - institutionId: ID of the institution (required): Foreign-key from listInstitutions tool  
     - name: Full name of the user (required)
     - email: Email address of the user (required)`,
     parameters: {
@@ -33,8 +33,14 @@ export class UsersTools {
     names?: string,
     email?: string
   ): Promise<string> {
-    if (!institutionId || !names || !email) {
-      return "Institution ID, name, email are required.";
+    if (!institutionId && this.user.institutions.length !== 1) {
+      return "You are administrator to several institutions, use dashboard for better management";
+    }
+
+    const institutionId_ = institutionId || this.user.institutions[0].id;
+
+    if (!names || !email) {
+      return "Name and Email are required.";
     }
 
     if (!this.user.systemAdmin) {
@@ -52,7 +58,7 @@ export class UsersTools {
         email,
         institutions: {
           create: {
-            institutionId,
+            institutionId: institutionId_,
           },
         },
       },
@@ -179,6 +185,10 @@ Parameters:
     parameters: {},
   })
   async listUsers(): Promise<string> {
+    if (!this.user.systemAdmin) {
+      return "You do not have permission to view user.";
+    }
+
     const users = this.user.systemAdmin
       ? await prisma.user.findMany({
           include: { institutions: { include: { institution: true } } },

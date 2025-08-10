@@ -169,7 +169,7 @@ export const systemUser: Omit<User, "id" | "photoUrl" | "preferredComChannel"> =
   {
     names: "System Lisa",
     email: "lisa@goweki.com",
-    tel: null,
+    tel: "+254711336187",
     telVerification: false,
     emailVerification: false,
     systemAdmin: true,

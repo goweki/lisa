@@ -1,25 +1,28 @@
-import { Content } from "@google/genai";
 import { LLMProvider } from "../llm/LLMProvider";
 import { createSystemPrompt, LLMResponse } from "../utils/createSystemPrompt";
 import { Tool } from "./Tool";
-import { Message } from "@prisma/client";
-import { generateModelHistoryFromMessages } from "../utils/generateHistory";
 import { UserContext } from "../types/UserContext";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+  ToolMessage,
+} from "@langchain/core/messages";
 
 export type LLMInput = {
-  prompt: Content[] | string;
-  system_prompt: string;
-  prompt_template?: string; // for non-Gemini models
+  prompt: Array<AIMessage | HumanMessage>;
+  systemPrompt: SystemMessage;
+  toolResults?: Array<ToolMessage>;
+  prompt_template?: string;
   max_tokens?: number;
   max_new_tokens?: number;
 };
 
 export class Agent {
-  tools: Record<string, Tool>;
-  private llmProvider: LLMProvider;
+  private tools: Record<string, Tool> = {};
+  private readonly llmProvider: LLMProvider;
 
   constructor(llmProvider: LLMProvider) {
-    this.tools = {};
     this.llmProvider = llmProvider;
   }
 
@@ -33,45 +36,44 @@ export class Agent {
     );
   }
 
-  async useTool(toolName: string, args: Record<string, any>): Promise<string> {
+  async useTool(
+    toolName: string,
+    args: Record<string, unknown>
+  ): Promise<string> {
     const tool = this.tools[toolName];
     if (!tool) {
       throw new Error(
-        `Tool '${toolName}' not found. Available: ${Object.keys(this.tools)}`
+        `Tool '${toolName}' not found. Available: ${Object.keys(this.tools).join(", ")}`
       );
     }
+
     const orderedKeys = Object.keys(tool.parameters);
     const argValues = orderedKeys.map((key) =>
       args.hasOwnProperty(key) ? args[key] : undefined
     );
 
-    return await tool.call(...argValues);
+    return tool.call(...argValues);
   }
 
-  /**
-   * Calls the LLM using the provided LLMProvider.
-   *
-   * It builds the input object (using a system prompt, user prompt, and other parameters)
-   * and passes it to the LLMProvider.
-   */
-
   async callLLM(
-    content: Content[] | string,
-    user: UserContext
+    prompt: Array<AIMessage | HumanMessage>,
+    user: UserContext,
+    toolResults?: Array<ToolMessage>
   ): Promise<LLMResponse | null> {
     const toolsArray = Object.values(this.tools);
-    const systemPrompt = JSON.stringify(
-      createSystemPrompt(toolsArray, user),
-      null,
-      2
+    const systemPrompt = new SystemMessage(
+      JSON.stringify(createSystemPrompt(toolsArray, user), null, 2)
     );
 
     const promptTemplate =
-      "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>lisa<|end_header_id|>\n\n";
+      `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}` +
+      "<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}" +
+      "<|eot_id|><|start_header_id|>lisa<|end_header_id|>\n\n";
 
     const input: LLMInput = {
-      prompt: content,
-      system_prompt: systemPrompt,
+      prompt,
+      systemPrompt,
+      toolResults,
       max_new_tokens: 1024,
       max_tokens: 2048,
       prompt_template: promptTemplate,
@@ -79,8 +81,12 @@ export class Agent {
 
     try {
       return await this.llmProvider.callLLM(input);
-    } catch (err: any) {
-      console.error(err);
+    } catch (err) {
+      console.error("LLM call failed", {
+        error: err,
+        userId: user?.id,
+        promptCount: prompt.length,
+      });
       return null;
     }
   }

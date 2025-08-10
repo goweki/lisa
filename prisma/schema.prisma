@@ -15,7 +15,8 @@ enum EntityStatus {
 
 model Institution {
   id       String       @id @default(uuid())
-  name     String       @unique
+  name     String
+  code     String       @unique
   location String?
   logoUrl  String?
   status   EntityStatus @default(DORMANT)

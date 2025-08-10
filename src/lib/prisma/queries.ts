@@ -24,6 +24,7 @@ export async function createUser(userData: {
   names: string;
   email: string;
   institutionName?: string;
+  institutionCode?: string;
   institutionIds?: string[];
 }): Promise<{
   id: string;
@@ -37,6 +38,7 @@ export async function createUser(userData: {
     email,
     institutionIds: _institutionIds,
     institutionName,
+    institutionCode,
   } = userData;
 
   if (
@@ -67,9 +69,10 @@ export async function createUser(userData: {
     }
 
     // Case 2: Create new institution
-    else if (institutionName) {
+    else if (institutionName && institutionCode) {
       const newInstitution = await prisma.institution.create({
         data: {
+          code: institutionCode,
           name: institutionName,
         },
       });

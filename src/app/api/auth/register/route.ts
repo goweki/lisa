@@ -5,6 +5,7 @@ import { compareHash, hash } from "@/helpers/passwordHandlers";
 import { createUser } from "@/lib/prisma/queries";
 import { welcomeEmail } from "@/lib/emailRenderer";
 import { BASE_URL } from "@/helpers/getUrl";
+import { generateUniqueInstitutionCode } from "@/helpers/stringHandlers";
 
 // create new User & institution
 export async function POST(request: Request) {
@@ -17,17 +18,24 @@ export async function POST(request: Request) {
     });
     if (emailExists)
       return Response.json("Email already in use", { status: 409 });
-    const institutionExists = await prisma.institution.findUnique({
-      where: { name: newUser.institutionName },
-    });
-    if (institutionExists)
-      return Response.json("Institution Name already exists", { status: 409 });
 
+    let institutionCode = "";
+    try {
+      institutionCode = await generateUniqueInstitutionCode(
+        newUser.institutionName
+      );
+    } catch (error: any) {
+      console.error(error);
+      return Response.json("could not generate unique institution CODE", {
+        status: 409,
+      });
+    }
     //add to db
     const newRegistration = await createUser({
       names: newUser.names,
       email: newUser.email,
       institutionName: newUser.institutionName,
+      institutionCode,
     });
 
     console.log("Database updated", newRegistration);

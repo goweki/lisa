@@ -12,7 +12,11 @@ import { sendMessage } from "../_actions";
 import parsePhoneNumberFromString from "libphonenumber-js";
 import { runAgent } from "@/lib/AI";
 import { User, InstitutionUser } from "@/types/models";
-import { generateModelHistoryFromMessages } from "@/lib/AI/utils/generateHistory";
+import {
+  generateConversationalContentFromMessages,
+  generateLangConversationFromMessages,
+} from "@/lib/AI/utils/generateHistory";
+import { HumanMessage } from "@langchain/core/messages";
 
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const WHATSAPP_PHONE_NO_ID = process.env.WHATSAPP_PHONE_NO_ID;
@@ -538,16 +542,16 @@ async function consultLisa({
 }): Promise<string | null> {
   const institutions =
     user.institutions?.map((userInst: InstitutionUser) => ({
-      name: userInst.institution?.name || "<NULL>",
       id: userInst.institutionId,
+      name: userInst.institution?.name || "<NULL>",
       role: userInst.role,
     })) || [];
 
   const reply = await runAgent({
     user: { ...user, institutions },
     prompt: [
-      ...(await generateModelHistoryFromMessages(user.messages || [])),
-      { role: "user", parts: [{ text: prompt }] },
+      ...(await generateLangConversationFromMessages(user.messages || [])),
+      new HumanMessage(prompt),
     ],
   });
   // console.log("Lisa AI says: ", reply);
