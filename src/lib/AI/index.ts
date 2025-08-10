@@ -160,7 +160,7 @@ export async function runAgent({
     });
 
     const secondPrompt_normalized: Array<BaseMessage> = pairedMessages;
-    const tools_prompt_final = `Do not use a tool again after this round. Tell user to try again later if operation has failed.`;
+    const tools_prompt_final = `Do not use a tool again after this. Tell user to try again later if operation has failed.`;
 
     const secondLLMResponse = await agent.callLLM(
       secondPrompt_normalized,
