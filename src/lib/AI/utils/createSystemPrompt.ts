@@ -2,7 +2,7 @@ import { Tool } from "../agent/Tool";
 import { SystemPrompt } from "../interfaces/SystemPrompt";
 import { UserContext } from "../types/UserContext";
 import { getUserRoles } from "./getUserRoles";
-import { z } from "zod";
+import { optional, z } from "zod";
 
 const BASE_INSTRUCTIONS_GENERAL: string[] = [
   // Role & context
@@ -97,7 +97,7 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
           args: {
             type: "object",
             description: "Parameters for the tool (optional)",
-            additionalProperties: true,
+            optional: true,
           },
         },
       },
