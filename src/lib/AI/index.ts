@@ -160,98 +160,21 @@ export async function runAgent({
     });
 
     const secondPrompt_normalized: Array<BaseMessage> = pairedMessages;
+    const tools_prompt_final = `Do not use a tool again after this round. Tell user to try again later if operation has failed.`;
 
     const secondLLMResponse = await agent.callLLM(
       secondPrompt_normalized,
-      user
+      user,
+      tools_prompt_final
     );
 
     if (secondLLMResponse?.direct_response) {
       finalResponse = secondLLMResponse.direct_response as string;
-    } else if (!secondLLMResponse) {
-      console.error("No LLMResponse: ", firstLLMResponse);
-      return finalResponse;
     } else {
-      if (!secondLLMResponse.tool_calls) {
-        console.error("Invalid LLMResponse: ", firstLLMResponse);
-        return finalResponse;
-      }
-      // LOOP 1
-      console.log("Lisa AI requires tools, AGAIN:", secondLLMResponse);
-      const toolResults: Record<string, Record<string, any>> = {};
-
-      for (const toolCall of secondLLMResponse.tool_calls) {
-        // Execute each tool call and store its result
-        // Consider better error handling for tool execution
-        try {
-          toolResults[toolCall.tool] = {
-            name: toolCall.tool,
-            args: toolCall.args,
-            output: await agent.useTool(toolCall.tool, toolCall.args),
-          };
-        } catch (toolError: any) {
-          console.error(`Error executing tool ${toolCall.tool}:`, toolError);
-          toolResults[toolCall.tool] = {
-            name: toolCall.tool,
-            args: toolCall.args,
-            output: `Error: ${toolError.message || "Tool execution failed"}`,
-          };
-        }
-      }
-
-      // Step 3: Call LLM again for final summary
-      const pairedMessages: BaseMessage[] = [];
-
-      Object.values(toolResults).forEach(({ name, args, output }) => {
-        // 1. The assistant's function call
-        pairedMessages.push(
-          new AIMessage({
-            content: JSON.stringify({
-              thoughts: secondLLMResponse.thought,
-              plan: secondLLMResponse.plan,
-            }),
-            additional_kwargs: {
-              tool_calls: [
-                {
-                  id: `call_${name}`,
-                  type: "function",
-                  function: {
-                    name: name,
-                    arguments: args ? JSON.stringify(args) : "",
-                  },
-                },
-              ],
-            },
-          })
-        );
-
-        pairedMessages.push(
-          new ToolMessage({
-            content: output,
-            name,
-            tool_call_id: `call_${name}`,
-          })
-        );
-      });
-
-      const finalPrompt_normalized: Array<BaseMessage> = pairedMessages;
-
-      const tools_prompt_final = `Do not use a tool again after this round. Tell user to try again later if operation has failed.`;
-
-      const finalLLMResponse = await agent.callLLM(
-        finalPrompt_normalized,
-        user,
-        tools_prompt_final
+      console.error(
+        "No secondLLMResponse.direct_response: ",
+        secondLLMResponse
       );
-
-      if (finalLLMResponse?.direct_response) {
-        finalResponse = finalLLMResponse.direct_response as string;
-      } else {
-        console.error(
-          "Could not generate final summary after tool use. direct_response attribute DOES NOT exist - ",
-          finalResponse
-        );
-      }
     }
   }
 
