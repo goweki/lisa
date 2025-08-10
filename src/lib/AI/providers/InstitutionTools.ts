@@ -155,8 +155,7 @@ Parameters:
   }
 
   @ToolDecorator({
-    docstring: `Lists all institutions visible to the user.
-System admins will see all institutions. Regular users only see their associated institutions.`,
+    docstring: `Lists all institutions.`,
     parameters: {},
   })
   async listInstitutions(): Promise<string> {
