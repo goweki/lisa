@@ -87,7 +87,6 @@ export async function runAgent({
     normalizedPrompt,
     user,
     toolsPrompt
-    // def_toolResults
   );
 
   console.log("Agent response from callLLM:", initialLLMResponse);
@@ -101,65 +100,67 @@ export async function runAgent({
     finalResponse = initialLLMResponse.direct_response || "";
   } else {
     console.log("Lisa AI requires tools");
-    const toolResults: Record<string, string> = {};
+    const toolResults: Record<string, Record<string, any>> = {};
     if (!initialLLMResponse.tool_calls) {
       console.error("Invalid LLMResponse: ", initialLLMResponse);
       return finalResponse;
     }
+
     for (const toolCall of initialLLMResponse.tool_calls) {
       // Execute each tool call and store its result
       // Consider better error handling for tool execution
       try {
-        toolResults[toolCall.tool] = await agent.useTool(
-          toolCall.tool,
-          toolCall.args
-        );
+        toolResults[toolCall.tool] = {
+          name: toolCall.tool,
+          args: toolCall.args,
+          output: await agent.useTool(toolCall.tool, toolCall.args),
+        };
       } catch (toolError: any) {
         console.error(`Error executing tool ${toolCall.tool}:`, toolError);
-        toolResults[toolCall.tool] =
-          `Error: ${toolError.message || "Tool execution failed"}`;
+        toolResults[toolCall.tool] = {
+          name: toolCall.tool,
+          args: toolCall.args,
+          output: `Error: ${toolError.message || "Tool execution failed"}`,
+        };
       }
     }
 
-    // Step 2: Formulate a final prompt with tool outputs for summarization
-    const finalPrompt = `
-            User Query: ${prompt}
-
-            Tool Outputs:
-            ${JSON.stringify(toolResults, null, 2)}
-
-            Instructions:
-            1. Read and analyze the content in "Tool Outputs" section.
-            2. For each result, generate a short response (1-2 sentences).
-            3. Use clear, informative language. Do not generate any additional text beyond the required summaries.
-            
-            Respond ONLY with a valid JSON object that matches the specified schema. Do not include any additional explanation, comment, markdown formatting, or any surrounding text. Do not wrap it in any punctuations, descriptors or triple backticks.
-            The direct response should be in the 'direct_response' attribute in the JSON response.
-            Do not require tool usage in this response.
-
-            Format:
-            Actions taken:
-            1. *[Action taken]* - (description)
-            2. *[Action taken]* - (description)
-
-            (Concise summary of actions taken and steps moving forward)
-
-            (Any lists the user may be required to select from or reference for next steps)
-        `;
-
     // Step 3: Call LLM again for final summary
-    const toolMessages = Object.entries(toolResults).map(
-      ([toolName, output], index) =>
+    const pairedMessages: BaseMessage[] = [];
+
+    Object.values(toolResults).forEach(({ name, args, output }) => {
+      // 1. The assistant's function call
+      pairedMessages.push(
+        new AIMessage({
+          content: JSON.stringify({
+            thoughts: initialLLMResponse.thought,
+            plan: initialLLMResponse.plan,
+          }),
+          additional_kwargs: {
+            tool_calls: [
+              {
+                id: `call_${name}`,
+                type: "function",
+                function: {
+                  name: name,
+                  arguments: args ? JSON.stringify(args) : "",
+                },
+              },
+            ],
+          },
+        })
+      );
+
+      pairedMessages.push(
         new ToolMessage({
           content: output,
-          name: toolName,
-          tool_call_id: `call_${index}`, // unique ID for each call
+          name,
+          tool_call_id: `call_${name}`,
         })
-    );
-    const finalPrompt_normalized: Array<BaseMessage> = [
-      // new SystemMessage(finalPrompt),
-      ...toolMessages,
-    ];
+      );
+    });
+
+    const finalPrompt_normalized: Array<BaseMessage> = pairedMessages;
 
     const finalLLMResponse = await agent.callLLM(finalPrompt_normalized, user);
 
