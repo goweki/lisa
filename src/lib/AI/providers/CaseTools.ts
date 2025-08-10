@@ -14,10 +14,10 @@ export class CasesTools {
    */
   @ToolDecorator({
     docstring: `Lists valid Case Type options for reference in Cases.
-
+    
     Returns:
     - name, id, primary party, secondary party`,
-    parameters: {},
+    parameters: undefined,
   })
   async listCaseTypes(): Promise<string> {
     const whereClause = this.user.systemAdmin
@@ -262,7 +262,7 @@ Parameters:
 System admins see all cases.
 Institution admins see all cases in their institution.
 Regular users see only cases they are assigned to.`,
-    parameters: {},
+    parameters: undefined,
   })
   async listCases(): Promise<string> {
     let cases;
@@ -270,7 +270,7 @@ Regular users see only cases they are assigned to.`,
     if (this.user.systemAdmin) {
       cases = await prisma.case.findMany({
         include: {
-          tasks: { select: { id: true } }, // Include only task IDs
+          tasks: true, // Include only task IDs
         },
       });
     } else {
@@ -283,7 +283,7 @@ Regular users see only cases they are assigned to.`,
           ],
         },
         include: {
-          tasks: { select: { id: true } }, // Include only task IDs
+          tasks: true, // Include only task IDs
         },
       });
     }
@@ -296,7 +296,7 @@ Regular users see only cases they are assigned to.`,
           ? JSON.stringify(c.tasks)
           : "No tasks";
 
-        return `- name:${c.name}, id:${c.id}, status:${c.status}, tasks: ${tasksOutput}`;
+        return `- name:${c.name}, id:${c.id}, status:${c.status}, tasks: ${tasksOutput}\n`;
       })
       .join("\n");
   }

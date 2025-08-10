@@ -38,7 +38,7 @@ export class Agent {
 
   async useTool(
     toolName: string,
-    args?: Record<string, unknown>
+    args: Record<string, unknown>
   ): Promise<string> {
     const tool = this.tools[toolName];
     if (!tool) {

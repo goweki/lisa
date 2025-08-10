@@ -156,7 +156,7 @@ Parameters:
 
   @ToolDecorator({
     docstring: `Lists all institutions.`,
-    parameters: {},
+    parameters: undefined,
   })
   async listInstitutions(): Promise<string> {
     const institutions = this.user.systemAdmin
