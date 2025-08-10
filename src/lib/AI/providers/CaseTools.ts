@@ -89,18 +89,38 @@ export class CasesTools {
       clientTel: { type: "string", description: "Client telephone (required)" },
     },
   })
-  async addCase(
-    institutionId: string,
-    caseTypeId: string,
-    name: string,
-    clientParty: string,
-    clientName: string,
-    clientTel: string,
-    description?: string
-  ): Promise<string> {
-    if (!institutionId) {
+  async addCase({
+    institutionId,
+    caseTypeId,
+    name,
+    clientParty,
+    clientName,
+    clientTel,
+    description,
+  }: {
+    institutionId: string;
+    caseTypeId: string;
+    name: string;
+    clientParty: string;
+    clientName: string;
+    clientTel: string;
+    description?: string;
+  }): Promise<string> {
+    console.log("add cases - ", {
+      institutionId,
+      name,
+      clientParty,
+      clientName,
+      clientTel,
+      caseTypeId,
+      createdById: this.user.id,
+    });
+
+    if (!institutionId && this.user.institutions.length !== 1) {
       return "institutionId is required.";
     }
+    const institutionId_ = institutionId || this.user.institutions[0].id;
+
     if (!caseTypeId) {
       return "caseTypeId is required.";
     }
@@ -138,7 +158,7 @@ export class CasesTools {
     // Create the case
     const caseRecord = await prisma.case.create({
       data: {
-        institutionId,
+        institutionId: institutionId_,
         name,
         clientParty,
         clientName,
@@ -158,7 +178,7 @@ export class CasesTools {
       },
     });
 
-    return `Case created with ID: ${caseRecord.id}`;
+    return `Case: ${caseRecord.name} created with ID: ${caseRecord.id}`;
   }
 
   @ToolDecorator({
