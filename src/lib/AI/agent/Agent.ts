@@ -38,7 +38,7 @@ export class Agent {
 
   async useTool(
     toolName: string,
-    args: Record<string, unknown>
+    args?: Record<string, unknown>
   ): Promise<string> {
     const tool = this.tools[toolName];
     if (!tool) {
@@ -49,7 +49,7 @@ export class Agent {
 
     const orderedKeys = Object.keys(tool.parameters);
     const argValues = orderedKeys.map((key) =>
-      args.hasOwnProperty(key) ? args[key] : undefined
+      args?.hasOwnProperty(key) ? args[key] : undefined
     );
 
     return tool.call(...argValues);
