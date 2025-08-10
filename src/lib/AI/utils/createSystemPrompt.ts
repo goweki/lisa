@@ -97,6 +97,7 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
           args: {
             type: "object",
             description: "Parameters for the tool (optional)",
+            additionalProperties: true,
             optional: true,
           },
         },
@@ -137,11 +138,11 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
       query: "Get upcoming tasks for me",
       response: {
         requires_tools: true,
-        thought: "I need to fetch upcoming tasks associated with the user.",
-        plan: ["Call listTasks", "filter upcoming tasks"],
+        thought: "I need to gel intitutions.",
+        plan: ["Call listInstitutions"],
         tool_calls: [
           {
-            tool: "listTasks",
+            tool: "listInstitutions",
           },
         ],
       },
