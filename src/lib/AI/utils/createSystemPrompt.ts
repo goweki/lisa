@@ -100,7 +100,7 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
           args: {
             type: "object",
             description: "Parameters for the tool (optional)",
-            additionalProperties: true,
+            // additionalProperties: true,
             optional: true,
           },
         },
