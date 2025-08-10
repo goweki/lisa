@@ -58,8 +58,8 @@ export class Agent {
   async callLLM(
     prompt: Array<AIMessage | HumanMessage>,
     user: UserContext,
-    toolResults?: Array<ToolMessage>,
-    tools_prompt?: string
+    tools_prompt?: string,
+    toolResults?: Array<ToolMessage>
   ): Promise<LLMResponse | null> {
     const toolsArray = Object.values(this.tools);
     const systemPrompt = new SystemMessage(

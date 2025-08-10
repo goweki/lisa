@@ -86,8 +86,8 @@ export async function runAgent({
   const initialLLMResponse = await agent.callLLM(
     normalizedPrompt,
     user,
-    def_toolResults,
     toolsPrompt
+    // def_toolResults
   );
 
   console.log("Agent response from callLLM:", initialLLMResponse);
@@ -157,7 +157,7 @@ export async function runAgent({
         })
     );
     const finalPrompt_normalized: Array<BaseMessage> = [
-      new SystemMessage(finalPrompt),
+      // new SystemMessage(finalPrompt),
       ...toolMessages,
     ];
 
@@ -167,7 +167,8 @@ export async function runAgent({
       finalResponse = finalLLMResponse.direct_response as string;
     } else {
       console.error(
-        "Could not generate final summary after tool use. direct_response attribute DOES NOT exist"
+        "Could not generate final summary after tool use. direct_response attribute DOES NOT exist - ",
+        finalResponse
       );
     }
   }
