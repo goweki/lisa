@@ -236,12 +236,12 @@ export async function runAgent({
 
       const finalPrompt_normalized: Array<BaseMessage> = pairedMessages;
 
-      const tools_prompt_ = `Do not use a tool again after this round. Tell user to try again later if operation has failed.`;
+      const tools_prompt_final = `Do not use a tool again after this round. Tell user to try again later if operation has failed.`;
 
       const finalLLMResponse = await agent.callLLM(
         finalPrompt_normalized,
         user,
-        tools_prompt_
+        tools_prompt_final
       );
 
       if (finalLLMResponse?.direct_response) {
