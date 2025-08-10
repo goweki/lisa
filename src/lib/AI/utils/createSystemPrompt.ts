@@ -55,7 +55,10 @@ export const LLM_RESPONSE_SCHEMA = z.object({
     .array(
       z.object({
         tool: z.string().describe("Name of the tool"),
-        args: z.record(z.any()).optional().describe("Parameters for the tool"),
+        args: z
+          .record(z.any())
+          .optional()
+          .describe("Parameters for the tool (optional)"),
       })
     )
     .describe("Tools to call in sequence (if required)")
@@ -98,9 +101,10 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
             type: "object",
             description: "Parameters for the tool (optional)",
             additionalProperties: true,
-            optional: true,
           },
         },
+        // The `required` array for this object
+        required: ["tool"],
       },
       description: "Tools to call in sequence (if required)",
       optional: true,
@@ -143,6 +147,8 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
         tool_calls: [
           {
             tool: "listInstitutions",
+            // The `args` field is completely omitted here,
+            // which is how you make it optional.
           },
         ],
       },
