@@ -96,8 +96,7 @@
 // }
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { z } from "zod";
+import { jsonrepair } from "jsonrepair";
 
 import {
   SafetySetting,
@@ -109,7 +108,6 @@ import { LLMInput } from "../agent/Agent";
 import { LLM_RESPONSE_SCHEMA, LLMResponse } from "../utils/createSystemPrompt";
 import { LLMProvider } from "./LLMProvider";
 import { isValidJson } from "../utils/isValidJson";
-import { safeParseJSON } from "../utils/safeParseJSON";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const safetySettings: SafetySetting[] = [
@@ -164,14 +162,19 @@ export class GeminiLLMProvider implements LLMProvider {
 
     // const structuredLlm = this.gemini.withStructuredOutput(LLM_RESPONSE_SCHEMA);
     const response = await this.gemini.invoke(messages);
+
     const responseText = response.text;
 
-    console.log("llm_response.log: ", responseText);
+    console.log(`llm_response.log: (${typeof responseText}) `, responseText);
 
     try {
-      return safeParseJSON(responseText);
+      if (isValidJson(responseText)) {
+        return JSON.parse(responseText);
+      }
+      const repaired = jsonrepair(responseText);
+      return JSON.parse(responseText);
     } catch (error: any) {
-      const err = `❌ Invalid LLMResponse, expected it to be JSON object - ${error.message || JSON.stringify(error)}`;
+      const err = `❌ Invalid LLMResponse, could not be repaired - ${error.message || JSON.stringify(error)}`;
       console.error(` ${err} \n> LLMResponse: `, response.text);
       return;
     }

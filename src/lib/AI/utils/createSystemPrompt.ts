@@ -10,7 +10,7 @@ const BASE_INSTRUCTIONS_GENERAL: string[] = [
   // Output rules
   "Respond ONLY with a valid JSON object that matches the specified schema.",
   "Do not include any extra text, comments, explanations, or markdown formatting (including triple backticks).",
-  "Please produce a valid JSON output. Do not use backticks (`) or unescaped quotes inside strings. Use plain text instead.",
+  "Do not use backticks (`) or unescaped quotes inside strings. Use plain text instead.",
   // Tool usage rules
   "Set requires_tools=true only if a tool is genuinely needed AND all required parameters are valid and present.",
   "Do not request for oprional parameters from user before using tools. Optional updates can be made via the UI ot lisa.goweki.com",
