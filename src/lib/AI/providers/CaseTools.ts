@@ -90,6 +90,8 @@ export class CasesTools {
     },
   })
   async addCase(params: any): Promise<string> {
+    console.log("creating new case: ", params);
+
     const requiredFields = [
       "institutionId",
       "caseTypeId",
