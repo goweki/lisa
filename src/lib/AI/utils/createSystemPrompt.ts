@@ -58,8 +58,6 @@ export const LLM_RESPONSE_SCHEMA = z.object({
         args: z
           .record(z.any())
           .optional()
-          .nullable()
-          .nullish()
           .describe("Parameters for the tool (optional)"),
       })
     )
