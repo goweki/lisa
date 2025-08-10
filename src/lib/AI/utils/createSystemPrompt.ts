@@ -58,6 +58,8 @@ export const LLM_RESPONSE_SCHEMA = z.object({
         args: z
           .record(z.any())
           .optional()
+          .nullable()
+          .nullish()
           .describe("Parameters for the tool (optional)"),
       })
     )
@@ -101,10 +103,9 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
             type: "object",
             description: "Parameters for the tool (optional)",
             additionalProperties: true,
+            optional: true,
           },
         },
-        // The `required` array for this object
-        required: ["tool"],
       },
       description: "Tools to call in sequence (if required)",
       optional: true,
