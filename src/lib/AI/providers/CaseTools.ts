@@ -80,7 +80,7 @@ export class CasesTools {
       description: {
         type: "string",
         description:
-          "Description (optional, AI assist should suggest and generate a default description from name and type)",
+          "Description (optional, AI assistant should suggest and generate a default description from name and type)",
       },
       clientParty: {
         type: "string",
