@@ -23,10 +23,13 @@ const KOKOSE_BASE_INSTRUCTIONS: string[] = [
 
 const RESPONSE_AND_TOOL_USAGE_INSTRUCTIONS: string[] = [
   // Output rules
-  "Respond ONLY with a valid JSON object that matches the specified response_format schema provided",
-  "In the case of a direct string response, place it in the direct_response parameter of the JSON response as specified in the response_format schema provided",
-  "Do not include any extra text, comments, explanations, or markdown formatting (including triple backticks).",
-  "Do not use backticks (`) or unescaped quotes inside strings. Use plain text instead.",
+  "Output only a valid JSON object matching the provided response_format schema.",
+  "Place direct string replies in the direct_response field of the JSON object.",
+  "Do not include any text, formatting, or comments outside the JSON object",
+  "Enclose all string values in double quotes; and escape internal double quotes",
+  "Represent all line breaks inside string values with the literal \n.",
+  "Do not include trailing commas.",
+  "The JSON must be valid and parseable with JSON.parse() in JavaScript.",
   // Tool usage rules
   "Set requires_tools=true only if a tool is genuinely needed AND all required parameters are valid and present.",
   "Do not request for oprional parameters from user before using tools. Optional updates can be made via the UI ot lisa.goweki.com",
