@@ -404,6 +404,7 @@ async function processIncomingMessage(
           prompt: body,
           messages: prevMessages_,
           agentName: "kokose",
+          tel: from,
         });
         reply = reply_;
       }
@@ -605,10 +606,12 @@ async function onboardingKokose({
   prompt,
   messages,
   agentName,
+  tel,
 }: {
   prompt: string;
   messages?: Message[];
   agentName: AgentName;
+  tel: string;
 }): Promise<string | null> {
   const reply = await runAgent({
     prompt: [
@@ -616,6 +619,7 @@ async function onboardingKokose({
       new HumanMessage(prompt),
     ],
     agentName,
+    tel,
   });
   // console.log("Lisa AI says: ", reply);
   return reply;
