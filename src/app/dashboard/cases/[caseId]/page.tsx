@@ -166,9 +166,17 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
   // update staff options
   useEffect(() => {
     const usersOptions = users.map(
-      ({ id, email, names }: { id: string; email: string; names: string }) => ({
+      ({
+        id,
+        email,
+        names,
+      }: {
+        id: string;
+        email: string | null;
+        names: string;
+      }) => ({
         value: id,
-        label: `${names}: ${email}`,
+        label: `${names}: ${email || "<NULL>"}`,
       })
     );
 
@@ -329,7 +337,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       otherPartyDescription:
         caseEdit.otherPartyDescription === selectedCase.otherPartyDescription
           ? undefined
-          : caseEdit.otherPartyDescription
+          : caseEdit.otherPartyDescription,
     };
     console.log("Updating case - ", updatedCaseObj);
 
@@ -356,8 +364,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       if (_res?.success) {
         console.log(
           "SUCCESS: Case updated successfully\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
+            JSON.stringify(_res.success) +
+            "\n.............."
         );
         await refreshData();
         toast.success("Case updated successfully!");
@@ -365,13 +373,13 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       } else {
         console.error(
           "ERROR: failed to update case - ih6\n" +
-          JSON.stringify(_res) +
-          "\n.............."
+            JSON.stringify(_res) +
+            "\n.............."
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
       setUIstate("OK");
-    } catch (error) { }
+    } catch (error) {}
   }
 
   // handle onSelect Institutions
@@ -446,7 +454,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
         body: JSON.stringify({
           id: task.id,
           caseId: task.caseId,
-          completedById: true
+          completedById: true,
         }),
       };
       // POST request using fetch
@@ -455,28 +463,26 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
           if (res_.ok) {
             return await res_.json();
           } else {
-            const error_ = `ERROR ${res_.status} - ${await res_.json()}`
+            const error_ = `ERROR ${res_.status} - ${await res_.json()}`;
             console.error(error_);
             toast.error(error_);
           }
         }
       );
 
-      if (!_res) return
+      if (!_res) return;
 
-      console.log(
-        "SUCCESS: task deleted ", _res
-      );
+      console.log("SUCCESS: task deleted ", _res);
       toast.success("Task deleted successfully!");
       await refreshData();
       router.refresh();
     } catch (error: any) {
-      let errorMessage = 'Task not deleted'
-      if (error.message) errorMessage = error.message
+      let errorMessage = "Task not deleted";
+      if (error.message) errorMessage = error.message;
       // setUIstate("Error: Institution was not initialized");
       toast.error(errorMessage);
     }
-  };
+  }
 
   //func to Delete Task
   async function handleDeleteTask(task: Task) {
@@ -499,7 +505,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
           if (res_.ok) {
             return await res_.json();
           } else {
-            const error_ = `ERROR ${res_.status} - ${await res_.json()}`
+            const error_ = `ERROR ${res_.status} - ${await res_.json()}`;
             console.error(error_);
             toast.error(error_);
           }
@@ -508,8 +514,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       if (_res?.success) {
         console.log(
           "SUCCESS: task deleted successfully\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
+            JSON.stringify(_res.success) +
+            "\n.............."
         );
         toast.success("Task deleted successfully!");
         await refreshData();
@@ -517,8 +523,8 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       } else {
         console.error(
           "ERROR: failed to delete task\n > " +
-          JSON.stringify(_res) +
-          "\n.............."
+            JSON.stringify(_res) +
+            "\n.............."
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
@@ -531,7 +537,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
       // setUIstate("Error: Institution was not initialized");
       toast.error("Task NOT deleted");
     }
-  };
+  }
 
   //render
   return UIstate && selectedCase && caseEdit ? (
@@ -614,7 +620,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
               Assignee
             </Label>
             {session?.user?.role === "system" ||
-              session?.user?.role === "admin" ? (
+            session?.user?.role === "admin" ? (
               <Select
                 name="assignee"
                 value={caseEdit.assigneeId || ""}
@@ -788,10 +794,10 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                       !caseEdit.clientParty
                         ? ""
                         : options.clientParties.find(
-                          (party) =>
-                            party !==
-                            (caseEdit.clientParty || selectedCase.clientParty)
-                        )
+                            (party) =>
+                              party !==
+                              (caseEdit.clientParty || selectedCase.clientParty)
+                          )
                     }
                     // disabled={!newCase.caseTypeID}
                     disabled={true}
@@ -913,9 +919,7 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                             due Date
                           </TableHead>
                           <TableHead className="text-center">
-                            <TaskModal
-                              _task={{ caseId }}
-                            />
+                            <TaskModal _task={{ caseId }} />
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -938,12 +942,13 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                               </TableCell>
                               <TableCell className="hidden sm:table-cell">
                                 <Badge
-                                  className={`text-xs ${task.completedById
-                                    ? "border-emerald-500"
-                                    : isDatePassed(new Date(task.dueDate))
-                                      ? "border-destructive"
-                                      : "border-border"
-                                    }`}
+                                  className={`text-xs ${
+                                    task.completedById
+                                      ? "border-emerald-500"
+                                      : isDatePassed(new Date(task.dueDate))
+                                        ? "border-destructive"
+                                        : "border-border"
+                                  }`}
                                   variant="outline"
                                 >
                                   {task.completedById
@@ -973,14 +978,18 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
                                     className="text-foreground"
                                   >
                                     {/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
-                                    <DropdownMenuItem onClick={() => handleCompleteTask(task)}>
+                                    <DropdownMenuItem
+                                      onClick={() => handleCompleteTask(task)}
+                                    >
                                       Complete
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setSelectedTask(task)}>Edit</DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={() =>
-                                        handleDeleteTask(task)
-                                      }
+                                      onClick={() => setSelectedTask(task)}
+                                    >
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => handleDeleteTask(task)}
                                     >
                                       Delete
                                     </DropdownMenuItem>
@@ -1007,39 +1016,41 @@ export default function CaseView({ params }: { params: { caseId: string } }) {
             </AccordionItem>
           </Accordion>
         </form>
-        {selectedTask && <TaskModal
-          _task={selectedTask}
-          isOpen={!!selectedTask}
-          toggleOpen={(open: boolean) => {
-            setSelectedTask(null)
-          }}
-        />}
+        {selectedTask && (
+          <TaskModal
+            _task={selectedTask}
+            isOpen={!!selectedTask}
+            toggleOpen={(open: boolean) => {
+              setSelectedTask(null);
+            }}
+          />
+        )}
       </CardContent>
       {(session?.user?.role === "admin" ||
         selectedCase.assigneeId === session?.user?.id) && (
-          <CardFooter className="border-t px-6 py-4 min-h-20">
-            {UIstate === "loading" ? (
-              <Loader />
-            ) : (
-              <div
-                className="flex flex-row justify-between w-full items-center"
-                id="buttonWrapper"
-              >
-                <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
-                  Update Case
-                </Button>
+        <CardFooter className="border-t px-6 py-4 min-h-20">
+          {UIstate === "loading" ? (
+            <Loader />
+          ) : (
+            <div
+              className="flex flex-row justify-between w-full items-center"
+              id="buttonWrapper"
+            >
+              <Button onClick={handleUpdateCase} disabled={!caseIsUpdated}>
+                Update Case
+              </Button>
 
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteCase}
-                  disabled={!selectedCase?.id}
-                >
-                  Delete Case
-                </Button>
-              </div>
-            )}
-          </CardFooter>
-        )}
+              <Button
+                variant="destructive"
+                onClick={handleDeleteCase}
+                disabled={!selectedCase?.id}
+              >
+                Delete Case
+              </Button>
+            </div>
+          )}
+        </CardFooter>
+      )}
     </Card>
   ) : (
     <Loader />

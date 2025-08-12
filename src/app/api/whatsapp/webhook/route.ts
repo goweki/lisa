@@ -1,8 +1,11 @@
 import { strFirstWord } from "@/helpers/stringHandlers";
 import prisma from "@/lib/prisma/prisma";
 import { TemplateObj } from "@/types/custom";
+import { randomUUID } from "crypto";
 import {
   Institution,
+  Message,
+  MessageDirection,
   MessageSubject,
   VerificationChannel,
 } from "@prisma/client";
@@ -17,6 +20,8 @@ import {
   generateLangConversationFromMessages,
 } from "@/lib/AI/utils/generateHistory";
 import { HumanMessage } from "@langchain/core/messages";
+import { AgentName } from "@/lib/AI/agent/Agent";
+import { IntentType } from "../types";
 
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 const WHATSAPP_PHONE_NO_ID = process.env.WHATSAPP_PHONE_NO_ID;
@@ -34,14 +39,6 @@ const WebhookPayloadSchema = z.object({
   ),
 });
 
-enum IntentType {
-  RESET_PASSWORD = "RESET_PASSWORD",
-  PAY_SUBSCRIPTION = "PAY_SUBSCRIPTION",
-  CREATE_PROJECT = "CREATE_PROJECT",
-  HELP = "HELP",
-  UNKNOWN = "UNKNOWN",
-}
-
 function getIntentFromMessage(message: string): IntentType {
   const normalized = message.toLowerCase().trim();
 
@@ -57,7 +54,15 @@ function getIntentFromMessage(message: string): IntentType {
     return IntentType.PAY_SUBSCRIPTION;
   }
 
-  return IntentType.UNKNOWN;
+  // TALK_TO_KOKOSE intent: message contains "kokose" or "420" and is < 10 chars
+  if (
+    (normalized.includes("kokose") || normalized.includes("420")) &&
+    normalized.length < 10
+  ) {
+    return IntentType.TALK_TO_KOKOSE;
+  }
+
+  return IntentType.HELP;
 }
 
 interface SendTemplateDto {
@@ -264,10 +269,11 @@ async function processIncomingMessage(
           data: {
             messageId: sent_whatsapp_template.whatsappResponse.messages[0].id,
             userId: from_user.id,
+            direction: MessageDirection.OUTBOUND,
             subject: MessageSubject.SET_YOUR_PASSWORD,
             to: from,
             from: to,
-            text: `verify account`,
+            text: `account verification info: ****`,
           },
         });
         return true;
@@ -297,6 +303,7 @@ async function processIncomingMessage(
         data: {
           messageId,
           userId: from_user.id,
+          direction: MessageDirection.INBOUND,
           from,
           to,
           text: body,
@@ -348,8 +355,9 @@ async function processIncomingMessage(
               data: {
                 messageId: sent_message_.messages[0].id,
                 userId: from_user.id,
+                direction: MessageDirection.OUTBOUND,
                 to: from,
-                from: "system",
+                from: "assistant",
                 text: reply,
               },
             });
@@ -369,46 +377,77 @@ async function processIncomingMessage(
       );
 
       // reply
-      const message_text_ = `Hi , \n\nYou need to sign-up to LISA to use this automated service. Read more here: \n\nhttps://lisa.goweki.com/`;
-      const sent_message_ = await sendMessage({
-        to: from,
-        body: message_text_,
-      });
+      let reply: string | null =
+        `Hi , \n\nYou need to sign-up to LISA to use this automated service. Read more here: \n\nhttps://lisa.goweki.com/`;
 
-      if (!sent_message_) {
-        console.warn("Message not sent - ", {
-          to: from,
-          body: message_text_,
-        });
-        return false;
+      if (message.type === "text" && message.text) {
+        body = message.text.body;
       }
 
-      //save to db
-      let systemUser = await prisma.user.findFirst({
-        where: {
-          systemAdmin: true,
-        },
-      });
-      // If not found, create one
-      if (!systemUser) {
-        systemUser = await prisma.user.create({
+      const intent = getIntentFromMessage(body);
+      if (intent === IntentType.TALK_TO_KOKOSE) {
+        const newMessage = await prisma.message.create({
           data: {
-            names: "System User",
-            systemAdmin: true,
-            email: "lisa@goweki.com",
+            messageId,
+            direction: MessageDirection.INBOUND,
+            to,
+            from,
+            text: "UNREGISTERED",
+          },
+        });
+
+        const prevMessages_ = await prisma.message.findMany({
+          where: { OR: [{ to: from }, { from }] },
+        });
+
+        const reply_ = await onboardingKokose({
+          prompt: body,
+          messages: prevMessages_,
+          agentName: "kokose",
+        });
+        reply = reply_;
+      }
+
+      if (reply) {
+        const sent_message_ = await sendMessage({
+          to: from,
+          body: reply,
+        });
+
+        if (!sent_message_) {
+          console.warn("Message not sent - ", {
+            to: from,
+            body: reply,
+          });
+          return false;
+        }
+
+        //save to db
+        let systemUser = await prisma.user.findUnique({
+          where: { email: "lisa@goweki.com" },
+        });
+        // If not found, create one
+        if (!systemUser) {
+          systemUser = await prisma.user.create({
+            data: {
+              names: "System User",
+              systemAdmin: true,
+              email: "lisa@goweki.com",
+            },
+          });
+        }
+
+        await prisma.message.create({
+          data: {
+            messageId: sent_message_.messages[0].id,
+            userId: systemUser.id,
+            direction: MessageDirection.OUTBOUND,
+            to: from,
+            from: "system",
+            text: "UNREGISTERED",
           },
         });
       }
-
-      await prisma.message.create({
-        data: {
-          messageId: sent_message_.messages[0].id,
-          userId: systemUser.id,
-          to: from,
-          from: "system",
-          text: "UNREGISTERED",
-        },
-      });
     }
 
     console.log(`Processed and saved incoming message: ${messageId}`);
@@ -531,28 +570,49 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// CHECKPOINT
-
 async function consultLisa({
   prompt,
   user,
+  agentName,
 }: {
   prompt: string;
-  user: User;
+  user?: User;
+  agentName?: AgentName;
 }): Promise<string | null> {
   const institutions =
-    user.institutions?.map((userInst: InstitutionUser) => ({
+    user?.institutions?.map((userInst: InstitutionUser) => ({
       id: userInst.institutionId,
       name: userInst.institution?.name || "<NULL>",
       role: userInst.role,
     })) || [];
 
   const reply = await runAgent({
-    user: { ...user, institutions },
+    user: user ? { ...user, institutions } : undefined,
     prompt: [
-      ...(await generateLangConversationFromMessages(user.messages || [])),
+      ...(await generateLangConversationFromMessages(user?.messages || [])),
       new HumanMessage(prompt),
     ],
+    agentName,
+  });
+  // console.log("Lisa AI says: ", reply);
+  return reply;
+}
+
+async function onboardingKokose({
+  prompt,
+  messages,
+  agentName,
+}: {
+  prompt: string;
+  messages?: Message[];
+  agentName?: AgentName;
+}): Promise<string | null> {
+  const reply = await runAgent({
+    prompt: [
+      ...(await generateLangConversationFromMessages(messages || [])),
+      new HumanMessage(prompt),
+    ],
+    agentName,
   });
   // console.log("Lisa AI says: ", reply);
   return reply;

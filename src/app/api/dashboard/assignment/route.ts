@@ -43,7 +43,7 @@ async function postHandler(
     });
 
     console.log(
-      `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${res_assigneeRequest.case.name}`
+      `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${JSON.stringify(res_assigneeRequest)}`
     );
 
     if (res_assigneeRequest && case_ && !case_.assigneeId) {
@@ -64,11 +64,9 @@ async function postHandler(
       });
 
       console.log(
-        `SUCCESS: case assigned to ${
+        `SUCCESS: assigned to ${
           res_assigneeRequest.assignee.email
-        }.\n > case:  ${res_assigneeRequest.case.name} \n > case.userId:  ${
-          res_case_.assigneeId === userID
-        }.\n`
+        }.\n >  ${JSON.stringify(res_assigneeRequest)} \n`
       );
     }
 

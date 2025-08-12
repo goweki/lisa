@@ -60,7 +60,7 @@ export function ProfileForm() {
       setUser(matchedUser);
       form.reset({
         names: matchedUser.names,
-        email: matchedUser.email,
+        email: matchedUser.email || undefined,
         tel: matchedUser.tel,
         photoUrl: matchedUser.photoUrl,
         photoFile: undefined,
@@ -129,8 +129,8 @@ export function ProfileForm() {
           !user.photoUrl
             ? undefined
             : {
-              replaceTargetUrl: user.photoUrl,
-            };
+                replaceTargetUrl: user.photoUrl,
+              };
 
         const photoEdgeUpload = await edgestore.publicFiles.upload({
           file: photoFile,
@@ -159,7 +159,7 @@ export function ProfileForm() {
         if (!photoUrl) {
           console.error("image upload failed");
 
-          showWarningToast('Photo could not be uploaded')
+          showWarningToast("Photo could not be uploaded");
         }
       }
 

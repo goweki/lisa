@@ -165,17 +165,9 @@ export const blogPosts: Omit<
   },
 ];
 
-export const systemUser: Omit<User, "id" | "photoUrl" | "preferredComChannel"> =
-  {
-    names: "System Lisa",
-    email: "lisa@goweki.com",
-    tel: "+254711336187",
-    telVerification: false,
-    emailVerification: false,
-    systemAdmin: true,
-    status: "ACTIVE",
-    resetTokenSentTo: null,
-    password: null,
-    resetToken: null,
-    resetTokenExpiry: null,
-  };
+export const systemUser = {
+  names: "System Lisa",
+  email: "lisa@goweki.com",
+  tel: "+254711336187",
+  systemAdmin: true,
+};

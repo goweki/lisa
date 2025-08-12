@@ -61,6 +61,7 @@ export function generateMockEvents(): CalendarTask[] {
       description: null,
       completedById: null,
       caseId: "",
+      assigneeId: null,
     });
   }
 

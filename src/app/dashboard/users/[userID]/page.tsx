@@ -56,7 +56,7 @@ import { Switch } from "@/components/ui/switch";
 interface SelectedEditUser {
   id?: string;
   names: string;
-  email: string;
+  email: string | null;
   tel: string | null;
   status?: EntityStatus;
   photoUrl: string | null;
@@ -65,7 +65,7 @@ interface SelectedEditUser {
 
 const default_UserEdit: SelectedEditUser = {
   names: "",
-  email: "",
+  email: null,
   tel: null,
   photoUrl: null,
 };
@@ -421,7 +421,7 @@ export default function UserView({ params }: { params: any }) {
               id="email"
               placeholder="official email"
               className="placeholder:italic"
-              value={userEdit.email || selected?.email}
+              value={userEdit.email || selected?.email || ""}
               onChange={(e) =>
                 setUserEdit((prev) => ({
                   ...prev,

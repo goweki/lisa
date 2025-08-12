@@ -2,56 +2,72 @@ import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
 import type { UserContext } from "../types/UserContext";
 import { TaskType, UserRole } from "@prisma/client";
+import { Case, Task } from "@/types/models";
 
 export class TasksTools {
+  private tasks: any[] = [];
+  private cases: any[] = [];
+
   constructor(private user: UserContext) {
     if (!user) {
-      throw new Error("User context is required to initialize TasksTools.");
+      throw new Error("You need to be a registered user to use TasksTools.");
     }
   }
 
-  private async canAccessCase(caseId: string) {
-    if (this.user.systemAdmin) return true;
+  async init() {
+    await this.loadCases();
+    await this.loadTasks();
+  }
 
-    const caseData = await prisma.case.findUnique({
-      where: { id: caseId },
-      select: { institutionId: true, assigneeId: true, createdById: true },
+  private async loadTasks() {
+    const cases = await prisma.case.findMany({
+      where: this.user?.systemAdmin ? {} : { assigneeId: this.user?.id },
+      include: { tasks: { include: { case: true } } },
+    });
+    this.cases = cases;
+
+    const tasks = await prisma.task.findMany({
+      where: {
+        OR: [{ assigneeId: this.user?.id }, { completedById: this.user?.id }],
+      },
+      include: { case: true },
     });
 
-    if (!caseData) return false;
+    // Merge case tasks + directly fetched tasks
+    const allTasks = [...cases.flatMap((c) => c.tasks), ...tasks];
 
-    if (
-      this.user.institutions.some(
-        (inst) =>
-          inst.id === caseData.institutionId && inst.role === UserRole.ADMIN
-      )
-    )
-      return true;
-    if (caseData.assigneeId === this.user.id) return true;
-    if (caseData.createdById === this.user.id) return true;
+    // Remove duplicates (if any)
+    const uniqueTasks = Array.from(
+      new Map(allTasks.map((t) => [t.id, t])).values()
+    );
 
-    return false;
+    this.tasks = uniqueTasks;
+  }
+
+  private async loadCases() {
+    const cases = await prisma.case.findMany({
+      where: this.user?.systemAdmin ? {} : { assigneeId: this.user?.id },
+      include: { tasks: true },
+    });
+    this.cases = cases;
   }
 
   @ToolDecorator({
-    docstring: `Lists all tasks for a specific case.`,
-    parameters: {
-      caseId: { type: "string", description: "The case ID to list tasks for" },
-    },
+    docstring: `Lists all tasks user has access to.`,
+    parameters: undefined,
   })
-  async listTasks(caseId: string): Promise<string> {
-    if (!caseId) return "Case ID is required.";
-    if (!(await this.canAccessCase(caseId)))
-      return "You do not have permission to view this case.";
+  async listTasks(): Promise<string> {
+    // If no tasks, return a friendly message
+    if (this.tasks.length === 0) {
+      return "✅ User has no assigned or completed tasks at the moment.";
+    }
 
-    const tasks = await prisma.task.findMany({ where: { caseId } });
-
-    if (!tasks.length) return "No tasks found for this case.";
-
-    return tasks
+    return this.tasks
       .map(
         (t) =>
-          `- ${t.name} [${t.type}] Due: ${t.dueDate.toDateString()} ${t.description ? `- ${t.description}` : ""}`
+          `- ${t.name} [${t.type}] with id:${t.id}, due: ${t.dueDate?.toDateString() || "No due date"} ${
+            t.description ? `- ${t.description}` : ""
+          }`
       )
       .join("\n");
   }
@@ -59,34 +75,44 @@ export class TasksTools {
   @ToolDecorator({
     docstring: `Adds a task to a case.`,
     parameters: {
-      caseId: { type: "string", description: "Case ID (required)" },
-      name: { type: "string", description: "Task name (required)" },
-      type: {
+      caseId: {
         type: "string",
-        description: "Task type (required): EVENT or DOCUMENT",
+        description: "id of the case associated with new task (required)",
+      },
+      name: {
+        type: "string",
+        description: "Name of task to be created (required)",
       },
       dueDate: {
         type: "string",
-        description: "Due date in ISO format (required)",
+        description: "Due date of the new task in ISO format (required)",
       },
-      description: { type: "string", description: "Optional task details" },
+      type: {
+        type: "string",
+        description: `Task Type (optional): valid types:${JSON.stringify(TaskType)}`,
+      },
+      description: {
+        type: "string",
+        description: "Optional task details and more info",
+      },
     },
   })
   async addTask(
     caseId: string,
     name: string,
-    type: string,
     dueDate: string,
+    type?: string,
     description?: string
   ): Promise<string> {
-    if (!(await this.canAccessCase(caseId)))
-      return "You do not have permission to add tasks to this case.";
+    await this.loadCases();
+    if (!this.cases.find(({ id }) => id === caseId))
+      return "Case not found: Invalid caseId";
 
     const task = await prisma.task.create({
       data: {
         caseId,
         name,
-        type: type as TaskType,
+        type: (type as TaskType) || "OTHER",
         dueDate: new Date(dueDate),
         description,
       },
@@ -102,18 +128,12 @@ export class TasksTools {
     },
   })
   async completeTask(taskId: string): Promise<string> {
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-      select: { caseId: true },
-    });
-
+    const task = this.tasks.find(({ id }) => id === taskId);
     if (!task) return "Task not found.";
-    if (!(await this.canAccessCase(task.caseId)))
-      return "You do not have permission to complete this task.";
 
     await prisma.task.update({
-      where: { id: taskId },
-      data: { completedById: this.user.id },
+      where: { id: task.id },
+      data: { completedById: this.user?.id },
     });
 
     return `Task ${taskId} marked as completed.`;

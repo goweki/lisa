@@ -8,6 +8,7 @@ import {
   SystemMessage,
   ToolMessage,
 } from "@langchain/core/messages";
+export type AgentName = "lisa" | "kokose";
 
 export type LLMInput = {
   prompt: Array<AIMessage | HumanMessage>;
@@ -36,35 +37,71 @@ export class Agent {
     );
   }
 
+  // async useTool(
+  //   toolName: string,
+  //   args?: Record<string, unknown>
+  // ): Promise<string> {
+  //   const tool = this.tools[toolName];
+  //   if (!tool) {
+  //     throw new Error(
+  //       `Tool '${toolName}' not found. Available: ${Object.keys(this.tools).join(", ")}`
+  //     );
+  //   }
+
+  //   const orderedKeys = Object.keys(tool.parameters);
+  //   const argValues = orderedKeys.map((key) =>
+  //     args?.hasOwnProperty(key) ? args[key] : undefined
+  //   );
+
+  //   return tool.call(...argValues);
+  // }
   async useTool(
     toolName: string,
     args?: Record<string, unknown>
   ): Promise<string> {
     const tool = this.tools[toolName];
     if (!tool) {
-      throw new Error(
-        `Tool '${toolName}' not found. Available: ${Object.keys(this.tools).join(", ")}`
-      );
+      const errorMsg = `⚠️ Tool '${toolName}' not found. Available: ${Object.keys(this.tools).join(", ") || "none"}`;
+      console.error(errorMsg);
+      return errorMsg;
     }
 
-    const orderedKeys = Object.keys(tool.parameters);
-    const argValues = orderedKeys.map((key) =>
-      args?.hasOwnProperty(key) ? args[key] : undefined
-    );
+    try {
+      const orderedKeys = Object.keys(tool.parameters || {});
+      const argValues = orderedKeys.map((key) =>
+        Object.prototype.hasOwnProperty.call(args || {}, key)
+          ? args?.[key]
+          : undefined
+      );
 
-    return tool.call(...argValues);
+      return await tool.call(...argValues);
+    } catch (err: any) {
+      const errorMsg = `⚠️ Error executing tool '${toolName}': ${err?.message || err}`;
+      console.error(errorMsg, err);
+      return errorMsg;
+    }
   }
 
-  async callLLM(
-    prompt: Array<AIMessage | HumanMessage>,
-    user: UserContext,
-    tools_prompt?: string,
-    toolResults?: Array<ToolMessage>
-  ): Promise<LLMResponse | void> {
+  async callLLM({
+    prompt,
+    user,
+    tools_prompt,
+    toolResults,
+    agent,
+  }: {
+    prompt: Array<AIMessage | HumanMessage>;
+    user?: UserContext;
+    tools_prompt?: string;
+    toolResults?: Array<ToolMessage>;
+    agent?: AgentName;
+  }): Promise<LLMResponse | void> {
     const toolsArray = Object.values(this.tools);
     const systemPrompt = new SystemMessage(
-      JSON.stringify(createSystemPrompt(toolsArray, user), null, 2) +
-        `\n\n ${tools_prompt}`
+      JSON.stringify(
+        createSystemPrompt(toolsArray, agent || "lisa", user),
+        null,
+        2
+      ) + `\n\n ${tools_prompt}`
     );
 
     const promptTemplate =

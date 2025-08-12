@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn } from "react-hook-form";
@@ -83,11 +83,7 @@ const taskInputSchema = z.object({
 });
 
 export default function TaskModal(params: TaskModalProps) {
-  const {
-    isOpen,
-    toggleOpen,
-    _task,
-  } = params;
+  const { isOpen, toggleOpen, _task } = params;
   const [isUpdated, setIsUpdated] = useState<boolean>(false);
   const router = useRouter();
 
@@ -95,7 +91,7 @@ export default function TaskModal(params: TaskModalProps) {
     resolver: zodResolver(taskInputSchema),
     defaultValues: {
       name: _task?.name,
-      caseId: _task?.caseId,
+      caseId: _task?.caseId || undefined,
       type: _task?.type,
       dueDate: _task?.dueDate,
       description: _task?.description || "",
@@ -111,55 +107,54 @@ export default function TaskModal(params: TaskModalProps) {
         return;
       }
 
-      const hasChanged = values.name !== _task?.name ||
-        values.type !== _task?.type || values.type !== _task?.type || values.dueDate !== _task?.dueDate
+      const hasChanged =
+        values.name !== _task?.name ||
+        values.type !== _task?.type ||
+        values.type !== _task?.type ||
+        values.dueDate !== _task?.dueDate;
 
       setIsUpdated(hasChanged);
-
     });
 
     return () => subscription.unsubscribe(); // cleanup
   }, [form, _task]);
 
-  // 
+  //
   useEffect(() => {
     if (_task) {
       const resetData = {
-        name: _task.name || '',
+        name: _task.name || "",
         type: _task.type || undefined,
-        caseId: _task.caseId,
+        caseId: _task.caseId || undefined,
         dueDate: _task.dueDate || new Date(),
-        description: _task.description || ''
-      }
+        description: _task.description || "",
+      };
       form.reset(resetData);
     }
   }, [_task]);
 
   async function onSubmit(values: z.infer<typeof taskInputSchema>) {
-
     console.log("Form data: ", values);
-    let APIresponse: string | null = null
+    let APIresponse: string | null = null;
 
     if (_task?.id) {
       const updates = {
         name: values.name !== _task.name ? values.name : undefined,
         type: values.type !== _task.name ? values.type : undefined,
         dueDate: values.dueDate !== _task.dueDate ? values.dueDate : undefined,
-      }
+      };
 
-      APIresponse = await handleTaskUpdate({ id: _task.id, ...updates })
-      console.log('RESPONSE - ', APIresponse)
-
+      APIresponse = await handleTaskUpdate({ id: _task.id, ...updates });
+      console.log("RESPONSE - ", APIresponse);
     } else {
-      APIresponse = await handleTaskCreation(values)
+      APIresponse = await handleTaskCreation(values);
       if (!!APIresponse) {
-        console.error('API response  - ', APIresponse,)
-        toast.success('Task created')
-        router.refresh()
+        console.error("API response  - ", APIresponse);
+        toast.success("Task created");
+        router.refresh();
       } else {
-        toast.error('Task Not created')
+        toast.error("Task Not created");
       }
-
     }
 
     if (toggleOpen) {
@@ -175,7 +170,6 @@ export default function TaskModal(params: TaskModalProps) {
       toast.success(res_);
       if (toggleOpen) toggleOpen(false);
     } else {
-
     }
     if (toggleOpen) toggleOpen(false);
   }
@@ -217,10 +211,7 @@ export default function TaskModal(params: TaskModalProps) {
                   <FormLabel>Type *</FormLabel>
                   <FormMessage />
                   <FormControl>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a task type..." />
                       </SelectTrigger>

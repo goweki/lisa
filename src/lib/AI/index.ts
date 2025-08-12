@@ -1,9 +1,10 @@
 import { InstitutionTools } from "./providers/InstitutionTools";
 import { UsersTools } from "./providers/UserTools";
+import { UserTaskTools } from "./providers/UserTaskTools";
 import { CasesTools } from "./providers/CaseTools";
 import { TasksTools } from "./providers/TaskTools";
 import { ToolsManager } from "./agent/ToolsManager";
-import { Agent } from "./agent/Agent";
+import { Agent, AgentName } from "./agent/Agent";
 import { GeminiLLMProvider } from "./llm/GeminiLLMProvider";
 import { Content } from "@google/genai";
 import { UserContext } from "./types/UserContext";
@@ -14,59 +15,92 @@ import {
   SystemMessage,
   ToolMessage,
 } from "@langchain/core/messages";
+import { Tool } from "./agent/Tool";
 
-const dummyPrompt =
-  "Find the latest trends in AI for 2025 specifically related to Large Language Models and summarize them search the web. Just return Json no additional text.";
+const dummyPrompt: Record<AgentName, string> = {
+  lisa: "What is Lisa?",
+  kokose: "How do i sign up to Kokose?",
+};
 
 export async function runAgent({
   user,
-  prompt = dummyPrompt,
+  prompt: _prompt,
+  agentName = "lisa",
 }: {
-  user: UserContext;
+  user?: UserContext;
   prompt: Array<HumanMessage | AIMessage> | string;
+  agentName?: AgentName;
 }): Promise<string | null> {
-  // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
-  const institutionProvider = new InstitutionTools(user);
-  const usersProvider = new UsersTools(user);
-  const caseProvider = new CasesTools(user);
-  const taskProvider = new TasksTools(user);
-
-  const institutionTools = ToolsManager.registerToolsFrom(institutionProvider);
-  const userTools = ToolsManager.registerToolsFrom(usersProvider);
-  const caseTools = ToolsManager.registerToolsFrom(caseProvider);
-  const taskTools = ToolsManager.registerToolsFrom(taskProvider);
+  const prompt = _prompt || dummyPrompt[agentName];
   // Initialize LLM Provider
   const llmProvider = new GeminiLLMProvider();
   const agent = new Agent(llmProvider);
-  // Register all tools with the agent
-  [
-    ...institutionTools,
-    ...userTools,
-    ...caseTools,
-    ...taskTools,
-    // ...searchTools,
-  ].forEach((tool) => agent.addTool(tool));
+  // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
 
-  const institutions = await agent.useTool("listInstitutions");
-  const caseTypes = await agent.useTool("listCaseTypes");
-  const cases = await agent.useTool("listCases");
-  const def_toolResults: ToolMessage[] = [
-    new ToolMessage({
-      content: institutions,
-      name: "listInstitutions",
-      tool_call_id: "call_0",
-    }),
-    new ToolMessage({
-      content: caseTypes,
-      name: "listCaseTypes",
-      tool_call_id: "call_1",
-    }),
-    new ToolMessage({
-      content: cases,
-      name: "listCases",
-      tool_call_id: "call_2",
-    }),
-  ];
+  if (user) {
+    const institutionProvider = new InstitutionTools(user);
+    const usersProvider = new UsersTools(user);
+    const caseProvider = new CasesTools(user);
+    const taskProvider = new TasksTools(user);
+
+    const institutionTools =
+      ToolsManager.registerToolsFrom(institutionProvider);
+    const userTools = ToolsManager.registerToolsFrom(usersProvider);
+    const caseTools = ToolsManager.registerToolsFrom(caseProvider);
+    const taskTools = ToolsManager.registerToolsFrom(taskProvider);
+
+    // Register all tools with the agent
+    [
+      ...institutionTools,
+      ...userTools,
+      ...caseTools,
+      ...taskTools,
+      // ...searchTools,
+    ].forEach((tool) => agent.addTool(tool));
+  } else {
+    const userTaskProvider = new UserTaskTools();
+    const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
+    [...userTaskTools].forEach((tool) => agent.addTool(tool));
+  }
+
+  function buildToolMessages(names: string[], results: any[]): ToolMessage[] {
+    return names.map(
+      (name, i) =>
+        new ToolMessage({
+          content: results[i],
+          name,
+          tool_call_id: `call_${i}`,
+        })
+    );
+  }
+
+  let def_toolResults: ToolMessage[] = [];
+
+  switch (agentName) {
+    case "lisa": {
+      const [institutions, caseTypes, cases, tasks] = await Promise.all([
+        agent.useTool("listInstitutions"),
+        agent.useTool("listCaseTypes"),
+        agent.useTool("listCases"),
+        agent.useTool("listTasks"),
+      ]);
+      def_toolResults = buildToolMessages(
+        ["listInstitutions", "listCaseTypes", "listCases", "listTasks"],
+        [institutions, caseTypes, cases, tasks]
+      );
+      break;
+    }
+    case "kokose": {
+      if (user) {
+        const tasks = await agent.useTool("listTasks");
+        def_toolResults = buildToolMessages(["listTasks"], [tasks]);
+      }
+      break;
+    }
+    default: {
+      def_toolResults = [];
+    }
+  }
   // --- End Agent Initialization ---
 
   let finalResponse: string | null = null;
@@ -80,14 +114,15 @@ export async function runAgent({
             ${JSON.stringify(def_toolResults, null, 2)}
 
             Tool Output Instructions:
-            - Reference Tool Outputs above if any id field is required. This could be institutionId,caseTypeId...
+            - Reference Tool Outputs above (if any) if any id field is required. This could be institutionId,caseTypeId...
         `;
 
-  const firstLLMResponse = await agent.callLLM(
-    normalizedPrompt,
+  const firstLLMResponse = await agent.callLLM({
+    prompt: normalizedPrompt,
     user,
-    toolsPrompt_1
-  );
+    tools_prompt: toolsPrompt_1,
+    agent: agentName,
+  });
 
   console.log("Agent response from callLLM:", firstLLMResponse);
 
@@ -96,10 +131,10 @@ export async function runAgent({
   }
 
   if (!firstLLMResponse.requires_tools) {
-    console.log("Lisa AI DOES NOT require tools for this response");
+    console.log("AI DOES NOT require tools for this response");
     finalResponse = firstLLMResponse.direct_response || "";
   } else {
-    console.log("Lisa AI requires tools: 1st loop");
+    console.log("AI requires tools: 1st loop");
     const toolResults: Record<string, Record<string, any>> = {};
     if (!firstLLMResponse.tool_calls) {
       console.error("Invalid LLMResponse: ", firstLLMResponse);
@@ -160,13 +195,14 @@ export async function runAgent({
     });
 
     const secondPrompt_normalized: Array<BaseMessage> = pairedMessages;
-    const tools_prompt_final = `Do not use a tool in this specific repsonse. Tell user to try again later if operation has failed.`;
+    const tools_prompt_final = `Do not use a tool in this specific repsonse. Summerize the tool output and advise steps forward.`;
 
-    const secondLLMResponse = await agent.callLLM(
-      secondPrompt_normalized,
+    const secondLLMResponse = await agent.callLLM({
+      prompt: secondPrompt_normalized,
       user,
-      tools_prompt_final
-    );
+      tools_prompt: tools_prompt_final,
+      agent: agentName,
+    });
 
     if (secondLLMResponse?.direct_response) {
       finalResponse = secondLLMResponse.direct_response as string;
