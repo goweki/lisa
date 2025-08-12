@@ -7,7 +7,7 @@ export class UserTaskTools {
   constructor(private tel: string) {}
 
   @ToolDecorator({
-    docstring: `Creates a new user within an institution. 
+    docstring: `Creates a new whatsapp user. 
 
     Parameters: 
     - name: Full name of the user (required)`,
@@ -18,7 +18,7 @@ export class UserTaskTools {
       },
     },
   })
-  async addTaskUser(name?: string): Promise<string> {
+  async addWhatsAppUser(name?: string): Promise<string> {
     if (!name || !this.tel) {
       return "User's telephone is obscured. refer them to webapp link.";
     }
