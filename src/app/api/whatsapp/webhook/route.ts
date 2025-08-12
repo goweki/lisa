@@ -326,12 +326,8 @@ async function processIncomingMessage(
           // Handle pay subscription logic here
           break;
         case IntentType.HELP:
-          console.warn(` > Unimplemented intent: help`);
-          // Handle help logic here
-          break;
-        default:
           console.warn(
-            ` > Default intent: Consulting lisa AI - ${from_user.names}, ${from_user.tel}`
+            ` > HELP intent: Consulting AI - ${from_user.names}, ${from_user.tel}`
           );
 
           const reply = await consultLisa({
@@ -365,6 +361,12 @@ async function processIncomingMessage(
             console.warn(`No response from lisa AI : prompt -`, body);
             return false;
           }
+          break;
+
+        default:
+          console.warn(
+            ` > Could not determine intent of WhatsApp message from - ${from_user.names} (${from_user.tel}): ${body}`
+          );
           break;
       }
 
