@@ -170,10 +170,14 @@ export class GeminiLLMProvider implements LLMProvider {
     try {
       if (isValidJson(responseText)) {
         return JSON.parse(responseText);
+      } else if (typeof responseText === "string") {
+        const repaired = {
+          direct_response: responseText,
+          requires_tools: false,
+        };
+        console.warn("Repaired LLM Response", repaired);
+        return repaired;
       }
-      const repaired = jsonrepair(responseText);
-      console.warn("Repaired LLM Response");
-      return JSON.parse(repaired);
     } catch (error: any) {
       const err = `❌ Invalid LLMResponse, also could not be repaired - ${error.message || JSON.stringify(error)}`;
       console.error(` ${err} \n> LLMResponse: `, response.text);
