@@ -423,21 +423,22 @@ async function processIncomingMessage(
         }
 
         //save to db
-        let systemUser = await prisma.user.findUnique({
-          where: { email: "lisa@goweki.com" },
-        });
-        // If not found, create one
-        if (!systemUser) {
-          systemUser = await prisma.user.create({
-            data: {
-              names: "System User",
-              systemAdmin: true,
-              email: "lisa@goweki.com",
-            },
-          });
-        }
-
         if (intent === IntentType.TALK_TO_KOKOSE) {
+          // user
+          let systemUser = await prisma.user.findUnique({
+            where: { email: "lisa@goweki.com" },
+          });
+          if (!systemUser) {
+            systemUser = await prisma.user.create({
+              data: {
+                names: "System User",
+                systemAdmin: true,
+                email: "lisa@goweki.com",
+              },
+            });
+          }
+
+          //create
           await prisma.message.create({
             data: {
               messageId: sent_message_.messages[0].id,
