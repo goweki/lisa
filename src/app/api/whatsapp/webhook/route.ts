@@ -323,6 +323,46 @@ async function processIncomingMessage(
           console.warn(` > Unimplemented intent: pay subscription`);
           // Handle pay subscription logic here
           break;
+        case IntentType.TALK_TO_KOKOSE:
+          console.warn(
+            ` > Consulting KOKOSE - registered user - ${from_user.names}, ${from_user.tel}`
+          );
+
+          const kokoseReply = await consultAI({
+            prompt: body,
+            user: from_user,
+            agentName: "kokose",
+          });
+
+          // reply
+          if (kokoseReply) {
+            const sent_message_ = await sendMessage({
+              to: from,
+              body: kokoseReply,
+            });
+
+            if (!sent_message_) {
+              console.warn(
+                `Reply was not sent to user ${from} : ${kokoseReply} `
+              );
+              return false;
+            }
+
+            await prisma.message.create({
+              data: {
+                messageId: sent_message_.messages[0].id,
+                userId: from_user.id,
+                direction: MessageDirection.OUTBOUND,
+                to: from,
+                from: "assistant",
+                text: kokoseReply,
+              },
+            });
+          } else {
+            console.warn(`No response from kokose AI : prompt -`, body);
+            return false;
+          }
+          break;
         case IntentType.HELP:
           console.warn(
             ` > HELP intent: Consulting AI - ${from_user.names}, ${from_user.tel}`
