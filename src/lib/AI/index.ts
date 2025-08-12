@@ -1,6 +1,6 @@
 import { InstitutionTools } from "./providers/InstitutionTools";
 import { UsersTools } from "./providers/UserTools";
-import { UserTaskTools } from "./providers/UserTaskTools";
+import { AnonymousWhatsAppTools } from "./providers/AnonymousWhatsAppTools";
 import { CasesTools } from "./providers/CaseTools";
 import { TasksTools } from "./providers/TaskTools";
 import { ToolsManager } from "./agent/ToolsManager";
@@ -59,7 +59,7 @@ export async function runAgent({
       // ...searchTools,
     ].forEach((tool) => agent.addTool(tool));
   } else if (tel) {
-    const userTaskProvider = new UserTaskTools("" + tel);
+    const userTaskProvider = new AnonymousWhatsAppTools("" + tel);
     const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
     [...userTaskTools].forEach((tool) => agent.addTool(tool));
   }

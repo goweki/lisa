@@ -3,11 +3,11 @@ import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
 import { error } from "console";
 
-export class UserTaskTools {
+export class AnonymousWhatsAppTools {
   constructor(private tel: string) {}
 
   @ToolDecorator({
-    docstring: `Creates a new whatsapp user. 
+    docstring: `Creates a new user over whatsapp self-registration. 
 
     Parameters: 
     - name: Full name of the user (required)`,
@@ -18,7 +18,7 @@ export class UserTaskTools {
       },
     },
   })
-  async addWhatsAppUser(name?: string): Promise<string> {
+  async addUserOnWhatsApp(name?: string): Promise<string> {
     if (!name || !this.tel) {
       return "User's telephone is obscured. refer them to webapp link.";
     }
