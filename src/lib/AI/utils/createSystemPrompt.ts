@@ -93,7 +93,7 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
     direct_response: {
       type: "string",
       description:
-        "Response when no tools are needed in the immediate consequent step",
+        "Response when no tools are needed in the immediate next step",
       optional: true,
     },
     thought: {
