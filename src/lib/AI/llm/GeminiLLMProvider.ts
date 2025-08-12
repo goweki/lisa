@@ -167,9 +167,15 @@ export class GeminiLLMProvider implements LLMProvider {
 
     console.log(`llm_response.log: (${typeof responseText}) `, responseText);
 
+    const cleanResponseText = responseText
+      .replace(/```[a-zA-Z]*\n?/g, "")
+      // Remove closing triple backticks
+      .replace(/```/g, "")
+      // Trim leading/trailing whitespace
+      .trim();
     try {
-      if (isValidJson(responseText)) {
-        return JSON.parse(responseText);
+      if (isValidJson(cleanResponseText)) {
+        return JSON.parse(cleanResponseText);
       } else {
         console.warn("LLM Response is not valid JSON", responseText);
         return;
