@@ -443,8 +443,8 @@ async function processIncomingMessage(
             userId: systemUser.id,
             direction: MessageDirection.OUTBOUND,
             to: from,
-            from: "system",
-            text: "UNREGISTERED",
+            from: "assistant",
+            text: reply,
           },
         });
       }

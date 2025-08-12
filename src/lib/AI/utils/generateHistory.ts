@@ -61,8 +61,6 @@ export async function generateConversationalContentFromMessages(
   return history;
 }
 
-type ConvoRole = "assistant" | "user";
-
 export async function generateLangConversationFromMessages(
   messages: Message[]
 ): Promise<Array<AIMessage | HumanMessage>> {
