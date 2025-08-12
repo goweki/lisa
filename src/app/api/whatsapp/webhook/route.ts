@@ -388,13 +388,13 @@ async function processIncomingMessage(
 
       const intent = getIntentFromMessage(body);
       if (intent === IntentType.TALK_TO_KOKOSE) {
-        const newMessage = await prisma.message.create({
+        await prisma.message.create({
           data: {
             messageId,
             direction: MessageDirection.INBOUND,
             to,
             from,
-            text: "UNREGISTERED",
+            text: body,
           },
         });
 
