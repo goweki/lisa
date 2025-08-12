@@ -22,7 +22,7 @@ const KOKOSE_BASE_INSTRUCTIONS: string[] = [
 
 const RESPONSE_AND_TOOL_USAGE_INSTRUCTIONS: string[] = [
   // Output rules
-  "Respond ONLY with a valid JSON object that matches the specified schema.",
+  "Respond ONLY with a valid JSON object that matches the specified response_format schema provided STRICTLY.",
   "Do not include any extra text, comments, explanations, or markdown formatting (including triple backticks).",
   "Do not use backticks (`) or unescaped quotes inside strings. Use plain text instead.",
   // Tool usage rules
