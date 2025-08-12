@@ -107,6 +107,10 @@ export async function createUser(userData: {
       },
     });
 
+    if (!newUser.email) {
+      throw new Error("No email to send password reset");
+    }
+
     const resetURL = `${BASE_URL}/reset-password/${resetToken}/?email_=${encodeURIComponent(newUser.email)}`;
 
     return {
