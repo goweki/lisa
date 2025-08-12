@@ -1,8 +1,10 @@
+import { te } from "date-fns/locale";
 import { ToolDecorator } from "../decorators/ToolDecorator";
 import prisma from "@/lib/prisma/prisma";
+import { error } from "console";
 
 export class UserTaskTools {
-  constructor() {}
+  constructor(private tel: string) {}
 
   @ToolDecorator({
     docstring: `Creates a new user within an institution. 
@@ -16,15 +18,15 @@ export class UserTaskTools {
       },
     },
   })
-  async addTaskUser(name?: string, tel?: string): Promise<string> {
-    if (!name || !tel) {
-      return "Name and telephone number are required.";
+  async addTaskUser(name?: string): Promise<string> {
+    if (!name || !this.tel) {
+      return "User's telephone is obscured. refer them to webapp link.";
     }
 
     const newUser = await prisma.user.create({
       data: {
         names: name,
-        tel,
+        tel: this.tel,
       },
     });
 

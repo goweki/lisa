@@ -25,10 +25,12 @@ export async function runAgent({
   user,
   prompt: _prompt,
   agentName,
+  tel,
 }: {
   user?: UserContext;
   prompt: Array<HumanMessage | AIMessage> | string;
   agentName: AgentName;
+  tel?: string;
 }): Promise<string | null> {
   const prompt = _prompt || dummyPrompt[agentName];
   // Initialize LLM Provider
@@ -56,8 +58,8 @@ export async function runAgent({
       ...taskTools,
       // ...searchTools,
     ].forEach((tool) => agent.addTool(tool));
-  } else {
-    const userTaskProvider = new UserTaskTools();
+  } else if (tel) {
+    const userTaskProvider = new UserTaskTools(tel);
     const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
     [...userTaskTools].forEach((tool) => agent.addTool(tool));
   }
