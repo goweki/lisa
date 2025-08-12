@@ -378,7 +378,7 @@ async function processIncomingMessage(
 
       // reply
       let reply: string | null =
-        `Hi , \n\nYou need to sign-up to LISA to use this automated service. Read more here: \n\nhttps://lisa.goweki.com/`;
+        `You need to sign-up to LISA to use this automated service. Read more here: \n\nhttps://lisa.goweki.com/`;
 
       if (message.type === "text" && message.text) {
         body = message.text.body;
@@ -437,16 +437,18 @@ async function processIncomingMessage(
           });
         }
 
-        await prisma.message.create({
-          data: {
-            messageId: sent_message_.messages[0].id,
-            userId: systemUser.id,
-            direction: MessageDirection.OUTBOUND,
-            to: from,
-            from: "assistant",
-            text: reply,
-          },
-        });
+        if (intent === IntentType.TALK_TO_KOKOSE) {
+          await prisma.message.create({
+            data: {
+              messageId: sent_message_.messages[0].id,
+              userId: systemUser.id,
+              direction: MessageDirection.OUTBOUND,
+              to: from,
+              from: "assistant",
+              text: reply,
+            },
+          });
+        }
       }
     }
 
