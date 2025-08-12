@@ -59,7 +59,7 @@ export async function runAgent({
       // ...searchTools,
     ].forEach((tool) => agent.addTool(tool));
   } else if (tel) {
-    const userTaskProvider = new UserTaskTools(tel);
+    const userTaskProvider = new UserTaskTools("" + tel);
     const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
     [...userTaskTools].forEach((tool) => agent.addTool(tool));
   }
