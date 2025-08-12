@@ -26,7 +26,7 @@ export class AnonymousWhatsAppTools {
     const newUser = await prisma.user.create({
       data: {
         names: name,
-        tel: this.tel,
+        tel: "+" + this.tel,
       },
     });
 
