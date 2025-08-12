@@ -12,7 +12,6 @@ import {
   AIMessage,
   BaseMessage,
   HumanMessage,
-  SystemMessage,
   ToolMessage,
 } from "@langchain/core/messages";
 import { Tool } from "./agent/Tool";
@@ -25,11 +24,11 @@ const dummyPrompt: Record<AgentName, string> = {
 export async function runAgent({
   user,
   prompt: _prompt,
-  agentName = "lisa",
+  agentName,
 }: {
   user?: UserContext;
   prompt: Array<HumanMessage | AIMessage> | string;
-  agentName?: AgentName;
+  agentName: AgentName;
 }): Promise<string | null> {
   const prompt = _prompt || dummyPrompt[agentName];
   // Initialize LLM Provider

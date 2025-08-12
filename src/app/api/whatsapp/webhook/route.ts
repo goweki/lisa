@@ -54,11 +54,9 @@ function getIntentFromMessage(message: string): IntentType {
     return IntentType.PAY_SUBSCRIPTION;
   }
 
-  // TALK_TO_KOKOSE intent: message contains "kokose" or "420" and is < 10 chars
-  if (
-    (normalized.includes("kokose") || normalized.includes("420")) &&
-    normalized.length < 10
-  ) {
+  // TALK_TO_KOKOSE intent: message contains "kokose" or "420" within the first 10 characters
+  const firstTenDgts = normalized.toLowerCase().slice(0, 10);
+  if (firstTenDgts.includes("kokose") || firstTenDgts.includes("420")) {
     return IntentType.TALK_TO_KOKOSE;
   }
 
@@ -330,7 +328,7 @@ async function processIncomingMessage(
             ` > HELP intent: Consulting AI - ${from_user.names}, ${from_user.tel}`
           );
 
-          const reply = await consultLisa({
+          const reply = await consultAI({
             prompt: body,
             user: from_user,
           });
@@ -572,17 +570,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function consultLisa({
+async function consultAI({
   prompt,
   user,
-  agentName,
+  agentName = "lisa",
 }: {
   prompt: string;
-  user?: User;
+  user: User;
   agentName?: AgentName;
 }): Promise<string | null> {
   const institutions =
-    user?.institutions?.map((userInst: InstitutionUser) => ({
+    user.institutions?.map((userInst: InstitutionUser) => ({
       id: userInst.institutionId,
       name: userInst.institution?.name || "<NULL>",
       role: userInst.role,
@@ -607,7 +605,7 @@ async function onboardingKokose({
 }: {
   prompt: string;
   messages?: Message[];
-  agentName?: AgentName;
+  agentName: AgentName;
 }): Promise<string | null> {
   const reply = await runAgent({
     prompt: [

@@ -17,7 +17,8 @@ const KOKOSE_BASE_INSTRUCTIONS: string[] = [
   //SIGNUP-INSTRUCTIONS
   "If the name of the human is unknown, suggest several names until user accepts, writing a nice backstory to convince them",
   "When suggesting names for an unknown user, use only one name and reference African cultures for inspiring stories behind names",
-  "Only after an unknown user accepts a name will you call the addUserTask() tool with the name params to create the user",
+  "Only after an unknown user accepts a name will you call the addUserTask() tool with the name params to create the user.",
+  "Dont ask for any other parameter apart from name when calling addUserTask() tool to signup User with a new name.",
 ];
 
 const RESPONSE_AND_TOOL_USAGE_INSTRUCTIONS: string[] = [
