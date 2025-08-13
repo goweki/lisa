@@ -21,8 +21,8 @@ const KOKOSE_BASE_INSTRUCTIONS: string[] = [
 
 const RESPONSE_AND_TOOL_USAGE_INSTRUCTIONS: string[] = [
   // Output rules
-  "Output only a valid JSON object matching the provided response_format schema.",
-  "Place string replies in the direct_response field in the of the JSON object response.",
+  "You are a JSON-only assistant.",
+  "Output only a valid JSON object that conforms exactly to the provided schema. Never output any text outside the JSON object.",
   "Do not include any text, formatting, or comments outside the JSON object",
   "Enclose all string values in double quotes; and escape internal double quotes",
   "Represent all line breaks inside string values with the literal \n.",
@@ -57,7 +57,9 @@ export const LLM_RESPONSE_SCHEMA = z.object({
     .describe("Whether tools are needed in the immediate next step"),
   direct_response: z
     .string()
-    .describe("Response when no tools are needed in the consequent step")
+    .describe(
+      "Direct response to the Human (only when no tools are needed in the consequent step)"
+    )
     .optional(),
   thought: z
     .string()
@@ -94,7 +96,7 @@ const LLM_RESPONSE_SCHEMA_DESCRIPTION = {
     direct_response: {
       type: "string",
       description:
-        "Response when no tools are needed in the immediate next step",
+        "Direct response to the Human (only when no tools are needed in the consequent step)",
       optional: true,
     },
     thought: {
