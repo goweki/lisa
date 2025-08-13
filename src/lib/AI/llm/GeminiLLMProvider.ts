@@ -81,7 +81,7 @@ export class GeminiLLMProvider implements LLMProvider {
         return { requires_tools: false, direct_response: cleanResponseText };
       }
     } catch (error: any) {
-      const err = `❌ Invalid LLMResponse, also could not be repaired - ${error.message || JSON.stringify(error)}`;
+      const err = `❌ Invalid LLMResponse - ${error.message || JSON.stringify(error)}`;
       console.error(` ${err} \n> LLMResponse: `, response.text);
       return;
     }
