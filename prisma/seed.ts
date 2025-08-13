@@ -17,7 +17,8 @@ import {
   plans,
   features,
   defaultCaseTypes,
-  systemUser,
+  users as users_data,
+  institutions,
 } from "./seed-data";
 import { faker } from "@faker-js/faker";
 
@@ -171,35 +172,57 @@ async function seedUsers(
     withInstitution: [],
   };
 
-  // const systemUser_ = await prisma_.user.create({ data: systemUser });
-  const systemUser_ = await prisma_.user.upsert({
-    where: { email: systemUser.email },
-    update: {},
-    create: systemUser,
-  });
-  result.system = systemUser_;
+  const systemUser_data = users_data.find(({ systemAdmin }) => systemAdmin);
+  if (!systemUser_data) {
+    console.warn("!! no admin data found...");
+  }
 
-  const users = await Promise.all(
-    Array.from({ length: count }).map((_, i) => {
-      const email = `antonio.oweki+${i + 1}@gmail.com`;
-      return prisma_.user.upsert({
-        where: { email },
+  //save systemAdmin
+  if (systemUser_data) {
+    if (!systemUser_data.email) {
+      console.warn("!! admin_data missing email...");
+    } else {
+      const systemUser_ = await prisma_.user.upsert({
+        where: { email: systemUser_data.email },
         update: {},
-        create: {
-          names: `User${i + 1} Lisa`,
-          email,
-          tel: faker.phone.number(),
-          photoUrl: faker.image.avatar(),
-          status: EntityStatus.ACTIVE,
-          systemAdmin: false,
-        },
+        create: systemUser_data,
       });
-    })
-  );
+      result.system = systemUser_;
+    }
+  }
 
-  result.withInstitution = users;
+  //save other users
+  const usersWithInst: User[] = [];
+  for (const user_ of users_data.filter(({ systemAdmin }) => !systemAdmin)) {
+    const orConditions = [];
+    if (user_.email) {
+      orConditions.push({ email: user_.email });
+    }
+    if (user_.tel) {
+      orConditions.push({ tel: user_.tel });
+    }
+
+    const existingUser = await prisma_.user.findFirst({
+      where: {
+        OR: orConditions,
+      },
+    });
+
+    let user_r: User | null = null;
+    if (existingUser) {
+      user_r = await prisma_.user.update({
+        where: { id: existingUser.id },
+        data: user_,
+      });
+    } else {
+      user_r = await prisma_.user.create({ data: user_ });
+    }
+    usersWithInst.push(user_r);
+  }
+
+  result.withInstitution = usersWithInst;
   const totalUsers = (result.system ? 1 : 0) + result.withInstitution.length;
-  console.log(`📝 Seeded users`);
+  console.log(`📝 Seeded users (${totalUsers})`);
   return result;
 }
 

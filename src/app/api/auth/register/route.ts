@@ -26,9 +26,12 @@ export async function POST(request: Request) {
       );
     } catch (error: any) {
       console.error(error);
-      return Response.json("could not generate unique institution CODE", {
-        status: 409,
-      });
+      return Response.json(
+        "could not generate unique institution CODE. Try another name",
+        {
+          status: 409,
+        }
+      );
     }
     //add to db
     const newRegistration = await createUser({
@@ -73,101 +76,3 @@ export async function POST(request: Request) {
     return Response.json("Registration failed", { status: 500 });
   }
 }
-
-// //validates token
-// export async function GET(request: NextRequest) {
-//   try {
-//     const searchParams = request.nextUrl.searchParams;
-//     const email = searchParams.get("email") as string;
-//     const plainTextToken = searchParams.get("token") as string;
-//     console.log("email-", email, "token-", plainTextToken);
-
-//     const userExists = await prisma.user.findUnique({
-//       where: {
-//         email,
-//         resetTokenExpiry: {
-//           gt: new Date(),
-//         },
-//       },
-//     });
-
-//     if (!userExists || !userExists.resetToken) {
-//       return Response.json(
-//         { message: "Not found. Try resetting your password later." },
-//         { status: 404 }
-//       );
-//     }
-
-//     const _isTokenValid = await compareHash(
-//       plainTextToken,
-//       userExists.resetToken
-//     );
-//     //user exists
-//     if (_isTokenValid) return Response.json({ success: "Enter new password" });
-//     else
-//       return Response.json(
-//         { message: "Invalid link. Try resetting Password after a while." },
-//         { status: 400 }
-//       );
-//     //
-//   } catch (err: any) {
-//     console.log("ERROR in route: >", err);
-//     return Response.json({ error: err.message });
-//   }
-// }
-
-// //updates password
-// export async function PUT(request: Request) {
-//   const { userEmail, token, password } = await request.json();
-//   console.log("password update request by - ", userEmail);
-//   try {
-//     const userExists = await prisma.user.findUnique({
-//       where: {
-//         email: userEmail,
-//         resetTokenExpiry: {
-//           gt: new Date(),
-//         },
-//       },
-//       select: {
-//         id: true,
-//         resetToken: true,
-//         resetTokenExpiry: true,
-//       },
-//     });
-
-//     if (!userExists || !userExists.resetToken) {
-//       return Response.json(
-//         { message: "Not found. Try resetting your password later." },
-//         { status: 404 }
-//       );
-//     }
-
-//     const _isTokenValid = await compareHash(token, userExists.resetToken);
-//     //user exists
-//     if (!_isTokenValid)
-//       return Response.json(
-//         { message: "Invalid token. Try Resetting your password later" },
-//         { status: 401 }
-//       );
-
-//     const updatedUser = await prisma.user.update({
-//       where: { id: userExists.id },
-//       data: {
-//         password: await hash(password),
-//         resetToken: null,
-//         resetTokenExpiry: null,
-//       },
-//     });
-
-//     if (!updatedUser)
-//       return Response.json(
-//         { message: "Password not updated" },
-//         { status: 500 }
-//       );
-
-//     return Response.json({ message: "Password updated" });
-//   } catch (err: any) {
-//     console.log("ERROR in route /api/reset-password:\n >", err.message ?? err);
-//     return Response.json({ message: "Server error" }, { status: 500 });
-//   }
-// }

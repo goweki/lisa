@@ -1,8 +1,6 @@
 import prisma from "@/lib/prisma/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
-import { User } from "@/types/models";
-import { Prisma } from "@prisma/client";
 import { SessionUser } from "@/types/next-auth";
 import { hasActiveSubscription } from "@/lib/prisma/queries";
 
@@ -24,7 +22,7 @@ async function getHandler(req: Request, user: SessionUser) {
       }
     }
 
-    console.log("ACTIVE INSTITUTIONS - ", instIDs_activeSub);
+    // console.log("ACTIVE INSTITUTIONS - ", instIDs_activeSub);
 
     if (!isSysAdmin && instIDs_activeSub.length === 0) {
       console.log("");

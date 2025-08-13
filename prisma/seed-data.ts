@@ -1,4 +1,11 @@
-import { Plan, Feature, Blogpost, User } from "@prisma/client";
+import {
+  Plan,
+  Feature,
+  Blogpost,
+  User,
+  Institution,
+  EntityStatus,
+} from "@prisma/client";
 
 export const plans: Omit<
   Plan,
@@ -165,9 +172,45 @@ export const blogPosts: Omit<
   },
 ];
 
-export const systemUser = {
-  names: "System Lisa",
-  email: "lisa@goweki.com",
-  tel: "+254711336187",
-  systemAdmin: true,
-};
+export const institutions: Omit<Institution, "id">[] = [
+  {
+    name: "Chat Users",
+    code: "CHAT25",
+    location: "online",
+    status: EntityStatus.DORMANT,
+    logoUrl: null,
+  },
+];
+
+export const users: Omit<
+  User,
+  | "id"
+  | "photoUrl"
+  | "emailVerification"
+  | "telVerification"
+  | "status"
+  | "preferredComChannel"
+  | "resetTokenSentTo"
+  | "password"
+  | "resetToken"
+  | "resetTokenExpiry"
+>[] = [
+  {
+    names: "System Lisa",
+    email: "lisa@goweki.com",
+    tel: "+254711336187",
+    systemAdmin: true,
+  },
+  {
+    names: "Antonio",
+    email: null,
+    tel: "+254721334944",
+    systemAdmin: false,
+  },
+  {
+    names: "Jojo",
+    email: null,
+    tel: "+254728927309",
+    systemAdmin: false,
+  },
+];
