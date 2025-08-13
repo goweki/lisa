@@ -62,9 +62,7 @@ export class GeminiLLMProvider implements LLMProvider {
     const messages = [input.systemPrompt, ...toolResults, ...input.prompt];
     console.log("llm_input.log: ", messages);
 
-    // const structuredLlm = this.gemini.withStructuredOutput(LLM_RESPONSE_SCHEMA);
     const response = await this.gemini.invoke(messages);
-
     const responseText = response.text;
 
     console.log(`llm_response.log: (${typeof responseText}) `, responseText);
@@ -80,8 +78,7 @@ export class GeminiLLMProvider implements LLMProvider {
         return JSON.parse(cleanResponseText);
       } else {
         console.warn("LLM Response is not valid JSON", responseText);
-        const res_ = "< Agent error: invalid NON-JSON response by assistant >";
-        return { requires_tools: false, direct_response: res_ };
+        return { requires_tools: false, direct_response: cleanResponseText };
       }
     } catch (error: any) {
       const err = `❌ Invalid LLMResponse, also could not be repaired - ${error.message || JSON.stringify(error)}`;
