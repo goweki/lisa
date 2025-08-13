@@ -78,10 +78,10 @@ export class GeminiLLMProvider implements LLMProvider {
         return JSON.parse(cleanResponseText);
       } else {
         console.warn("LLM Response is not valid JSON", responseText);
-        return { requires_tools: false, direct_response: cleanResponseText };
+        return;
       }
     } catch (error: any) {
-      const err = `❌ Invalid LLMResponse - ${error.message || JSON.stringify(error)}`;
+      const err = `❌ Invalid LLMResponse, not string either - ${error.message || JSON.stringify(error)}`;
       console.error(` ${err} \n> LLMResponse: `, response.text);
       return;
     }
