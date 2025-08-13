@@ -204,7 +204,7 @@ async function processIncomingMessage(
   try {
     // message info
     const from = message.from;
-    const from_user = await prisma.user.findFirst({
+    const from_user = await prisma.user.findUnique({
       where: { tel: "+" + from },
       include: {
         messages: true,
@@ -219,7 +219,7 @@ async function processIncomingMessage(
     let _mediaUrl = null;
     let mediaUrl = null;
 
-    if (from_user) {
+    if (from_user && from_user.email) {
       console.log(
         ` > Processing incoming message from existing user:`,
         from_user.email || from_user.tel
@@ -565,55 +565,6 @@ async function processStatusUpdate(status: any): Promise<boolean> {
   }
 }
 
-// GET: Verification
-export async function GET(req: NextRequest) {
-  console.log("GET webhook verification", req.url);
-  const { searchParams } = req.nextUrl;
-
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
-
-  if (process.env.NODE_ENV === "development") {
-    console.warn("WHATSAPP WEBHOOK IN DEVELOPMENT:");
-    console.warn(" - mode:", mode);
-    console.warn(" - token:", token);
-    console.warn(" - challenge:", challenge);
-  }
-
-  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
-
-  if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("✅ WhatsApp webhook verified successfully.");
-    return new Response(challenge ?? "", { status: 200 });
-  } else {
-    console.warn("❌ WhatsApp webhook verification failed.");
-    return new Response("Forbidden", { status: 403 });
-  }
-}
-
-// POST: Receive Webhook Payload
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    console.log("📩 Received webhook POST payload", body);
-
-    const parsed = WebhookPayloadSchema.safeParse(body);
-    if (!parsed.success) {
-      console.error("❌ Invalid webhook payload:", parsed.error.flatten());
-      return new Response("Invalid webhook payload", { status: 400 });
-    }
-
-    const result = await processWebhook(parsed.data);
-    // console.log('RESULT - ', result);
-
-    return Response.json("");
-  } catch (err) {
-    console.error("🔥 Error processing webhook:", err);
-    return new Response("Internal Server Error", { status: 500 });
-  }
-}
-
 async function consultAI({
   prompt,
   user,
@@ -663,4 +614,53 @@ async function onboardingKokose({
   });
   // console.log("Lisa AI says: ", reply);
   return reply;
+}
+
+// GET: Verification
+export async function GET(req: NextRequest) {
+  console.log("GET webhook verification", req.url);
+  const { searchParams } = req.nextUrl;
+
+  const mode = searchParams.get("hub.mode");
+  const token = searchParams.get("hub.verify_token");
+  const challenge = searchParams.get("hub.challenge");
+
+  if (process.env.NODE_ENV === "development") {
+    console.warn("WHATSAPP WEBHOOK IN DEVELOPMENT:");
+    console.warn(" - mode:", mode);
+    console.warn(" - token:", token);
+    console.warn(" - challenge:", challenge);
+  }
+
+  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
+
+  if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("✅ WhatsApp webhook verified successfully.");
+    return new Response(challenge ?? "", { status: 200 });
+  } else {
+    console.warn("❌ WhatsApp webhook verification failed.");
+    return new Response("Forbidden", { status: 403 });
+  }
+}
+
+// POST: Receive Webhook Payload
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    console.log("📩 Received webhook POST payload", body);
+
+    const parsed = WebhookPayloadSchema.safeParse(body);
+    if (!parsed.success) {
+      console.error("❌ Invalid webhook payload:", parsed.error.flatten());
+      return new Response("Invalid webhook payload", { status: 400 });
+    }
+
+    const result = await processWebhook(parsed.data);
+    // console.log('RESULT - ', result);
+
+    return Response.json("");
+  } catch (err) {
+    console.error("🔥 Error processing webhook:", err);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
