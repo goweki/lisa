@@ -22,7 +22,7 @@ const KOKOSE_BASE_INSTRUCTIONS: string[] = [
 const RESPONSE_AND_TOOL_USAGE_INSTRUCTIONS: string[] = [
   // Output rules
   "Output only a valid JSON object matching the provided response_format schema.",
-  "Place direct string replies in the direct_response field of the JSON object.",
+  "Place string replies in the direct_response field in the of the JSON object response.",
   "Do not include any text, formatting, or comments outside the JSON object",
   "Enclose all string values in double quotes; and escape internal double quotes",
   "Represent all line breaks inside string values with the literal \n.",
