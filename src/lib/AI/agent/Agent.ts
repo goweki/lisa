@@ -37,24 +37,6 @@ export class Agent {
     );
   }
 
-  // async useTool(
-  //   toolName: string,
-  //   args?: Record<string, unknown>
-  // ): Promise<string> {
-  //   const tool = this.tools[toolName];
-  //   if (!tool) {
-  //     throw new Error(
-  //       `Tool '${toolName}' not found. Available: ${Object.keys(this.tools).join(", ")}`
-  //     );
-  //   }
-
-  //   const orderedKeys = Object.keys(tool.parameters);
-  //   const argValues = orderedKeys.map((key) =>
-  //     args?.hasOwnProperty(key) ? args[key] : undefined
-  //   );
-
-  //   return tool.call(...argValues);
-  // }
   async useTool(
     toolName: string,
     args?: Record<string, unknown>
