@@ -13,6 +13,7 @@ export class AnonymousWhatsAppTools {
   }
 
   private async loadUser() {
+    console.log("loading user: ", appendPlus(this.tel));
     const user_ = await prisma.user.findUnique({
       where: { tel: appendPlus(this.tel) },
       include: { messages: true },
