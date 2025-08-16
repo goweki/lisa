@@ -53,15 +53,15 @@ export function generateMockEvents(): CalendarTask[] {
       id: `event-${i + 1}`,
       name: EVENT_TITLES[Math.floor(Math.random() * EVENT_TITLES.length)],
       dueDate: endTime,
-      reminders: [],
-      type:
-        Math.floor(Math.random() * 2) + 1 === 1
-          ? TaskType.DOCUMENT
-          : TaskType.EVENT,
-      description: null,
+      reminders: [] as Reminder[],
+      type: Math.random() < 0.5 ? TaskType.DOCUMENT : TaskType.EVENT,
+      description: "",
       completedById: null,
-      caseId: "",
-      assigneeId: null,
+      caseId: `case-${Math.floor(Math.random() * 1000)}`, // add variation instead of empty string
+      assigneeId: `user-${Math.floor(Math.random() * 50)}`, // mock assignment
+      createdAt: startTime,
+      completedAt: Math.random() < 0.2 ? endTime : null, // some tasks completed
+      // color: EVENT_COLORS[Math.floor(Math.random() * EVENT_COLORS.length)], // add color variety
     });
   }
 
