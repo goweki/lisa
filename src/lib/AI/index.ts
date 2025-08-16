@@ -38,7 +38,7 @@ export async function runAgent({
   const agent = new Agent(llmProvider);
   // --- Agent Initialization (happens on each request for simplicity, can be optimized) ---
 
-  if (user) {
+  if (user && user.email) {
     const institutionProvider = new InstitutionTools(user);
     const usersProvider = new UsersTools(user);
     const caseProvider = new CasesTools(user);
@@ -59,7 +59,7 @@ export async function runAgent({
       // ...searchTools,
     ].forEach((tool) => agent.addTool(tool));
   } else if (tel) {
-    const userTaskProvider = new AnonymousWhatsAppTools("" + tel);
+    const userTaskProvider = new AnonymousWhatsAppTools(tel);
     const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
     [...userTaskTools].forEach((tool) => agent.addTool(tool));
   }
@@ -92,10 +92,9 @@ export async function runAgent({
       break;
     }
     case "kokose": {
-      if (user) {
-        const tasks = await agent.useTool("listTasks");
-        def_toolResults = buildToolMessages(["listTasks"], [tasks]);
-      }
+      const tasks = await agent.useTool("listTasks");
+      def_toolResults = buildToolMessages(["listTasks"], [tasks]);
+
       break;
     }
     default: {
@@ -115,7 +114,7 @@ export async function runAgent({
             ${JSON.stringify(def_toolResults, null, 2)}
 
             Tool Output Instructions:
-            - Reference Tool Outputs above (if any) if any id field is required. This could be institutionId,caseTypeId...
+            - Reference Tool Outputs above (if any) if any id field is required. This could be institutionId,caseTypeId, userId, taskId...
         `;
 
   const firstLLMResponse = await agent.callLLM({
