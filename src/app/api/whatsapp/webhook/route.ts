@@ -430,7 +430,7 @@ async function processIncomingMessage(
           data: {
             messageId,
             direction: MessageDirection.INBOUND,
-            to,
+            to: "kokose",
             from,
             text: body,
           },
@@ -486,7 +486,7 @@ async function processIncomingMessage(
               userId: systemUser.id,
               direction: MessageDirection.OUTBOUND,
               to: from,
-              from: "assistant",
+              from: "kokose",
               text: reply,
             },
           });
