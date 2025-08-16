@@ -411,7 +411,7 @@ async function processIncomingMessage(
       return true;
     } else {
       console.warn(
-        ` > Processing incoming message from unregistered user:`,
+        ` > Processing incoming message from unonboarded user:`,
         from,
         message
       );
@@ -419,6 +419,7 @@ async function processIncomingMessage(
       // reply
       let reply: string | null =
         `You need to sign-up to LISA to use this automated service. Read more here: \n\nhttps://lisa.goweki.com/`;
+      let saveMessageFlag: boolean = false;
 
       if (message.type === "text" && message.text) {
         body = message.text.body;
@@ -440,13 +441,27 @@ async function processIncomingMessage(
           where: { OR: [{ to: from }, { from }] },
         });
 
-        const reply_ = await onboardingKokose({
-          prompt: body,
-          messages: prevMessages_,
-          agentName: "kokose",
-          tel: from,
-        });
-        reply = reply_;
+        // message count in the last 2 minutes
+        const recentMessagesCount = prevMessages_.filter((message) => {
+          const messageTime = new Date(message.createdAt).getTime();
+          return Date.now() - messageTime <= 2 * 60 * 1000;
+        }).length;
+
+        if (recentMessagesCount > 5) {
+          const reply_ =
+            "User Messages exceeded demo quota. Try again after 2 minutes.";
+          console.warn(reply_);
+          reply = reply_;
+        } else {
+          const reply_ = await consultKokose({
+            prompt: body,
+            messages: prevMessages_,
+            agentName: "kokose",
+            tel: from,
+          });
+          reply = reply_;
+          saveMessageFlag = true;
+        }
       }
 
       if (reply) {
@@ -464,7 +479,7 @@ async function processIncomingMessage(
         }
 
         //save to db
-        if (intent === IntentType.TALK_TO_KOKOSE) {
+        if (saveMessageFlag) {
           // user
           let systemUser = await prisma.user.findUnique({
             where: { email: "lisa@goweki.com" },
@@ -593,7 +608,7 @@ async function consultAI({
   return reply;
 }
 
-async function onboardingKokose({
+async function consultKokose({
   prompt,
   messages,
   agentName,
