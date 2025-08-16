@@ -69,7 +69,7 @@ export class AnonymousWhatsAppTools {
   Parameters: 
   - taskName: Name of the task (required)
   - description: details of the task (optional)
-  - dueDate: Time when task is expected to be executed
+  - dueDate: Time when task is expected to be executed (ISO datetime (YYYY-MM-DDTHH:mm))
   `,
     parameters: {
       taskName: {
