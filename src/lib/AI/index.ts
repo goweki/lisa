@@ -15,6 +15,7 @@ import {
   ToolMessage,
 } from "@langchain/core/messages";
 import { Tool } from "./agent/Tool";
+import { User } from "@prisma/client";
 
 const dummyPrompt: Record<AgentName, string> = {
   lisa: "What is Lisa?",
@@ -33,6 +34,7 @@ export async function runAgent({
   tel?: string;
 }): Promise<string | null> {
   const prompt = _prompt || dummyPrompt[agentName];
+  let whatsAppUser_: User | null = null;
   // Initialize LLM Provider
   const llmProvider = new GeminiLLMProvider();
   const agent = new Agent(llmProvider);
@@ -60,7 +62,7 @@ export async function runAgent({
     ].forEach((tool) => agent.addTool(tool));
   } else if (tel) {
     const userTaskProvider = new AnonymousWhatsAppTools(tel);
-    await userTaskProvider.init();
+    whatsAppUser_ = await userTaskProvider.init();
     const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
     [...userTaskTools].forEach((tool) => agent.addTool(tool));
   }
@@ -116,7 +118,9 @@ export async function runAgent({
 
             Tool Output Instructions:
             - Reference Tool Outputs above (if any) if any id field is required. This could be institutionId,caseTypeId, userId, taskId...
-        `;
+        
+            Human's name is ${user?.names || whatsAppUser_?.names || "unknown"}
+            `;
 
   const firstLLMResponse = await agent.callLLM({
     prompt: normalizedPrompt,

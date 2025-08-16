@@ -9,16 +9,17 @@ export class AnonymousWhatsAppTools {
   constructor(private tel: string) {}
 
   async init() {
-    await this.loadUser();
+    return await this.loadUser();
   }
 
-  private async loadUser() {
+  private async loadUser(): Promise<User | null> {
     console.log("loading user: ", appendPlus(this.tel));
     const user_ = await prisma.user.findUnique({
       where: { tel: appendPlus(this.tel) },
       include: { messages: true },
     });
     this.user = user_;
+    return user_;
   }
 
   @ToolDecorator({
