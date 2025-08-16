@@ -60,6 +60,7 @@ export async function runAgent({
     ].forEach((tool) => agent.addTool(tool));
   } else if (tel) {
     const userTaskProvider = new AnonymousWhatsAppTools(tel);
+    await userTaskProvider.init();
     const userTaskTools = ToolsManager.registerToolsFrom(userTaskProvider);
     [...userTaskTools].forEach((tool) => agent.addTool(tool));
   }
