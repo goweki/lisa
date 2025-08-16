@@ -618,7 +618,7 @@ async function onboardingKokose({
 
 // GET: Verification
 export async function GET(req: NextRequest) {
-  console.log("GET webhook verification", req.url);
+  console.log("WhatsApp webhook verification request...", req.url);
   const { searchParams } = req.nextUrl;
 
   const mode = searchParams.get("hub.mode");
