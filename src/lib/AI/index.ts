@@ -18,7 +18,7 @@ import { Tool } from "./agent/Tool";
 
 const dummyPrompt: Record<AgentName, string> = {
   lisa: "What is Lisa?",
-  kokose: "How do i sign up to Kokose?",
+  kokose: "Kokose how can you help me?",
 };
 
 export async function runAgent({
