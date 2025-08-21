@@ -1,10 +1,11 @@
 # LISA: Legal Intelligent Support Assistant
 
-LISA is a Next.js web application designed to provide intelligent support for legal professionals. It offers a range of features to manage tasks, cases, and reminders efficiently.
+LISA is a Next.js web application designed to provide intelligent support for legal professionals. It goes beyond traditional dashboards by enabling natural interactions through WhatsApp and the web, making case and task management faster and more intuitive.
 
 ## Table of Contents
 
 - [Features](#features)
+- [AI Capabilities](#ai-capabilities)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
@@ -12,10 +13,12 @@ LISA is a Next.js web application designed to provide intelligent support for le
 
 ## Features
 
-- Responsive design: Optimized for both desktop and mobile devices.
-- User authentication: Secure login and registration.
-- Case management: Organize and track legal cases.
-- ~~ Task management: Create, update, and delete tasks embedded in each case. Set and manage reminders for tasks. ~~
+- **AI-powered assistant (Lisa AI)**: Interact with your legal management system via WhatsApp or natural language queries.
+- **Responsive design**: Optimized for desktop and mobile.
+- **Secure authentication**: Login and registration for authorized access.
+- **Case management**: Organize, track, and update legal cases.
+- **Task management**: Create, complete, and get reminders for tasks tied to cases.
+- **Audit logs**: Transparent record of user actions for compliance.
 
 ## Installation
 

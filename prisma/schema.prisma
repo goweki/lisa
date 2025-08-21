@@ -174,7 +174,9 @@ model PaymentTransaction {
   institution           Institution   @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   subscriptionId        String?
   subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
-  paymentMethod         String
+  taskId                String?
+  task                  Task?         @relation(fields: [taskId], references: [id])
+  paymentMethod         PaymentMethod @default(OTHER)
   amount                Float
   currency              Currency      @default(KSH)
   status                PaymentStatus @default(PENDING)
@@ -258,6 +260,10 @@ model Task {
   name        String
   type        TaskType
   dueDate     DateTime
+  currency    String?
+  price       Int?
+  hours       Int?
+  hourlyRate  Int?
   description String?
   createdAt   DateTime @default(now())
 
@@ -270,9 +276,10 @@ model Task {
   caseId String?
   case   Case?   @relation(fields: [caseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  reminders       Reminder[]
-  documents       Document[]
-  AssigneeRequest AssigneeRequest[]
+  reminders          Reminder[]
+  documents          Document[]
+  AssigneeRequest    AssigneeRequest[]
+  PaymentTransaction PaymentTransaction[]
 
   @@map("tasks")
 }
@@ -387,6 +394,13 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  PAYSTACK
+  CASH
+  OTHER
 }
 
 enum ContentStatus {
