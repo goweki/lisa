@@ -13,10 +13,10 @@
     "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "db:launch": "docker run --name lisa-postgres -e POSTGRES_PASSWORD=lisa -p 5432:5432 -d postgres",
+    "db:launch": "docker run --name lisa-postgres -e POSTGRES_USER=lisa -e POSTGRES_PASSWORD=lisa-pass -e POSTGRES_DB=lisa-db -p 5432:5432 -v lisa-data:/var/lib/postgresql/data -d postgres:17",
     "db:start": "docker start lisa-postgres",
     "db:stop": "docker stop lisa-postgres",
-    "db:rm": "docker rm lisa-postgres",
+    "db:rm": "docker rm lisa-postgres && docker volume rm lisa-data",
     "db:restart": "npm run db:stop && npm run db:start",
     "test": "jest",
     "test:watch": "jest --watch"

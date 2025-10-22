@@ -17,7 +17,7 @@ import {
   plans,
   features,
   defaultCaseTypes,
-  users as users_data,
+  adminUser,
   institutions,
 } from "./seed-data";
 import { faker } from "@faker-js/faker";
@@ -32,15 +32,14 @@ async function main(): Promise<void> {
   await seedPlanFeatures(prisma, plans, features);
 
   const institutions = await seedInstitutions(prisma);
-  const users = await seedUsers(prisma);
+  const admin = await seedAdminUser(prisma);
 
-  await seedInstitutionUsers(prisma, users.withInstitution, institutions);
   await seedSubscriptions(prisma, institutions, plans);
 
-  if (users.system) {
-    await seedBlog(prisma, users.system);
+  if (admin) {
+    await seedBlog(prisma, admin);
   } else {
-    console.log("⚠️  No user with (isSystem===true), skipping seeding blogs");
+    console.log("⚠️  No systemAdmin user, skipping seeding blogs");
   }
 
   console.log("✅ Seeding complete.");
@@ -49,7 +48,7 @@ async function main(): Promise<void> {
 // ---------------- SEED FUNCTIONS ----------------
 
 async function seedCaseTypes(prisma: PrismaClient): Promise<CaseType[]> {
-  console.log(` > Seeding case types (VERBOSE=true)`);
+  console.log(`  >> Seeding case types (VERBOSE)...`);
   const seededCaseTypes: CaseType[] = [];
 
   for (const caseType of defaultCaseTypes) {
@@ -59,10 +58,10 @@ async function seedCaseTypes(prisma: PrismaClient): Promise<CaseType[]> {
 
     if (!existing) {
       const created = await prisma.caseType.create({ data: caseType });
-      console.log(` >> ${caseType.name}`);
+      console.log(`  >> ${caseType.name}`);
       seededCaseTypes.push(created);
     } else {
-      console.warn(` >> Already Exists: - ${caseType.name}`);
+      console.warn(`  >> Already Exists: - ${caseType.name}`);
     }
   }
 
@@ -163,94 +162,29 @@ async function seedInstitutions(
   return result;
 }
 
-async function seedUsers(
+async function seedAdminUser(
   prisma_: PrismaClient,
-  count = 2
-): Promise<{ system: User | null; withInstitution: User[] }> {
-  const result: { system: User | null; withInstitution: User[] } = {
-    system: null,
-    withInstitution: [],
-  };
+): Promise<User | null> {
 
-  const systemUser_data = users_data.find(({ systemAdmin }) => systemAdmin);
-  if (!systemUser_data) {
-    console.warn("!! no admin data found...");
+  if (!adminUser) {
+    console.warn("!! no adminUser in seed-data...");
   }
 
   //save systemAdmin
-  if (systemUser_data) {
-    if (!systemUser_data.email) {
-      console.warn("!! admin_data missing email...");
-    } else {
-      const systemUser_ = await prisma_.user.upsert({
-        where: { email: systemUser_data.email },
-        update: {},
-        create: systemUser_data,
-      });
-      result.system = systemUser_;
-    }
+  if (!adminUser.email) {
+    console.error("adminUser data missing email...");
+    return null
   }
 
-  //save other users
-  const usersWithInst: User[] = [];
-  for (const user_ of users_data.filter(({ systemAdmin }) => !systemAdmin)) {
-    const orConditions = [];
-    if (user_.email) {
-      orConditions.push({ email: user_.email });
-    }
-    if (user_.tel) {
-      orConditions.push({ tel: user_.tel });
-    }
+  const systemAdmin_ = await prisma_.user.upsert({
+    where: { email: adminUser.email },
+    update: {},
+    create: adminUser,
+  });
 
-    const existingUser = await prisma_.user.findFirst({
-      where: {
-        OR: orConditions,
-      },
-    });
 
-    let user_r: User | null = null;
-    if (existingUser) {
-      user_r = await prisma_.user.update({
-        where: { id: existingUser.id },
-        data: user_,
-      });
-    } else {
-      user_r = await prisma_.user.create({ data: user_ });
-    }
-    usersWithInst.push(user_r);
-  }
-
-  result.withInstitution = usersWithInst;
-  const totalUsers = (result.system ? 1 : 0) + result.withInstitution.length;
-  console.log(`📝 Seeded users (${totalUsers})`);
-  return result;
-}
-
-async function seedInstitutionUsers(
-  prisma_: PrismaClient,
-  users: User[],
-  institutions: Institution[]
-): Promise<void> {
-  for (const user of users) {
-    const institution =
-      institutions[Math.floor(Math.random() * institutions.length)];
-
-    await prisma_.institutionUser.upsert({
-      where: {
-        institutionId_userId: {
-          institutionId: institution.id,
-          userId: user.id,
-        },
-      },
-      update: {},
-      create: {
-        institutionId: institution.id,
-        userId: user.id,
-        role: UserRole.LAWYER,
-      },
-    });
-  }
-  console.log("🧩 Users Intitutions linkage seeded");
+  console.log(`📝 Seeded admin user (${systemAdmin_.email})`);
+  return systemAdmin_;
 }
 
 async function seedSubscriptions(
@@ -292,7 +226,7 @@ async function seedBlog(
   prisma_: PrismaClient,
   systemUser: User
 ): Promise<void> {
-  console.log(` > Seeding blogposts (VERBOSE=true)`);
+  console.log(`  >> Seeding blogposts (VERBOSE)...`);
   const seededBlogPosts: Blogpost[] = [];
 
   for (const blogpost of blogPosts) {
@@ -304,10 +238,10 @@ async function seedBlog(
       const created = await prisma.blogpost.create({
         data: { ...blogpost, authorId: systemUser.id },
       });
-      console.log(` >> Seeded blogpost: ${created.slug}`);
+      console.log(`  >> Seeded blogpost: ${created.slug}`);
       seededBlogPosts.push(created);
     } else {
-      console.log(` >> Already Exists: ${blogpost.slug}`);
+      console.log(`  >> Already Exists: ${blogpost.slug}`);
     }
   }
 
