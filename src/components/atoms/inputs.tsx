@@ -3,7 +3,7 @@
 import React, { ChangeEvent, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cssHandlers";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { resizeImageFile } from "@/lib/utils";
+import { resizeImageFile } from "@/lib/utils/imageHandlers";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
@@ -58,10 +58,11 @@ export function InputText({
           name={name}
           id={name}
           type={type}
-          className={`${valObj.error
+          className={`${
+            valObj.error
               ? "border-red-500 dark:border-red-400"
               : "border-transparent dark:border-transparent focus:ring-primary focus:border-primary"
-            } border shadow dark:shadow-dark dark:focus:shadow-dpressed focus:shadow-pressed text-sm rounded-lg block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic bg-transparent`}
+          } border shadow dark:shadow-dark dark:focus:shadow-dpressed focus:shadow-pressed text-sm rounded-lg block w-full pl-10 p-2.5 dark:placeholder-gray-400 placeholder:italic bg-transparent`}
           placeholder={placeholder}
           value={valObj.value}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +153,7 @@ export function ComboboxSearchable({
                     <Check
                       className={cn(
                         "ml-auto",
-                        value === option.value ? "opacity-100" : "opacity-0"
+                        value === option.value ? "opacity-100" : "opacity-0",
                       )}
                     />
                   </CommandItem>
@@ -228,7 +229,7 @@ export function InputImage({
               setPhoto(resizedImage_);
             } else {
               console.error(
-                "Invalid file or file-size. Please select an image less than 2MB."
+                "Invalid file or file-size. Please select an image less than 2MB.",
               );
               // alert("Please select an image file.");
               toast.error("Please select an image less than 2MB.");

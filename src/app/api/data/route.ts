@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 export const revalidate = 3600;
 
 const allowedModels = ["blog"] as const;
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
   try {
     console.log(
-      `........................\nGET REQUEST /api/data\n > model - ${model_}`
+      `........................\nGET REQUEST /api/data\n > model - ${model_}`,
     );
 
     let data;

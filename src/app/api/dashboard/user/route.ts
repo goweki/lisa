@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { withAuthAdmin } from "@/lib/authRouteWrappers";
 import { BASE_URL } from "@/helpers/getUrl";
 import { NextRequest } from "next/server";
@@ -11,7 +11,7 @@ import { UserRole } from "@prisma/client";
 async function postHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   const doc = await request.json();
   console.log("POST - /api/dashboard/user", doc);
@@ -22,7 +22,7 @@ async function postHandler(
   if (user.role !== "system") {
     const isAllAdmin = includesAll(
       _institutionIds_update,
-      institutionIds || []
+      institutionIds || [],
     );
     if (!isAllAdmin) {
       return Response.json("Not allowed", { status: 403 });
@@ -45,7 +45,7 @@ async function postHandler(
     // send email
     const emailToSend = await welcomeEmail(
       newRegistration.name,
-      newRegistration.onboardingURL
+      newRegistration.onboardingURL,
     );
     const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
       method: "POST",
@@ -65,7 +65,7 @@ async function postHandler(
     } else {
       console.warn(
         "Failed to send onboarding email to - ",
-        newRegistration.email
+        newRegistration.email,
       );
     }
 
@@ -84,7 +84,7 @@ async function postHandler(
     }
     console.error(
       "ERROR occurred during user creation -route:/api/dashboard/user POST\n >> error:",
-      message
+      message,
     );
     return Response.json(message, { status: code });
   }
@@ -93,7 +93,7 @@ async function postHandler(
 async function getHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   const url = new URL(request.url);
   const userID = url.searchParams.get("id");
@@ -121,7 +121,7 @@ async function getHandler(
 async function patchHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   // request body
   const doc = await request.json();
@@ -181,7 +181,7 @@ async function patchHandler(
 async function deleteHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   const doc = await request.json();
   const { id } = doc;

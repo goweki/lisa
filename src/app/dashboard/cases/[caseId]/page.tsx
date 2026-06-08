@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
@@ -70,7 +70,8 @@ import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
 import AssignmentRequestComponent from "./_components/assigneeComponent";
 import { AssigneeRequest } from "@prisma/client";
 
-export default function CaseView({ params }: { params: { caseId: string } }) {
+export default function CaseView(props: { params: Promise<{ caseId: string }> }) {
+  const params = use(props.params);
   const { caseId } = params;
   const {
     data: { users, institutions, cases, caseTypes, assignmentRequests },

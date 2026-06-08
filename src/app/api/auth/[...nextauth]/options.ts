@@ -1,6 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { compareHash } from "@/helpers/passwordHandlers";
 import { Role } from "@/types/custom";
 import { EntityStatus } from "@prisma/client";
@@ -64,8 +64,8 @@ export const authOptions: NextAuthOptions = {
           // valid credentials
           console.log(
             `\n.............\nSUCCESS: User authenticated\n > ${JSON.stringify(
-              user_
-            )}`
+              user_,
+            )}`,
           );
           //update status
           if (user_.status !== EntityStatus.ACTIVE) {
@@ -82,8 +82,8 @@ export const authOptions: NextAuthOptions = {
           // invalid credentials
           console.error(
             ` FAILED: Invalid credentials\n > by ${JSON.stringify(
-              credentials
-            )}\n`
+              credentials,
+            )}\n`,
           );
           return null;
         }

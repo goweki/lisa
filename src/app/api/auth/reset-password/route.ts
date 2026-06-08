@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { type NextRequest } from "next/server";
 import crypto from "crypto";
 import { compareHash, generateRandom, hash } from "@/helpers/passwordHandlers";
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         {
           message: "Error generating reset link, try again later",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
     console.log("Password Reset link SAVED: \n", updatedUser);
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     // send email
     const renderedEmail = await resetPasswordEmailTemplate(
       updatedUser.names,
-      resetURL
+      resetURL,
     );
 
     // console.log("renderedEmail:\n", renderedEmail);
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
     if (!_isTokenValid) {
       return Response.json(
         { message: "Invalid token. Try restting password" },
-        { status: 400 }
+        { status: 400 },
       );
     } else return Response.json({ message: "Enter new password" });
   } catch (err: any) {
@@ -136,7 +136,7 @@ export async function PUT(request: Request) {
     if (!userExists || !userExists.resetToken) {
       return Response.json(
         { message: "Not found. Try resetting your password later." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -145,7 +145,7 @@ export async function PUT(request: Request) {
     if (!_isTokenValid)
       return Response.json(
         { message: "Invalid token. Try Resetting your password later" },
-        { status: 401 }
+        { status: 401 },
       );
 
     const updatedUser = await prisma.user.update({
@@ -160,7 +160,7 @@ export async function PUT(request: Request) {
     if (!updatedUser)
       return Response.json(
         { message: "Password not updated" },
-        { status: 500 }
+        { status: 500 },
       );
 
     return Response.json({ message: "Password updated" });

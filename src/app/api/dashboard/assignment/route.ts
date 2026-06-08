@@ -1,11 +1,11 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
 import { SessionUser } from "@/types/next-auth";
 
 async function postHandler(
   request: Request | NextRequest,
-  user: Partial<SessionUser>
+  user: Partial<SessionUser>,
 ) {
   // request body
   const doc = await request.json();
@@ -43,7 +43,7 @@ async function postHandler(
     });
 
     console.log(
-      `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${JSON.stringify(res_assigneeRequest)}`
+      `SUCCESS: assignment request by ${res_assigneeRequest.assignee.email} saved.\n > case:  ${JSON.stringify(res_assigneeRequest)}`,
     );
 
     if (res_assigneeRequest && case_ && !case_.assigneeId) {
@@ -66,7 +66,7 @@ async function postHandler(
       console.log(
         `SUCCESS: assigned to ${
           res_assigneeRequest.assignee.email
-        }.\n >  ${JSON.stringify(res_assigneeRequest)} \n`
+        }.\n >  ${JSON.stringify(res_assigneeRequest)} \n`,
       );
     }
 
@@ -80,7 +80,7 @@ async function postHandler(
 
 async function deleteHandler(
   request: Request | NextRequest,
-  user: Partial<SessionUser>
+  user: Partial<SessionUser>,
 ) {
   // request body
   const doc = await request.json();
@@ -111,8 +111,8 @@ async function deleteHandler(
   } catch (err) {
     console.error(
       `ERROR: assignmentRequest deletion failed: ${JSON.stringify(
-        doc
-      )}\n >> error: ${err}\n`
+        doc,
+      )}\n >> error: ${err}\n`,
     );
     return Response.json({ error: "SERVER ERROR" });
   }

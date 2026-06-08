@@ -1,12 +1,12 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "./prisma/prisma";
+import prisma from "./prisma";
 import { InstitutionUser, UserRole } from "@prisma/client";
 import { SessionUser } from "@/types/next-auth";
 
 export function withAuthGeneral(
-  handler: (req: Request | NextRequest, user: SessionUser) => Promise<Response>
+  handler: (req: Request | NextRequest, user: SessionUser) => Promise<Response>,
 ) {
   return async function (req: Request | NextRequest) {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export function withAuthGeneral(
     if (!user) {
       return Response.json(
         { message: "Unauthorized: please log in" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -30,8 +30,8 @@ export function withAuthAdmin(
   handler: (
     req: Request | NextRequest,
     user: SessionUser,
-    institutionIds: string[] | undefined
-  ) => Promise<Response>
+    institutionIds: string[] | undefined,
+  ) => Promise<Response>,
 ) {
   return async function (req: Request | NextRequest) {
     const session = await getServerSession(authOptions);
@@ -64,7 +64,7 @@ export function withAuthAdmin(
         ...user,
         role: user.role || "user",
       },
-      institutionIds
+      institutionIds,
     );
   };
 }

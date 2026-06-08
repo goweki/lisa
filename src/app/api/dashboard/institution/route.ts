@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { withAuthGeneral, withAuthAdmin } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
 import { SessionUser } from "@/types/next-auth";
@@ -9,7 +9,7 @@ import { generateUniqueInstitutionCode } from "@/helpers/stringHandlers";
 async function postHandler(
   request: Request,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   if (user.role !== "system") {
     return Response.json("You do not have permission to create institution", {
@@ -49,7 +49,7 @@ async function postHandler(
   } catch (err) {
     console.error(
       "ERROR: institution insertion failed - route: /api/dashboard/institution POST\n >> error:",
-      err
+      err,
     );
     return Response.json("Server error", { status: 500 });
   }
@@ -59,7 +59,7 @@ async function postHandler(
 async function patchHandler(
   request: Request,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   const doc = await request.json();
   console.log("REQUEST: Patch institution", doc);
@@ -82,7 +82,7 @@ async function patchHandler(
   } catch (err) {
     console.error(
       `ERROR: institution update failed - route: /api/dashboard/institution PUT\n >> error:`,
-      err
+      err,
     );
     return Response.json("Server error", { status: 500 });
   }
@@ -104,7 +104,7 @@ async function getHandler(request: Request, user: SessionUser) {
       "You do not have permission to view these institutions",
       {
         status: 403,
-      }
+      },
     );
   }
 
@@ -132,7 +132,7 @@ async function getHandler(request: Request, user: SessionUser) {
 async function deleteHandler(
   request: Request,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   if (user.role !== "system") {
     return Response.json("You do not have permission to delete institution", {
@@ -157,7 +157,7 @@ async function deleteHandler(
     } else {
       console.error(
         `ERROR: institution deletion failed - route: /api/dashboard/institution DELETE\n >> `,
-        err
+        err,
       );
       errMessage = `SERVER ERROR`;
     }

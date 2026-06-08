@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
@@ -52,7 +52,8 @@ interface InstitutionEdit {
   logoFile: File | null;
 }
 
-export default function InstitutionView({ params }: { params: any }) {
+export default function InstitutionView(props: { params: Promise<any> }) {
+  const params = use(props.params);
   const { instID } = params;
   const {
     data: { institutions, users },

@@ -1,5 +1,5 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import type { UserContext } from "../types/UserContext";
 import { generateUniqueInstitutionCode } from "@/helpers/stringHandlers";
 
@@ -7,7 +7,7 @@ export class InstitutionTools {
   constructor(private user: UserContext) {
     if (!user) {
       throw new Error(
-        "User context is required to initialize InstitutionTools."
+        "User context is required to initialize InstitutionTools.",
       );
     }
   }
@@ -87,12 +87,12 @@ Parameters:
   async editInstitution(
     id?: string,
     name?: string,
-    address?: string
+    address?: string,
   ): Promise<string> {
     if (!id) return "Institution ID is required.";
 
     const institutionRole = this.user.institutions.find(
-      ({ id: instId }) => instId === id
+      ({ id: instId }) => instId === id,
     )?.role;
     if (institutionRole !== "ADMIN") {
       return "You do not have permission to edit this institution.";
@@ -174,7 +174,7 @@ Parameters:
     return institutions
       .map(
         (inst) =>
-          `- ${inst.name} (${inst.id})${inst.location ? ` - ${inst.location}` : ""}`
+          `- ${inst.name} (${inst.id})${inst.location ? ` - ${inst.location}` : ""}`,
       )
       .join("\n");
   }

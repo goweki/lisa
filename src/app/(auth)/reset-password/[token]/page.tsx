@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SVGemail, SVGhome, SVGpassword } from "@/components/atoms/svgs";
@@ -14,13 +14,14 @@ import { Loader } from "@/components/atoms/loader";
 import { strsMatch } from "@/helpers/stringHandlers";
 import toast from "react-hot-toast";
 
-export default function ResetPassword({
-  params,
-  searchParams,
-}: {
-  params: { token: string };
-  searchParams: { [key: string]: string };
-}) {
+export default function ResetPassword(
+  props: {
+    params: Promise<{ token: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
+  }
+) {
+  const searchParams = use(props.searchParams);
+  const params = use(props.params);
   const { token } = params;
   const { email_ } = searchParams;
   const [password, setPassword] = useState({ value: "", error: "" });

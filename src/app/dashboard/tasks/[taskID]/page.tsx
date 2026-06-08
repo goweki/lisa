@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
@@ -58,7 +58,8 @@ const default_Assets: Assets = {
   assignees: [],
 };
 
-export default function TaskView({ params }: { params: any }) {
+export default function TaskView(props: { params: Promise<any> }) {
+  const params = use(props.params);
   const { caseID } = params;
   const {
     data: { users, institutions, cases, caseTypes },

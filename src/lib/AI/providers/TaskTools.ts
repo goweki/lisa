@@ -1,5 +1,5 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import type { UserContext } from "../types/UserContext";
 import { TaskType, UserRole } from "@prisma/client";
 import { Case, Task } from "@/types/models";
@@ -38,7 +38,7 @@ export class TasksTools {
 
     // Remove duplicates (if any)
     const uniqueTasks = Array.from(
-      new Map(allTasks.map((t) => [t.id, t])).values()
+      new Map(allTasks.map((t) => [t.id, t])).values(),
     );
 
     this.tasks = uniqueTasks;
@@ -67,7 +67,7 @@ export class TasksTools {
         (t) =>
           `- ${t.name} [${t.type}] with id:${t.id}, due: ${t.dueDate?.toDateString() || "No due date"} ${
             t.description ? `- ${t.description}` : ""
-          }`
+          }`,
       )
       .join("\n");
   }
@@ -102,7 +102,7 @@ export class TasksTools {
     name: string,
     dueDate: string,
     type?: string,
-    description?: string
+    description?: string,
   ): Promise<string> {
     await this.loadCases();
     if (!this.cases.find(({ id }) => id === caseId))

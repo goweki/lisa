@@ -1,7 +1,7 @@
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { SessionUser } from "@/types/next-auth";
 import { z } from "zod";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { TemplateObj } from "@/types/custom";
 import { sendMessage } from "../_actions";
 

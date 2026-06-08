@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
 import { SessionUser } from "@/types/next-auth";

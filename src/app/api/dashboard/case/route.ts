@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { withAuthAdmin, withAuthGeneral } from "@/lib/authRouteWrappers";
 import { NextRequest } from "next/server";
 import { User } from "@/types/models";
@@ -25,7 +25,7 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
     });
 
     const isMember = userInsts.some(
-      ({ institutionId }) => institutionId === _institutionId
+      ({ institutionId }) => institutionId === _institutionId,
     );
 
     if (!isMember) {
@@ -34,9 +34,9 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
   }
 
   try {
-    doc_.createdById = user.id
-    doc_.institutionId = _institutionId
-    console.log('Creating - ', doc_)
+    doc_.createdById = user.id;
+    doc_.institutionId = _institutionId;
+    console.log("Creating - ", doc_);
     // insert doc
     const res_ = await prisma.case.create({
       data: { ...doc_ },
@@ -45,7 +45,7 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
       },
     });
     console.log(
-      `SUCCESS: case inserted, for institution ${res_.institution.name}.\n > ${res_.name}`
+      `SUCCESS: case inserted, for institution ${res_.institution.name}.\n > ${res_.name}`,
     );
     // HTTP response
     return Response.json(res_);
@@ -58,7 +58,7 @@ async function postHandler(request: Request | NextRequest, user: SessionUser) {
 async function patchHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   const body = await request.json();
   console.log(`PATCH REQUEST: case data: `, body);
@@ -71,21 +71,20 @@ async function patchHandler(
   const doc = parsed.data;
   const { id, assigneeId, institutionId, ...doc_ } = doc;
 
-  const update: TemplateObj = doc_
+  const update: TemplateObj = doc_;
 
   // ✅ Handle optional relation
   if (assigneeId === null) {
     update.assignee = { disconnect: true };
-  } else if (typeof assigneeId === 'string') {
+  } else if (typeof assigneeId === "string") {
     update.assignee = { connect: { id: assigneeId } };
   }
 
   if (institutionId === null) {
     update.institution = { disconnect: true };
-  } else if (typeof institutionId === 'string') {
+  } else if (typeof institutionId === "string") {
     update.institution = { connect: { id: institutionId } };
   }
-
 
   try {
     console.log(`patching... `, update);
@@ -108,7 +107,7 @@ async function patchHandler(
 async function deleteHandler(
   request: Request | NextRequest,
   user: SessionUser,
-  institutionIds: string[] | undefined
+  institutionIds: string[] | undefined,
 ) {
   const doc = await request.json();
   const { id } = doc;
@@ -122,7 +121,7 @@ async function deleteHandler(
     return Response.json({ success: res });
   } catch (err) {
     console.error(
-      `ERROR: case deletion failed: ${JSON.stringify(doc)}\n >> error: ${err}\n`
+      `ERROR: case deletion failed: ${JSON.stringify(doc)}\n >> error: ${err}\n`,
     );
     return Response.json({ error: "SERVER ERROR" });
   }

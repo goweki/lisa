@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { type NextRequest } from "next/server";
 import crypto from "crypto";
 import { compareHash, hash } from "@/helpers/passwordHandlers";
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     let institutionCode = "";
     try {
       institutionCode = await generateUniqueInstitutionCode(
-        newUser.institutionName
+        newUser.institutionName,
       );
     } catch (error: any) {
       console.error(error);
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         "could not generate unique institution CODE. Try another name",
         {
           status: 409,
-        }
+        },
       );
     }
     //add to db
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     // send email
     const emailToSend = await welcomeEmail(
       newRegistration.name,
-      newRegistration.onboardingURL
+      newRegistration.onboardingURL,
     );
 
     const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
@@ -63,13 +63,13 @@ export async function POST(request: Request) {
 
     if (!emailerRes.ok) {
       return Response.json(
-        "Email was not sent: reset password later, or contact support"
+        "Email was not sent: reset password later, or contact support",
       );
     }
 
     console.log("Registration successful");
     return Response.json(
-      "Registration successful. Check email for activation link"
+      "Registration successful. Check email for activation link",
     );
   } catch (err: any) {
     console.error("ERROR in route: /api/auth/register >", err);

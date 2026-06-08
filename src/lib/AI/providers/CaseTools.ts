@@ -1,5 +1,5 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import type { UserContext } from "../types/UserContext";
 
 export class CasesTools {
@@ -44,7 +44,7 @@ export class CasesTools {
     return caseTypes
       .map(
         (ct) =>
-          `- ${ct.name} with id:${ct.id}, primary party:${ct.primaryParty}, secondary party:${ct.secondaryParty}`
+          `- ${ct.name} with id:${ct.id}, primary party:${ct.primaryParty}, secondary party:${ct.secondaryParty}`,
       )
       .join("\n");
   }
@@ -104,7 +104,7 @@ export class CasesTools {
     clientName: string,
     clientTel: string,
     description?: string,
-    institutionId?: string
+    institutionId?: string,
   ): Promise<string> {
     // Log input params for debugging
     console.log("addCase called with:", {
@@ -150,7 +150,7 @@ export class CasesTools {
     // Permission check: if not systemAdmin, user must be ADMIN for institution
     if (!this.user.systemAdmin) {
       const institutionRole = this.user.institutions.find(
-        ({ id }) => id === institutionId_
+        ({ id }) => id === institutionId_,
       )?.role;
 
       if (institutionRole !== "ADMIN") {
@@ -221,7 +221,7 @@ Parameters:
 
     if (!this.user.systemAdmin) {
       const institutionRole = this.user.institutions.find(
-        ({ id }) => id === caseRecord.institutionId
+        ({ id }) => id === caseRecord.institutionId,
       )?.role;
 
       if (institutionRole === "ADMIN") {
@@ -230,7 +230,7 @@ Parameters:
         // Assignee can only change status
         const allowedKeys = ["status"];
         updates = Object.fromEntries(
-          Object.entries(updates).filter(([k]) => allowedKeys.includes(k))
+          Object.entries(updates).filter(([k]) => allowedKeys.includes(k)),
         );
       } else {
         return "You do not have permission to edit this case.";
@@ -278,7 +278,7 @@ Parameters:
 
     if (!this.user.systemAdmin) {
       const hasPermission = this.user.institutions.some(
-        ({ id, role }) => id === targetCase.institutionId && role === "ADMIN"
+        ({ id, role }) => id === targetCase.institutionId && role === "ADMIN",
       );
 
       if (!hasPermission) {

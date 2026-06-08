@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
@@ -70,7 +70,8 @@ const default_UserEdit: SelectedEditUser = {
   photoUrl: null,
 };
 
-export default function UserView({ params }: { params: any }) {
+export default function UserView(props: { params: Promise<any> }) {
+  const params = use(props.params);
   const { userID } = params;
   const {
     data: { users, institutions },

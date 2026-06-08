@@ -10,10 +10,9 @@ import {
   emailValidator,
   nameValidator,
   passwordValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
-import { httpCodes } from "@/lib/configs";
 
 export default function ForgotPassword() {
   // states
@@ -49,7 +48,7 @@ export default function ForgotPassword() {
       return;
     }
     console.log(
-      `........................\nCHECKPOINT: sending reset password token to user\n > ${email.value}\n..................`
+      `........................\nCHECKPOINT: sending reset password token to user\n > ${email.value}\n..................`,
     );
     // API call
     const fetchOptions = {
@@ -67,7 +66,7 @@ export default function ForgotPassword() {
           console.error("Error in sending reset password link: ", error_);
           toast.error(error_.message || error_);
         }
-      }
+      },
     );
 
     if (!response) {

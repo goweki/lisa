@@ -1,19 +1,21 @@
 import { render } from "@react-email/render";
 import React from "react";
 import { WelcomeEmail, welcomeEmailText } from "@/components/emails/welcome";
-import { ConfirmEmail, confirmEmailText } from "@/components/emails/messageConfirmation";
+import {
+  ConfirmEmail,
+  confirmEmailText,
+} from "@/components/emails/messageConfirmation";
 import {
   ResetPasswordHtml,
   resetPasswordText,
 } from "@/components/emails/resetPassword";
-
 
 /**
  * Renders a React component to a static HTML string.
  * @param component The React component to render.
  * @returns The HTML string representation of the component.
  */
-async function renderEmailHtml(component: React.ReactElement): Promise<string> {
+async function renderEmailHtml(component: React.ReactElement<any>): Promise<string> {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -28,9 +30,8 @@ async function renderEmailHtml(component: React.ReactElement): Promise<string> {
 }
 
 export const welcomeEmail = async (name: string, onboardLink: string) => {
-  const emailHtml = await renderEmailHtml(
-    <WelcomeEmail name={name} onboardLink={onboardLink} />
-  );
+  const emailHtml = <WelcomeEmail name={name} onboardLink={onboardLink} />;
+
   const emailText = welcomeEmailText({ name, onboardLink });
 
   return { html: emailHtml, text: emailText };
@@ -38,11 +39,12 @@ export const welcomeEmail = async (name: string, onboardLink: string) => {
 
 export const resetPasswordEmail = async (
   name: string,
-  resetPasswordLink: string
+  resetPasswordLink: string,
 ) => {
-  const emailHtml = await renderEmailHtml(
+  const emailHtml = (
     <ResetPasswordHtml name={name} resetPasswordLink={resetPasswordLink} />
   );
+
   const emailText = resetPasswordText({
     name,
     resetPasswordLink: resetPasswordLink,
@@ -51,9 +53,12 @@ export const resetPasswordEmail = async (
   return { html: emailHtml, text: emailText };
 };
 
-export const messageConfirmationEmail = async (name: string, message: string) => {
+export const messageConfirmationEmail = async (
+  name: string,
+  message: string,
+) => {
   const emailHtml = await renderEmailHtml(
-    <ConfirmEmail name={name} message={message} />
+    <ConfirmEmail name={name} message={message} />,
   );
   const emailText = confirmEmailText({ name, message });
 

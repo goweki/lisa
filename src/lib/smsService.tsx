@@ -1,3 +1,4 @@
+import "server-only";
 import AfricasTalking from "africastalking";
 
 const {
@@ -6,7 +7,7 @@ const {
   AFRICASTALKING_SENDER_ID,
 } = process.env;
 
-interface SMSData {
+export interface SMSData {
   subject: string;
   text: string;
   to: string;

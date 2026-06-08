@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { httpCodes } from "@/lib/configs";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { SessionUser } from "@/types/next-auth";
@@ -15,7 +15,14 @@ async function postHandler(request: Request, user: SessionUser) {
     return Response.json("Invalid request body", { status: 400 });
   }
   const doc = parsed.data;
-  const { caseId, dueDate, name: taskName, type, reminders: _reminders, ...doc_ } = doc;
+  const {
+    caseId,
+    dueDate,
+    name: taskName,
+    type,
+    reminders: _reminders,
+    ...doc_
+  } = doc;
 
   if (!caseId || !taskName || !type || !dueDate) {
     console.error("Invalid task object - ", doc);
@@ -37,21 +44,25 @@ async function postHandler(request: Request, user: SessionUser) {
       regime: TimeRegimes;
       count: number;
       channel: ReminderChannels;
-    }[] = _reminders || []
+    }[] = _reminders || [];
     if (reminders.length === 0) {
       reminders.push({
         regime: "hours",
         count: 2,
         channel: "whatsapp",
-      })
+      });
     }
 
     // insert doc
     const res_ = await prisma.task.create({
       data: {
-        caseId, name: taskName, type, dueDate, ...doc,
+        caseId,
+        name: taskName,
+        type,
+        dueDate,
+        ...doc,
         reminders: {
-          create: reminders.map((reminder__) => reminder__,),
+          create: reminders.map((reminder__) => reminder__),
         },
       },
     });
@@ -62,7 +73,7 @@ async function postHandler(request: Request, user: SessionUser) {
     console.error(
       " > ERROR: task-document insertion failed.",
       err,
-      "\n.........."
+      "\n..........",
     );
     return Response.json("SERVER ERROR");
   }

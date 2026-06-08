@@ -1,0 +1,24 @@
+import Resizer from "react-image-file-resizer";
+
+/**
+ * Resizes an image file.
+ *
+ * @param {File} file - The input image file to be resized.
+ * @returns {Promise<any>} A promise that resolves with the resized image URI (base64-encoded).
+ */
+export function resizeImageFile(file: File): Promise<any> {
+  return new Promise((resolve) => {
+    Resizer.imageFileResizer(
+      file,
+      600, // Desired width
+      600, // Desired height
+      "png", // Output format
+      100, // Image quality (0 to 100)
+      0, // Rotation angle (in degrees)
+      (uri) => {
+        resolve(uri);
+      },
+      "file", // Encoding type: base64 | blob | file.
+    );
+  });
+}

@@ -1,5 +1,7 @@
 "use client";
+
 import React from "react";
+
 export function useDate() {
   const locale = "en";
   const [today, setDate] = React.useState(new Date()); // Save the current date in state to be able to trigger an update
@@ -25,7 +27,7 @@ export function useDate() {
       locale,
       {
         month: "long",
-      }
+      },
     )}`;
     return date;
   }

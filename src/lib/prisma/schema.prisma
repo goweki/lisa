@@ -1,0 +1,447 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum EntityStatus {
+  ACTIVE
+  DORMANT
+  INACTIVE
+}
+
+model Institution {
+  id       String       @id @default(uuid())
+  name     String
+  code     String       @unique
+  location String?
+  logoUrl  String?
+  status   EntityStatus @default(DORMANT)
+
+  users         InstitutionUser[]
+  cases         Case[]
+  caseTypes     CaseType[]
+  subscriptions Subscription[]
+  payments      PaymentTransaction[]
+
+  @@map("institutions")
+}
+
+model User {
+  id                  String         @id @default(uuid())
+  names               String
+  email               String?        @unique
+  systemAdmin         Boolean        @default(false)
+  tel                 String?        @unique
+  photoUrl            String?
+  status              EntityStatus   @default(DORMANT)
+  preferredComChannel MessageChannel @default(EMAIL)
+  emailVerification   Boolean        @default(false)
+  telVerification     Boolean        @default(false)
+  password            String?
+
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  resetTokenSentTo NotificationChannel?
+
+  institutions     InstitutionUser[]
+  casesCreated     Case[]            @relation("creator")
+  caseAssignments  Case[]            @relation("assignment")
+  completedTasks   Task[]            @relation("completedTasks")
+  assignedTasks    Task[]            @relation("assignedTasks")
+  assigneeRequests AssigneeRequest[]
+  blogposts        Blogpost[]
+  messages         Message[]
+
+  Session Session[]
+
+  @@map("users")
+}
+
+model Message {
+  id          String           @id @default(uuid())
+  messageId   String
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     MessageSubject   @default(OTHER)
+  from        String
+  to          String
+  text        String?
+  mediaUrl    String?
+  intent      String?
+  channel     MessageChannel   @default(WHATSAPP)
+  direction   MessageDirection
+  sessionId   String?
+  session     Session?         @relation(fields: [sessionId], references: [id])
+  isDelivered Boolean          @default(false)
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("messages")
+}
+
+model Session {
+  id             String    @id @default(uuid())
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id])
+  whatsAppNumber String
+  context        Json?
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  Message        Message[]
+
+  @@map("sessions")
+}
+
+model InstitutionUser {
+  id            String   @id @default(uuid())
+  institutionId String
+  userId        String
+  role          UserRole @default(LAWYER)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, userId])
+}
+
+model Subscription {
+  id                  String               @id @default(uuid())
+  institutionId       String
+  institution         Institution          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  planId              String
+  plan                Plan                 @relation(fields: [planId], references: [id])
+  status              SubscriptionStatus
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  cancelAtPeriodEnd   Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  paymentTransactions PaymentTransaction[]
+
+  @@index([institutionId])
+  @@map("subscriptions")
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  name         PlanName @unique
+  description  String
+  price        Float
+  currency     String   @default("KES")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  priceMonthly Float
+  priceAnnual  Float
+  trialDays    Int      @default(0)
+
+  planFeatures  PlanFeature[]
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Feature {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String
+  limits      Json?
+  isActive    Boolean @default(true)
+
+  planFeatures PlanFeature[]
+
+  @@map("features")
+}
+
+model PlanFeature {
+  id        String  @id @default(uuid())
+  planId    String
+  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureId String
+  feature   Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  limits    Json?
+
+  @@unique([planId, featureId])
+}
+
+model PaymentTransaction {
+  id                    String        @id @default(uuid())
+  institutionId         String
+  institution           Institution   @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  subscriptionId        String?
+  subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
+  taskId                String?
+  task                  Task?         @relation(fields: [taskId], references: [id])
+  paymentMethod         PaymentMethod @default(OTHER)
+  amount                Float
+  currency              Currency      @default(KSH)
+  status                PaymentStatus @default(PENDING)
+  providerTransactionId String        @unique
+  description           String?
+  metadata              String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([institutionId])
+  @@index([subscriptionId])
+  @@map("payments")
+}
+
+model CaseType {
+  id             String  @id @default(uuid())
+  institutionId  String?
+  name           String  @unique
+  primaryParty   String
+  secondaryParty String
+
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  cases       Case[]
+
+  @@map("caseTypes")
+}
+
+model Case {
+  id                    String     @id @default(uuid())
+  name                  String
+  description           String?
+  status                CaseStatus @default(OPEN)
+  caseNumber            String?
+  clientParty           String
+  clientName            String
+  clientIdNumber        String?
+  clientTel             String
+  clientEmail           String?
+  otherPartyName        String?
+  otherPartyTel         String?
+  otherPartyEmail       String?
+  otherPartyDescription String?
+  court                 String?
+
+  caseTypeId    String
+  caseType      CaseType    @relation(fields: [caseTypeId], references: [id])
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  assigneeId    String?
+  assignee      User?       @relation("assignment", fields: [assigneeId], references: [id])
+  createdById   String
+  creator       User        @relation("creator", fields: [createdById], references: [id])
+
+  tasks            Task[]
+  assigneeRequests AssigneeRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cases")
+}
+
+model AssigneeRequest {
+  id         String @id @default(uuid())
+  assigneeId String
+  assignee   User   @relation(fields: [assigneeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  status    AssigneeRequestStatus @default(PENDING)
+  createdAt DateTime              @default(now())
+
+  @@map("assignment-requests")
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  name        String
+  type        TaskType
+  dueDate     DateTime
+  currency    String?
+  price       Int?
+  hours       Int?
+  hourlyRate  Int?
+  description String?
+  createdAt   DateTime @default(now())
+
+  completedById String?
+  completedBy   User?     @relation("completedTasks", fields: [completedById], references: [id])
+  completedAt   DateTime?
+  assigneeId    String?
+  assignee      User?     @relation("assignedTasks", fields: [assigneeId], references: [id])
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  reminders          Reminder[]
+  documents          Document[]
+  AssigneeRequest    AssigneeRequest[]
+  PaymentTransaction PaymentTransaction[]
+
+  @@map("tasks")
+}
+
+model Document {
+  id     String @id @default(uuid())
+  name   String
+  link   String
+  taskId String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("documents")
+}
+
+model Reminder {
+  id        String           @id @default(uuid())
+  regime    TimeRegimes
+  count     Int
+  channel   ReminderChannels
+  createdAt DateTime         @default(now())
+
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+model Blogpost {
+  id         String        @id @default(cuid())
+  title      String
+  slug       String        @unique
+  content    String
+  excerpt    String?
+  coverImage String?
+  published  Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  status     ContentStatus @default(DRAFT)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("blog")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  userId    String
+  timestamp DateTime @default(now())
+  details   Json?
+}
+
+// ENUMS
+
+enum UserRole {
+  ADMIN
+  ADVOCATE
+  LAWYER
+}
+
+enum CaseStatus {
+  OPEN
+  CLOSED
+}
+
+enum AssigneeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReminderChannels {
+  email
+  sms
+  whatsapp
+}
+
+enum TimeRegimes {
+  minutes
+  hours
+  days
+}
+
+enum TaskType {
+  EVENT
+  DOCUMENT
+  OTHER
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+  TRIALING
+  PAUSED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  PAYSTACK
+  CASH
+  OTHER
+}
+
+enum ContentStatus {
+  DRAFT
+  UNPUBLISHED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MessageSubject {
+  SET_YOUR_PASSWORD
+  PASSWORD_RESET
+  INVOICE
+  SUBSCRIPTION_CONFIRMATION
+  SERVICE_NOTIFICATION
+  OTHER
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum MessageChannel {
+  WHATSAPP
+  EMAIL
+  WEB
+}
+
+enum PlanName {
+  starter
+  team
+  enterprise
+}
+
+enum Currency {
+  KSH
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}

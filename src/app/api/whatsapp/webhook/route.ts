@@ -1,5 +1,5 @@
 import { strFirstWord } from "@/helpers/stringHandlers";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { TemplateObj } from "@/types/custom";
 import { randomUUID } from "crypto";
 import {
@@ -35,7 +35,7 @@ const WebhookPayloadSchema = z.object({
     z.object({
       id: z.string(),
       changes: z.array(z.any()), // Define this properly based on your needs
-    })
+    }),
   ),
 });
 
@@ -73,7 +73,7 @@ interface SendTemplateDto {
 }
 
 async function sendTemplate(
-  sendTemplateDto: SendTemplateDto
+  sendTemplateDto: SendTemplateDto,
 ): Promise<TemplateObj | null> {
   const {
     to: _to,
@@ -145,12 +145,12 @@ async function sendTemplate(
     if (!WHATSAPP_API_URL || !WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NO_ID) {
       if (process.env.NODE_ENV === "production") {
         throw new Error(
-          "WhatsApp API env configs not set: API URL / Access Token / Phone Number ID"
+          "WhatsApp API env configs not set: API URL / Access Token / Phone Number ID",
         );
       } else {
         console.warn(
           "TESTING ENVIRONMENT: WhatsApp API env configs not set: API URL / Access Token / Phone Number ID: ",
-          sendTemplateDto
+          sendTemplateDto,
         );
       }
       return {
@@ -164,7 +164,7 @@ async function sendTemplate(
       "Sending template message to WhatsApp API:",
       messageData,
       "-",
-      url
+      url,
     );
 
     const waResponse = await fetch(url, {
@@ -199,7 +199,7 @@ async function sendTemplate(
 
 async function processIncomingMessage(
   message: any,
-  valueData: any
+  valueData: any,
 ): Promise<boolean> {
   try {
     // message info
@@ -222,7 +222,7 @@ async function processIncomingMessage(
     if (from_user && from_user.email) {
       console.log(
         ` > Processing incoming message from existing user:`,
-        from_user.email || from_user.tel
+        from_user.email || from_user.tel,
       );
 
       if (
@@ -256,7 +256,7 @@ async function processIncomingMessage(
           ...templateConfig_,
         });
         console.log(
-          `sent new_password template message with valid token to - ${from}`
+          `sent new_password template message with valid token to - ${from}`,
         );
         if (!sent_whatsapp_template) {
           console.error("Whatsapp Template not sent");
@@ -289,7 +289,7 @@ async function processIncomingMessage(
           // You can implement media download and storage here
           console.warn(
             "Media processing logic yet to be implemented...",
-            _mediaUrl
+            _mediaUrl,
           );
         }
       }
@@ -325,7 +325,7 @@ async function processIncomingMessage(
           break;
         case IntentType.TALK_TO_KOKOSE:
           console.warn(
-            ` > Consulting KOKOSE - registered user - ${from_user.names}, ${from_user.tel}`
+            ` > Consulting KOKOSE - registered user - ${from_user.names}, ${from_user.tel}`,
           );
 
           const kokoseReply = await consultAI({
@@ -343,7 +343,7 @@ async function processIncomingMessage(
 
             if (!sent_message_) {
               console.warn(
-                `Reply was not sent to user ${from} : ${kokoseReply} `
+                `Reply was not sent to user ${from} : ${kokoseReply} `,
               );
               return false;
             }
@@ -365,7 +365,7 @@ async function processIncomingMessage(
           break;
         case IntentType.HELP:
           console.warn(
-            ` > HELP intent: Consulting AI - ${from_user.names}, ${from_user.tel}`
+            ` > HELP intent: Consulting AI - ${from_user.names}, ${from_user.tel}`,
           );
 
           const reply = await consultAI({
@@ -403,7 +403,7 @@ async function processIncomingMessage(
 
         default:
           console.warn(
-            ` > Could not determine intent of WhatsApp message from - ${from_user.names} (${from_user.tel}): ${body}`
+            ` > Could not determine intent of WhatsApp message from - ${from_user.names} (${from_user.tel}): ${body}`,
           );
           break;
       }
@@ -413,7 +413,7 @@ async function processIncomingMessage(
       console.warn(
         ` > Processing incoming message from unonboarded user:`,
         from,
-        message
+        message,
       );
 
       // reply
@@ -518,7 +518,7 @@ async function processIncomingMessage(
 }
 
 async function processWebhook(
-  data: z.infer<typeof WebhookPayloadSchema>
+  data: z.infer<typeof WebhookPayloadSchema>,
 ): Promise<boolean> {
   console.log("📦 Processing webhook payload:", data);
 

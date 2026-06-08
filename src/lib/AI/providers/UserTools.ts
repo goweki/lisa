@@ -1,5 +1,5 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import type { UserContext } from "../types/UserContext";
 
 export class UsersTools {
@@ -31,7 +31,7 @@ export class UsersTools {
   async addUser(
     institutionId?: string,
     names?: string,
-    email?: string
+    email?: string,
   ): Promise<string> {
     if (!institutionId && this.user.institutions.length !== 1) {
       return "You are administrator to several institutions, use dashboard for better management";
@@ -45,7 +45,7 @@ export class UsersTools {
 
     if (!this.user.systemAdmin) {
       const institutionRole = this.user.institutions.find(
-        ({ id }) => id === institutionId
+        ({ id }) => id === institutionId,
       )?.role;
       if (institutionRole !== "ADMIN") {
         return "You do not have permission to create users in this institution.";
@@ -93,7 +93,7 @@ Parameters:
   async editUser(
     userId?: string,
     names?: string,
-    email?: string
+    email?: string,
   ): Promise<string> {
     if (!userId) return "User ID is required.";
 
@@ -106,8 +106,8 @@ Parameters:
 
       const hasPermission = targetUser.institutions.some((inst) =>
         this.user.institutions.some(
-          (uInst) => uInst.id === inst.institutionId && uInst.role === "ADMIN"
-        )
+          (uInst) => uInst.id === inst.institutionId && uInst.role === "ADMIN",
+        ),
       );
       if (!hasPermission) {
         return "You do not have permission to edit this user.";
@@ -156,8 +156,8 @@ Parameters:
 
       const hasPermission = targetUser.institutions.some((inst) =>
         this.user.institutions.some(
-          (uInst) => uInst.id === inst.institutionId && uInst.role === "ADMIN"
-        )
+          (uInst) => uInst.id === inst.institutionId && uInst.role === "ADMIN",
+        ),
       );
       if (!hasPermission) {
         return "You do not have permission to delete this user.";
@@ -212,9 +212,9 @@ Parameters:
           `- ${u.names} (${u.email}) with id ${u.id} - Institutions: ${u.institutions
             .map(
               (inst) =>
-                `${inst.role} in institution with id ${inst.institutionId} (${inst.institution.name})`
+                `${inst.role} in institution with id ${inst.institutionId} (${inst.institution.name})`,
             )
-            .join(", ")}`
+            .join(", ")}`,
       )
       .join("\n");
   }

@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { withAuthGeneral } from "@/lib/authRouteWrappers";
 import { excludeFields } from "@/helpers/dataHandlers";
 import { SessionUser } from "@/types/next-auth";
@@ -112,7 +112,7 @@ async function getHandler(req: Request, user: SessionUser) {
                   in: instIDs_activeSub,
                 },
               },
-            }
+            },
       ),
     ]);
 

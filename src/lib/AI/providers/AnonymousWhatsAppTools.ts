@@ -1,5 +1,5 @@
 import { ToolDecorator } from "../decorators/ToolDecorator";
-import prisma from "@/lib/prisma/prisma";
+import prisma from "@/lib/prisma";
 import { TaskType, User } from "@prisma/client";
 import { appendPlus } from "@/helpers/telHandlers";
 
@@ -89,7 +89,7 @@ export class AnonymousWhatsAppTools {
   async addTask(
     taskName: string,
     description?: string,
-    dueDate?: string
+    dueDate?: string,
   ): Promise<string> {
     if (!this.user) {
       return "User has not been onboarded yet, add user first.";
@@ -252,7 +252,7 @@ export class AnonymousWhatsAppTools {
         (task, index) =>
           `${index + 1}. ${task.name} (ID: ${task.id}) ${
             task.completedAt ? "✅ Completed" : "⏳ Pending"
-          }`
+          }`,
       )
       .join("\n");
 
