@@ -18,35 +18,28 @@ async function sendEmail({
   message,
   from,
   replyTo,
-}: SendEmailProps): Promise<{ success: boolean; id?: string; error?: string }> {
-  try {
-    if (!defaultFrom) {
-      console.log("misssing env.RESEND_SYSTEM_SENDER");
-      throw new Error("ERROR: missing env");
-    }
-
-    const { data, error } = await client.emails.send({
-      from: from || defaultFrom,
-      to,
-      subject,
-      react: message.react,
-      text: message.text,
-      replyTo,
-    });
-
-    if (error) {
-      console.error("Resend ERROR:", error);
-      return { success: false, error: error.message };
-    }
-
-    console.log(`Email sent successfully: ${data?.id}`);
-    return { success: true, id: data?.id };
-  } catch (err) {
-    console.error("Mailing ERROR:", err);
-
-    const errorMessage = getFriendlyErrorMessage(err);
-    return { success: false, error: errorMessage };
+}: SendEmailProps): Promise<ActionResult<string>> {
+  if (!defaultFrom) {
+    console.log("misssing env.RESEND_SYSTEM_SENDER");
+    throw new Error("ERROR: missing env");
   }
+
+  const { data, error } = await client.emails.send({
+    from: from || defaultFrom,
+    to,
+    subject,
+    react: message.react,
+    text: message.text,
+    replyTo,
+  });
+
+  if (error) {
+    console.error("Resend ERROR:", error);
+    return { ok: false, error: error.message };
+  }
+
+  console.log(`Email sent successfully:`, data);
+  return { ok: true, data: data.id };
 }
 
 export default sendEmail;

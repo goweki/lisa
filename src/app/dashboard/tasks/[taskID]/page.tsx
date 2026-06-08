@@ -25,9 +25,9 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
-import { User, Institution, Case } from "@/types/models";
-import { arraysEqual, isKeyOf } from "@/lib/utils";
+} from "@/lib/utils/inputValidators";
+import { Case } from "@/types/models";
+import { isKeyOf } from "@/lib/utils/dataHandlers";
 import { TemplateObj } from "@/types/custom";
 import {
   Card,
@@ -91,7 +91,7 @@ export default function TaskView(props: { params: Promise<any> }) {
         ({ id, name }: { id: string; name: string }) => ({
           value: id,
           label: name,
-        })
+        }),
       ),
     }));
   }, [caseTypes]);
@@ -106,7 +106,7 @@ export default function TaskView(props: { params: Promise<any> }) {
         ({ id, name }: { id: string; name: string }) => ({
           value: id,
           label: name,
-        })
+        }),
       ),
     }));
   }, [institutions]);
@@ -117,7 +117,7 @@ export default function TaskView(props: { params: Promise<any> }) {
     // console.log("caseTypeId is: ", caseEdit.caseTypeID || selected?.caseTypeID);
     const foundCaseType_ = caseTypes.find(
       ({ id }: { id: string }) =>
-        id === (caseEdit.caseTypeId || selected?.caseTypeId)
+        id === (caseEdit.caseTypeId || selected?.caseTypeId),
     );
 
     if (!foundCaseType_) return;
@@ -136,7 +136,7 @@ export default function TaskView(props: { params: Promise<any> }) {
       ({ id, names }: { id: string; names: string }) => ({
         value: id,
         label: `${names}`,
-      })
+      }),
     );
     setOptions((prev) => ({
       ...prev,
@@ -233,7 +233,7 @@ export default function TaskView(props: { params: Promise<any> }) {
     }
     if (caseEdit.otherPartyEmail) {
       inputErrors.otherPartyEmailError_ = emailValidator(
-        caseEdit.otherPartyEmail
+        caseEdit.otherPartyEmail,
       );
     }
     if (caseEdit.court) {
@@ -291,13 +291,13 @@ export default function TaskView(props: { params: Promise<any> }) {
             setUIstate(error_);
             return null;
           }
-        }
+        },
       );
       if (_res?.success) {
         console.log(
           "SUCCESS: Case updated successfully\n > " +
-          JSON.stringify(_res.success) +
-          "\n.............."
+            JSON.stringify(_res.success) +
+            "\n..............",
         );
         await refreshData();
         toast.success("Case updated successfully!");
@@ -305,13 +305,13 @@ export default function TaskView(props: { params: Promise<any> }) {
       } else {
         console.error(
           "ERROR: failed to update case - 7ghb\n" +
-          JSON.stringify(_res) +
-          "\n.............."
+            JSON.stringify(_res) +
+            "\n..............",
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
       setUIstate("OK");
-    } catch (error) { }
+    } catch (error) {}
   }
 
   // handle onSelect Institutions
@@ -353,7 +353,7 @@ export default function TaskView(props: { params: Promise<any> }) {
           setUIstate(error_);
           return null;
         }
-      }
+      },
     );
 
     if (!res) return;
@@ -362,7 +362,7 @@ export default function TaskView(props: { params: Promise<any> }) {
       console.log(
         "SUCCESS: case deleted\n > ",
         res.success,
-        "\n.............."
+        "\n..............",
       );
 
       toast.success("case deleted");
@@ -611,10 +611,10 @@ export default function TaskView(props: { params: Promise<any> }) {
                       !(caseEdit.clientParty || selected.clientParty)
                         ? ""
                         : options.clientParties.find(
-                          (party) =>
-                            party !==
-                            (caseEdit.clientParty || selected.clientParty)
-                        )
+                            (party) =>
+                              party !==
+                              (caseEdit.clientParty || selected.clientParty),
+                          )
                     }
                     // disabled={!newCase.caseTypeID}
                     disabled={true}

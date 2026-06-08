@@ -2,7 +2,7 @@
 import { useState, useContext, useEffect } from "react";
 import Image from "next/image";
 import { InputText } from "@/components/atoms/inputs";
-import { strTruncate } from "@/helpers/stringHandlers";
+import { strTruncate } from "@/lib/utils/stringHandlers";
 import { BlogContext } from "./providers";
 import { def_Input } from "@/types/custom";
 import { Blogpost } from "@prisma/client";
@@ -17,7 +17,7 @@ export default function BlogPage() {
   //filter blogposts by searchphrase
   useEffect(() => {
     const filtBlogposts = blog?.filter(({ title }) =>
-      title.toLowerCase().includes(searchPhrase.toLowerCase())
+      title.toLowerCase().includes(searchPhrase.toLowerCase()),
     );
     setBlogposts(filtBlogposts || []);
   }, [searchPhrase, blog]);

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { formatNumberToK, strPascalCase } from "@/helpers/stringHandlers";
+import { formatNumberToK, strPascalCase } from "@/lib/utils/stringHandlers";
 import { CheckIcon } from "lucide-react";
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import CheckoutForm from "./checkoutForm";
@@ -60,7 +60,7 @@ export default function PaymentsSection({ exit }: { exit?: () => any }) {
             console.error(`ERROR: ` + error_ || "Error fetching plans data");
             toast.error(error_);
           }
-        }
+        },
       );
 
       if (!response) {
@@ -158,7 +158,7 @@ export default function PaymentsSection({ exit }: { exit?: () => any }) {
                         ? pkg.priceMonthly
                         : regime === "yearly"
                           ? pkg.priceAnnual
-                          : 0
+                          : 0,
                     )}
                   </span>
                 </CardHeader>

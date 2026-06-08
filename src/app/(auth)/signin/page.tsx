@@ -11,7 +11,7 @@ import {
   emailValidator,
   nameValidator,
   passwordValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
 
@@ -48,7 +48,7 @@ export default function SigninPage() {
     }
     //sign in
     console.log(
-      `........................\nCHECKPOINT: validating user\n > ${email.value} , ${password.value}\n..................`
+      `........................\nCHECKPOINT: validating user\n > ${email.value} , ${password.value}\n..................`,
     );
     const res = await signIn("credentials", {
       email: email.value,
@@ -64,7 +64,7 @@ export default function SigninPage() {
       else toast.error("Sign in failed. Try again later.");
       console.log(
         `........................\n > FAILED: user not validated\n >`,
-        res
+        res,
       );
       setUIstate("OK");
     }

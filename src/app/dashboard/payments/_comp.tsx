@@ -11,7 +11,7 @@ import { PaymentTransaction } from "@prisma/client";
 import { useContext, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DataContext } from "../providers";
-import { dateShort } from "@/helpers/dateHandlers";
+import { dateShort } from "@/lib/utils/dateHandlers";
 
 export function PaymentsList({
   payments: _payments,
@@ -34,7 +34,7 @@ export function PaymentsList({
   //filter blogposts by searchphrase
   useEffect(() => {
     const filtPayments_ = payments?.filter(({ providerTransactionId }) =>
-      providerTransactionId.toLowerCase().includes(searchPhrase.toLowerCase())
+      providerTransactionId.toLowerCase().includes(searchPhrase.toLowerCase()),
     );
     setFiltPayments(filtPayments_ || []);
   }, [searchPhrase, searchPhrase]);

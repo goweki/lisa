@@ -8,7 +8,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Separator } from "../ui/separator";
@@ -46,7 +46,7 @@ type PaymentConfigFactory = (packag: Packag, amount: number) => PaymentConfig;
 
 const def_paymentConfig: PaymentConfigFactory = (
   packag: Packag,
-  amount: number
+  amount: number,
 ) => ({
   reference: `lisa-paystack-${packag.name}-${packag.regime}-${new Date().getTime().toString()}`,
   amount,
@@ -74,7 +74,7 @@ export default function Checkout({
   const [selected_institutionId, setSelectedInstitutionId] =
     useState<string>("");
   const [payConfig, setPayConfig] = useState<PaymentConfig>(
-    def_paymentConfig(packag, amount * 100)
+    def_paymentConfig(packag, amount * 100),
   );
   const { data: session } = useSession();
 
@@ -83,7 +83,7 @@ export default function Checkout({
   useEffect(() => {
     (async () => {
       const insts_ = await fetch(
-        `/api/dashboard/institution?userId=${session?.user?.id}`
+        `/api/dashboard/institution?userId=${session?.user?.id}`,
       ).then(async (res) => {
         if (res.ok) {
           const insts = await res.json();
@@ -99,7 +99,7 @@ export default function Checkout({
         insts_.map(({ id, name }: { id: string; name: string }) => ({
           label: name,
           value: id,
-        }))
+        })),
       );
       setSelectedInstitutionId(insts_[0].id);
     })();
@@ -163,7 +163,7 @@ export default function Checkout({
       toast.custom(
         <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
           {_ref.status} - {_ref.message}
-        </div>
+        </div>,
       );
     } else {
       toast.success(_ref.message);
@@ -194,14 +194,14 @@ export default function Checkout({
       if (res_) {
         console.log("Payment recorded:", res_);
         toast.success("Payment successful");
-        router.replace('/');
+        router.replace("/");
       }
     } catch (err) {
       console.error("Error saving payment:", err);
       toast.custom(
         <div className="bg-orange-200 text-orange-800 px-4 py-2 rounded-lg">
           Payment succeeded but saving failed. Please contact support.
-        </div>
+        </div>,
       );
     }
   };

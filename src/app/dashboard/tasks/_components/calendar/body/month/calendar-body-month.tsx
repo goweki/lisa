@@ -10,7 +10,7 @@ import {
   format,
   isWithinInterval,
 } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cssHandlers";
 import CalendarEvent from "../../calendar-event";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -41,7 +41,7 @@ export default function CalendarBodyMonth() {
       isWithinInterval(event.dueDate, {
         start: calendarStart,
         end: calendarEnd,
-      })
+      }),
     // ||
     // isWithinInterval(event.dueDate, { start: calendarStart, end: calendarEnd })
   );
@@ -73,7 +73,7 @@ export default function CalendarBodyMonth() {
         >
           {calendarDays.map((day) => {
             const dayEvents = visibleEvents.filter((event) =>
-              isSameDay(event.dueDate, day)
+              isSameDay(event.dueDate, day),
             );
             const isToday = isSameDay(day, today);
             const isCurrentMonth = isSameMonth(day, date);
@@ -83,7 +83,7 @@ export default function CalendarBodyMonth() {
                 key={day.toISOString()}
                 className={cn(
                   "relative flex flex-col border-b border-r p-2 aspect-square cursor-pointer",
-                  !isCurrentMonth && "bg-muted/50 hidden md:flex"
+                  !isCurrentMonth && "bg-muted/50 hidden md:flex",
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -94,7 +94,7 @@ export default function CalendarBodyMonth() {
                 <div
                   className={cn(
                     "text-sm font-medium w-fit p-1 flex flex-col items-center justify-center rounded-full aspect-square",
-                    isToday && "bg-primary text-background"
+                    isToday && "bg-primary text-background",
                   )}
                 >
                   {format(day, "d")}

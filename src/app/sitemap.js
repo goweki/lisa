@@ -1,4 +1,4 @@
-import { BASE_URL } from "@/helpers/getUrl";
+import { BASE_URL } from "@/lib/utils/getUrl";
 
 export default async function sitemap() {
   // DYNAMIC PAGES - blogposts

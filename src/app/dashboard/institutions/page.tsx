@@ -18,7 +18,7 @@ import {
   locationValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
@@ -107,7 +107,7 @@ export default function InstitutionsPage() {
           logoUrl_ = logoEdgeUpload.url;
         } catch (error) {
           console.error("logo not uploaded:", error);
-          showWarningToast(' Logo not saved')
+          showWarningToast(" Logo not saved");
         }
 
         setNewInstitution((prev) => {
@@ -125,7 +125,7 @@ export default function InstitutionsPage() {
       };
 
       const fetchBody = Object.fromEntries(
-        Object.entries(_fetchBody).filter(([_, value]) => value !== undefined)
+        Object.entries(_fetchBody).filter(([_, value]) => value !== undefined),
       );
 
       // API call, using fetch
@@ -143,7 +143,7 @@ export default function InstitutionsPage() {
             toast.error(error_);
             return;
           }
-        }
+        },
       );
       if (!res) return;
 
@@ -160,7 +160,7 @@ export default function InstitutionsPage() {
   //render
   return (
     <Card x-chunk="dashboard-04-chunk-1">
-      {userSession?.user?.role === "system" ? (
+      {userSession?.user?.systemAdmin ? (
         <>
           <CardHeader>
             <CardTitle className="font-light">Create New Institution</CardTitle>

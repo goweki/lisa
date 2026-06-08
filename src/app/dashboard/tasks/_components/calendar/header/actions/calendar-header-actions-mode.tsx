@@ -5,7 +5,7 @@ import { Mode, calendarModes } from "../../calendar-types";
 import { useCalendarContext } from "../../calendar-context";
 import { calendarModeIconMap } from "../../calendar-mode-icon-map";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cssHandlers";
 
 export default function CalendarHeaderActionsMode() {
   const { mode, setMode } = useCalendarContext();
@@ -41,7 +41,7 @@ export default function CalendarHeaderActionsMode() {
                 value={modeValue}
                 className={cn(
                   "w-full rounded-none shadow-none focus-visible:z-10 text-base flex items-center justify-center gap-2 relative border-none",
-                  isSelected && "z-10"
+                  isSelected && "z-10",
                 )}
               >
                 <motion.div

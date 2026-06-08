@@ -10,7 +10,7 @@ import { DataContext } from "@/app/dashboard/providers";
 import { useSession, signOut } from "next-auth/react";
 import { Case, Task } from "@/types/models";
 import { CaseStatus, EntityStatus, UserRole } from "@prisma/client";
-import { dateShort } from "@/helpers/dateHandlers";
+import { dateShort } from "@/lib/utils/dateHandlers";
 
 export default function UserHome() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function UserHome() {
           dueTasks: case_.tasks?.filter(
             (task_) =>
               // !task_.completedByID && isDatePassed(new Date(task_.dueDate))
-              !task_.completedById
+              !task_.completedById,
           ),
         };
       })
@@ -69,7 +69,7 @@ export default function UserHome() {
     const usersBrief = users.map((user_) => {
       const institutions_roles = user_.institutions?.map((instUser) => {
         const institution_ = institutions?.find(
-          ({ id }) => id === instUser.institutionId
+          ({ id }) => id === instUser.institutionId,
         );
         return { name: institution_?.name, role: instUser.role };
       });
@@ -111,7 +111,7 @@ export default function UserHome() {
             : 0;
       const periodEnding = new Date(
         new Date(infoObj.submittedAt).getTime() +
-          daysToAdd * 24 * 60 * 60 * 1000
+          daysToAdd * 24 * 60 * 60 * 1000,
       );
 
       return {
@@ -263,7 +263,7 @@ function ProfileCard({
                           ))}
                         </div>
                       </li>
-                    )
+                    ),
                   )}
               </ul>
             </div>
@@ -295,7 +295,7 @@ function ProfileCard({
                   </span>
                   <span className="text-sm pr-2">{value.length || 0}</span>
                 </div>
-              )
+              ),
             )}
           </div>
         )}

@@ -3,42 +3,16 @@ import { useContext, useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useSession } from "next-auth/react";
-import {
-  SVGbuilding,
-  SVGcell,
-  SVGdoc,
-  SVGemail,
-  SVGpenscilSquare,
-  SVGuser,
-} from "@/components/atoms/svgs";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
 import { Loader } from "@/components/atoms/loader";
-import {
-  emailValidator,
-  nameValidator,
-  telValidator,
-} from "@/helpers/inputValidators";
-import { httpCodes, roleLabels } from "@/lib/configs";
-import { EntityStatus, UserRole as UserRoles } from "@prisma/client";
-import { User, Institution } from "@/types/models";
-import { arraysEqual, isKeyOf } from "@/lib/utils";
-import { TemplateObj } from "@/types/custom";
+import { emailValidator, nameValidator } from "@/lib/utils/inputValidators";
+import { EntityStatus, UserRole } from "@prisma/client";
 import {
   Card,
   CardContent,
   CardTitle,
-  CardDescription,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
@@ -50,7 +24,7 @@ import MultiSelect, {
   Option as MultiSelectOption,
   Option,
 } from "@/components/atoms/multiSelect";
-import { deepEqual } from "@/helpers/dataHandlers";
+import { deepEqual } from "@/lib/utils/dataHandlers";
 import { Switch } from "@/components/ui/switch";
 
 interface SelectedEditUser {
@@ -98,7 +72,7 @@ export default function UserView(props: { params: Promise<any> }) {
 
     const userIsUpdated = (
       selected_: SelectedEditUser,
-      editObj: SelectedEditUser
+      editObj: SelectedEditUser,
     ): boolean => {
       const newInstIDS_ = userInstitutions?.map(({ value }) => value);
       if (!deepEqual(selected?.institutionIDs, newInstIDS_)) {
@@ -152,13 +126,13 @@ export default function UserView(props: { params: Promise<any> }) {
       const seletedsInsts = foundUser_.institutions?.map(
         ({ institutionId: institutionId_found }) => {
           const _institution = institutions?.find(
-            ({ id }) => institutionId_found === id
+            ({ id }) => institutionId_found === id,
           );
           return {
             value: _institution?.id,
             label: _institution?.name,
           } as Option;
-        }
+        },
       );
 
       setUserInstitutions(seletedsInsts);
@@ -267,7 +241,7 @@ export default function UserView(props: { params: Promise<any> }) {
             toast.error(error_);
             return null;
           }
-        }
+        },
       );
       if (!res) return;
       //res is truthy
@@ -314,7 +288,7 @@ export default function UserView(props: { params: Promise<any> }) {
             toast.error(error_);
             return null;
           }
-        }
+        },
       );
       if (!res) return;
       //res is truthy
@@ -356,7 +330,7 @@ export default function UserView(props: { params: Promise<any> }) {
           setUIstate(error_);
           return null;
         }
-      }
+      },
     );
 
     if (!res) return;
@@ -379,7 +353,7 @@ export default function UserView(props: { params: Promise<any> }) {
       <CardHeader>
         <CardTitle className="font-light flex flex-row">
           <span>{selected?.names}</span>
-          {userSession?.user?.role === "system" && (
+          {userSession?.user?.systemAdmin && (
             <div className="ml-4 px-4 w-fit">
               {UIstate === "loading" ? (
                 <Loader />
@@ -463,7 +437,7 @@ export default function UserView(props: { params: Promise<any> }) {
                 ({ id, name }: { id: string; name: string }) => ({
                   value: id,
                   label: name,
-                })
+                }),
               )}
               //
               placeholder="Select Institutions..."

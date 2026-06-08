@@ -1,15 +1,14 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "./prisma";
 import { InstitutionUser, UserRole } from "@prisma/client";
-import { SessionUser } from "@/types/next-auth";
+import { auth } from "./auth";
+import { type User } from "next-auth";
 
 export function withAuthGeneral(
-  handler: (req: Request | NextRequest, user: SessionUser) => Promise<Response>,
+  handler: (req: Request | NextRequest, user: unknown) => Promise<Response>,
 ) {
   return async function (req: Request | NextRequest) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const user = session?.user;
 
     if (!user) {
@@ -19,22 +18,19 @@ export function withAuthGeneral(
       );
     }
 
-    return handler(req, {
-      ...user,
-      role: user.role || "user",
-    });
+    return handler(req, user);
   };
 }
 
 export function withAuthAdmin(
   handler: (
     req: Request | NextRequest,
-    user: SessionUser,
+    user: User,
     institutionIds: string[] | undefined,
   ) => Promise<Response>,
 ) {
   return async function (req: Request | NextRequest) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const user = session?.user;
 
     if (!user) {
@@ -58,13 +54,6 @@ export function withAuthAdmin(
       }
     }
 
-    return handler(
-      req,
-      {
-        ...user,
-        role: user.role || "user",
-      },
-      institutionIds,
-    );
+    return handler(req, user, institutionIds);
   };
 }

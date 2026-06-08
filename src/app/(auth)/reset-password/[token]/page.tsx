@@ -8,18 +8,16 @@ import {
   emailValidator,
   nameValidator,
   passwordValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
-import { strsMatch } from "@/helpers/stringHandlers";
+import { strsMatch } from "@/lib/utils/stringHandlers";
 import toast from "react-hot-toast";
 
-export default function ResetPassword(
-  props: {
-    params: Promise<{ token: string }>;
-    searchParams: Promise<{ [key: string]: string }>;
-  }
-) {
+export default function ResetPassword(props: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ [key: string]: string }>;
+}) {
   const searchParams = use(props.searchParams);
   const params = use(props.params);
   const { token } = params;
@@ -51,7 +49,7 @@ export default function ResetPassword(
 
         const response = await fetch(
           `/api/auth/reset-password?email=${encodeURIComponent(email_)}&token=${token}`,
-          fetchOptions
+          fetchOptions,
         ).then(async (res_) => {
           if (res_.ok) {
             return await res_.json();
@@ -107,7 +105,7 @@ export default function ResetPassword(
 
       const response = await fetch(
         "/api/auth/reset-password",
-        fetchOptions
+        fetchOptions,
       ).then(async (res_) => {
         if (res_.ok) {
           return await res_.json();

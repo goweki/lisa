@@ -5,10 +5,11 @@ import toast from "react-hot-toast";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
 import { UIstate } from "@/types/custom";
-import { messageConfirmationEmail } from "@/lib/emailRenderer";
-import { BASE_URL } from "@/helpers/getUrl";
+import { BASE_URL } from "@/lib/utils/getUrl";
+import { generateConfirmationMessage } from "@/components/emails/messageConfirmation";
+import sendEmail from "@/lib/mailer";
 
-const ADMIN_EMAIL = process.env.NEXT_PUBLIC_MAIL_ACCOUNT_ADMIN
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_MAIL_ACCOUNT_ADMIN;
 
 export default function ContactsPage() {
   const [UIstate, setUIstate] = useState<UIstate>("OK");
@@ -26,8 +27,10 @@ export default function ContactsPage() {
   //onClick Send
   async function handleSend() {
     if (!ADMIN_EMAIL) {
-      toast.error('ERROR: no admin address. Contact support at lisa@goweki.com');
-      return
+      toast.error(
+        "ERROR: no admin address. Contact support at lisa@goweki.com",
+      );
+      return;
     }
     // confirm fields filled
     if (!name || !email) {
@@ -39,49 +42,27 @@ export default function ContactsPage() {
     // send email
 
     try {
-      const emailToSend = await messageConfirmationEmail(
-        name,
-        message);
-
-
-      const emailerRes = await fetch(`${BASE_URL}/api/mailer`, {
-        method: "POST",
-        body: JSON.stringify({
-          email: {
-            to: email,
-            subject: "Message Received",
-            html: emailToSend.html,
-            text: emailToSend.text,
-            cc: ADMIN_EMAIL
-          },
-        }),
-      }).then(async (res_) => {
-        if (res_.ok) {
-          return await res_.json()
-        } else {
-          const error_ = `ERROR ${res_.status} - ${await res_.json()}`
-          console.log(error_)
-          toast.error(error_)
-        }
+      const confirmationMessage = generateConfirmationMessage(name, message);
+      const mailerRes = await sendEmail({
+        to: email,
+        subject: "Message Received",
+        message: confirmationMessage,
       });
 
-      if (!emailerRes) {
-        return
+      if (!mailerRes.ok) {
+        toast.error(mailerRes.error || "Unknown error. Try again later");
       }
 
-      console.log(
-        "SUCCESS: info sent\n > ", emailerRes
-      );
       toast.success("Info submitted!");
       setName("");
       setEmail("");
       setMessage("");
       setUIstate("OK");
     } catch (err: any) {
-      console.error('Error in contacts form 7hf - ', err)
-      toast.error('Info was not sent. Contact support at lisa@goweki.com')
+      console.error("Error in contacts form 7hf - ", err);
+      toast.error("Info was not sent. Contact support at lisa@goweki.com");
     } finally {
-      setUIstate('OK')
+      setUIstate("OK");
     }
   }
   //render
@@ -111,8 +92,9 @@ export default function ContactsPage() {
                       required
                     />
                     <label
-                      className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${message ? "scale-[0.8] -translate-y-5" : ""
-                        } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+                      className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${
+                        message ? "scale-[0.8] -translate-y-5" : ""
+                      } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
                       htmlFor="message"
                     >
                       Message / Inquiry
@@ -280,7 +262,7 @@ function renderInput(
   value: string,
   setValue: (val: string) => void,
   type = "text",
-  name = "inputField"
+  name = "inputField",
 ) {
   return (
     <div className="relative mb-8">
@@ -292,8 +274,9 @@ function renderInput(
         onChange={(e) => setValue(e.target.value)}
       />
       <label
-        className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${value ? "scale-[0.8] -translate-y-5" : ""
-          } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
+        className={`pointer-events-none absolute top-0 left-3 mb-0 max-w-[90%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-font-inactive/75 dark:text-font-dark-inactive/75 transition-all duration-200 ease-out peer-focus:-translate-y-5 peer-focus:scale-[0.8] peer-focus:text-emerald-500 ${
+          value ? "scale-[0.8] -translate-y-5" : ""
+        } dark:peer-focus:text-emerald-500 motion-reduce:transition-none`}
         htmlFor={name}
       >
         Your {name}*

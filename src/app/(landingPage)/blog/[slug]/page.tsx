@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getBlogPostBySlug } from "@/lib/blog";
 import type { Metadata, ResolvingMetadata } from "next";
 import Image from "next/image";
-import { dateLong } from "@/helpers/dateHandlers";
+import { dateLong } from "@/lib/utils/dateHandlers";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -11,7 +11,7 @@ type Props = {
 
 export async function generateMetadata(
   { params, searchParams }: Props,
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);

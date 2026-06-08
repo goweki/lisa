@@ -26,7 +26,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { EntityStatus } from "@prisma/client";
 
@@ -138,7 +138,7 @@ export default function UsersLayout({
                         {userInsts
                           ?.map(({ institutionId }) => {
                             const institution_ = institutions?.find(
-                              ({ id }) => id === institutionId
+                              ({ id }) => id === institutionId,
                             );
                             return institution_?.name;
                           })

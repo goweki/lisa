@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { nameValidator, telValidator } from "@/helpers/inputValidators";
+import { nameValidator, telValidator } from "@/lib/utils/inputValidators";
 import { useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
@@ -78,7 +78,7 @@ export default function CasesPage() {
         ({ id, name }: { id: string; name: string }) => ({
           value: id,
           label: name,
-        })
+        }),
       ),
     }));
   }, [caseTypes]);
@@ -91,7 +91,7 @@ export default function CasesPage() {
         ({ id, name }: { id: string; name: string }) => ({
           value: id,
           label: name,
-        })
+        }),
       ),
     }));
   }, [institutions]);
@@ -102,7 +102,7 @@ export default function CasesPage() {
       return;
 
     const foundCaseType = caseTypes.find(
-      ({ id }: { id: string }) => id === newCase.caseTypeID
+      ({ id }: { id: string }) => id === newCase.caseTypeID,
     );
     if (!foundCaseType) {
       toast.error("CaseType not found");
@@ -204,7 +204,7 @@ export default function CasesPage() {
             toast.error(error);
             return;
           }
-        }
+        },
       );
       if (!_res) {
         setUIstate("OK");

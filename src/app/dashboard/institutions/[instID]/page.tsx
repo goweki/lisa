@@ -1,23 +1,8 @@
 "use client";
 import { useContext, useState, useEffect, use } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
 import { useSession } from "next-auth/react";
-import {
-  SVGbuilding,
-  SVGcell,
-  SVGdoc,
-  SVGemail,
-  SVGpenscilSquare,
-  SVGuser,
-} from "@/components/atoms/svgs";
-import {
-  ButtonPrimary,
-  ButtonSecondary,
-  ButtonDestructive,
-} from "@/components/atoms/buttons";
-import { InputText } from "@/components/atoms/inputs";
 import toast from "react-hot-toast";
 import { useEdgeStore } from "@/lib/edgestore";
 import { Loader } from "@/components/atoms/loader";
@@ -26,10 +11,8 @@ import {
   locationValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
-import { httpCodes } from "@/lib/configs";
+} from "@/lib/utils/inputValidators";
 import { User, Institution } from "@/types/models";
-import { isKeyOf } from "@/lib/utils";
 import { TemplateObj } from "@/types/custom";
 import {
   Card,
@@ -45,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { InputImage } from "@/components/atoms/inputs";
 import { Switch } from "@/components/ui/switch";
 import { EntityStatus } from "@prisma/client";
+import { isKeyOf } from "@/lib/utils/dataHandlers";
 
 interface InstitutionEdit {
   name: string;
@@ -76,7 +60,7 @@ export default function InstitutionView(props: { params: Promise<any> }) {
   useEffect(() => {
     if (instID) {
       const selectedInst_ = institutions?.find(
-        ({ id }: { id: string }) => id === instID
+        ({ id }: { id: string }) => id === instID,
       );
       if (!selectedInst_) return router.push("/dashboard/institutions");
       else setSelected(selectedInst_);
@@ -105,7 +89,7 @@ export default function InstitutionView(props: { params: Promise<any> }) {
                 selected_[key] !== editObj[key]
               ) {
                 console.log(
-                  `${key} has changed from ${selected_[key]} to ${editObj[key]}`
+                  `${key} has changed from ${selected_[key]} to ${editObj[key]}`,
                 );
                 return true;
               }
@@ -204,7 +188,7 @@ export default function InstitutionView(props: { params: Promise<any> }) {
       };
 
       const fetchBody = Object.fromEntries(
-        Object.entries(_fetchBody).filter(([_, value]) => value !== undefined)
+        Object.entries(_fetchBody).filter(([_, value]) => value !== undefined),
       );
 
       const fetchOptions = {
@@ -222,14 +206,14 @@ export default function InstitutionView(props: { params: Promise<any> }) {
             console.log(`ERROR: ` + JSON.stringify(res_));
             return toast.error(error_);
           }
-        }
+        },
       );
       if (!res) return;
       //res is truthy
       console.log(
         "SUCCESS: Institution updated\n > ",
         res.data,
-        "\n.............."
+        "\n..............",
       );
       toast.success("Institution updated");
       await refreshData();
@@ -277,14 +261,14 @@ export default function InstitutionView(props: { params: Promise<any> }) {
             toast.error(error_);
             return;
           }
-        }
+        },
       );
       if (!res) return;
       //res is truthy
       console.log(
         "SUCCESS: Institution status updated\n > ",
         res,
-        "\n.............."
+        "\n..............",
       );
       toast.success("Institution status updated");
       await refreshData();
@@ -335,7 +319,7 @@ export default function InstitutionView(props: { params: Promise<any> }) {
             toast.error(error_);
             return null;
           }
-        }
+        },
       );
 
       if (!res) return;
@@ -366,7 +350,7 @@ export default function InstitutionView(props: { params: Promise<any> }) {
       <CardHeader>
         <CardTitle className="font-light flex flex-row">
           <span>{selected?.name}</span>
-          {userSession?.user?.role === "system" && (
+          {userSession?.user?.systemAdmin && (
             <div className="ml-4 px-4 w-fit">
               {UIstate === "loading" ? (
                 <Loader />

@@ -1,7 +1,7 @@
 import { CalendarTask as CalendarEventType } from "./calendar-types";
 import { useCalendarContext } from "./calendar-context";
 import { format, isSameDay, isSameMonth } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cssHandlers";
 import { motion, MotionConfig, AnimatePresence } from "framer-motion";
 
 interface EventPosition {
@@ -13,7 +13,7 @@ interface EventPosition {
 
 function getOverlappingEvents(
   currentEvent: CalendarEventType,
-  events: CalendarEventType[]
+  events: CalendarEventType[],
 ): CalendarEventType[] {
   return events.filter((event) => {
     if (event.id === currentEvent.id) return false;
@@ -27,11 +27,11 @@ function getOverlappingEvents(
 
 function calculateEventPosition(
   event: CalendarEventType,
-  allEvents: CalendarEventType[]
+  allEvents: CalendarEventType[],
 ): EventPosition {
   const overlappingEvents = getOverlappingEvents(event, allEvents);
   const group = [event, ...overlappingEvents].sort(
-    (a, b) => a.dueDate.getTime() - b.dueDate.getTime()
+    (a, b) => a.dueDate.getTime() - b.dueDate.getTime(),
   );
   const position = group.indexOf(event);
   const width = `${100 / (overlappingEvents.length + 1)}%`;
@@ -105,7 +105,7 @@ export default function CalendarEvent({
               event.completedById ? "emerald" : "slate"
             }-500`,
             !month && "absolute",
-            className
+            className,
           )}
           style={style}
           onClick={(e) => {
@@ -150,7 +150,7 @@ export default function CalendarEvent({
               `flex flex-col w-full text-${
                 event.completedById ? "emerald" : "slate"
               }-500`,
-              month && "flex-row items-center justify-between"
+              month && "flex-row items-center justify-between",
             )}
             layout="position"
           >

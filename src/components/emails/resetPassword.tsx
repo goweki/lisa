@@ -11,7 +11,7 @@ import {
   Text,
 } from "@react-email/components";
 import { main, container, text, button, anchor } from "./_styles";
-import { BASE_URL } from "@/helpers/getUrl";
+import { BASE_URL } from "@/lib/utils/getUrl";
 
 interface ResetPasswordEmailProps {
   name: string;
@@ -84,4 +84,11 @@ ResetPasswordHtml.PreviewProps = {
   resetPasswordLink: "https://www.goweki.com",
 } as ResetPasswordEmailProps;
 
-export { ResetPasswordHtml, resetPasswordText };
+function generatePasswordResetMessage(name: string, link: string) {
+  return {
+    react: <ResetPasswordHtml name={name} resetPasswordLink={link} />,
+    text: resetPasswordText({ name, resetPasswordLink: link }),
+  };
+}
+
+export { generatePasswordResetMessage };

@@ -8,13 +8,13 @@ import { findUserByKey } from "./user.actions";
 
 import prisma from "@/lib/prisma";
 import { BANNER_IMAGE_URL, BASE_URL } from "@/lib/utils/getUrl";
-import { resetPasswordEmail } from "@/lib/emailRenderer";
 import sendEmail from "@/lib/mailer";
 import { getFriendlyErrorMessage } from "@/lib/utils/errorHandlers";
 import sendSMS, { SMSData } from "@/lib/smsService";
 import { NotificationChannel } from "@prisma/client";
 import loci_whatsapp from "@/lib/whatsapp";
 import { SendTemplateMessageInput } from "@/lib/whatsapp/client";
+import { generatePasswordResetMessage } from "@/components/emails/resetPassword";
 
 /**
  * Creates a new user, and sends Welcome email.
@@ -60,7 +60,7 @@ export async function sendResetLinkAction(data: {
       console.log(
         `[PASSWORD RESET]: sending reset passsword email to [${user.email}]`,
       );
-      const emailToSend = await resetPasswordEmail(user.names, resetLink);
+      const message = generatePasswordResetMessage(user.names, resetLink);
 
       if (process.env.NODE_ENV === "development") {
         console.log("📧 Email (DEV MODE)");
@@ -73,7 +73,7 @@ export async function sendResetLinkAction(data: {
         await sendEmail({
           to: user.email,
           subject: "Reset Password: Q-Sync",
-          message: { react: emailToSend.html, text: emailToSend.text },
+          message,
         });
       }
 
@@ -143,8 +143,8 @@ export async function sendResetLinkAction(data: {
             onboardingLink: resetLink,
           });
         } else {
-          const { text: message } = await resetPasswordEmail(
-            user.names || "",
+          const { text: message } = generatePasswordResetMessage(
+            user.names,
             resetLink,
           );
           const smsOptions: SMSData = {

@@ -1,5 +1,3 @@
-import prisma from "@/lib/prisma";
-
 /**
  * Truncates a string to a specified length and appends ellipsis if needed.
  *
@@ -101,67 +99,4 @@ export function strFirstWord(input: string): string {
   const firstSpaceIndex = trimmed.indexOf(" ");
 
   return firstSpaceIndex === -1 ? trimmed : trimmed.slice(0, firstSpaceIndex);
-}
-
-/**
- * Generates a unique institution code based on a given name.
- * The code consists of six evenly spaced letters from the name (ignoring spaces)
- * followed by the last two digits of the current year.
- * Ensures that no existing institution has a code with at least three matching characters
- * in the same positions as the generated code.
- *
- * @param prisma - Prisma client instance for database access.
- * @param name - The institution name to generate the code from.
- * @returns A unique code in the format "XXXXXXYY".
- *
- * @throws Error if a unique code cannot be generated after multiple attempts.
- */
-export async function generateUniqueInstitutionCode(
-  name: string,
-): Promise<string> {
-  const MAX_ATTEMPTS = 5;
-  const MIN_SIMILAR_CHARS = 3;
-
-  const generateCodeFromString = (input: string, attempt: number): string => {
-    const cleaned = input.replace(/\s+/g, "");
-    const offset = Math.floor(Math.random() * Math.min(3, cleaned.length));
-    const letters = [...Array(6)]
-      .map((_, i) => {
-        const index = Math.floor((i * (cleaned.length - 1)) / 5) + offset;
-        return cleaned[index % cleaned.length] || "";
-      })
-      .join("")
-      .toUpperCase();
-    const yearSuffix = new Date().getFullYear().toString().slice(-2);
-    return letters + yearSuffix;
-  };
-
-  const hasAtLeastSimilarChars = (code1: string, code2: string): boolean => {
-    let count = 0;
-    for (let i = 0; i < Math.min(code1.length, code2.length); i++) {
-      if (code1[i] === code2[i]) count++;
-      if (count >= MIN_SIMILAR_CHARS) return true;
-    }
-    return false;
-  };
-
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const code = generateCodeFromString(name, attempt);
-
-    const institutions = await prisma.institution.findMany({
-      select: { code: true },
-    });
-
-    const tooSimilar = institutions.some((inst) =>
-      hasAtLeastSimilarChars(code, inst.code || ""),
-    );
-
-    if (!tooSimilar) {
-      return code;
-    }
-  }
-
-  throw new Error(
-    "Could not generate unique institution code after multiple attempts",
-  );
 }

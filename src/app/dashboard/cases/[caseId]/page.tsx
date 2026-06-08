@@ -1,15 +1,13 @@
 "use client";
+
 import { useContext, useState, useEffect, use } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DataContext } from "@/app/dashboard/providers";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -27,16 +25,15 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { httpCodes } from "@/lib/configs";
-import { User, Institution, Case, Task } from "@/types/models";
-import { arraysEqual, isKeyOf } from "@/lib/utils";
+import { Case, Task } from "@/types/models";
+import { isKeyOf } from "@/lib/utils/dataHandlers";
 import { TemplateObj } from "@/types/custom";
 import {
   Card,
   CardTitle,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
@@ -52,7 +49,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { InputImage } from "@/components/atoms/inputs";
 import MultipleSelector, {
   Option as MultiSelectOption,
 } from "@/components/atoms/multiSelect";
@@ -66,11 +62,13 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import TaskModal from "@/components/mols/taskModal";
 import { Task as TaskType } from "@/types/models";
-import { dateShort, isDatePassed } from "@/helpers/dateHandlers";
+import { dateShort, isDatePassed } from "@/lib/utils/dateHandlers";
 import AssignmentRequestComponent from "./_components/assigneeComponent";
 import { AssigneeRequest } from "@prisma/client";
 
-export default function CaseView(props: { params: Promise<{ caseId: string }> }) {
+export default function CaseView(props: {
+  params: Promise<{ caseId: string }>;
+}) {
   const params = use(props.params);
   const { caseId } = params;
   const {
@@ -102,7 +100,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
   useEffect(() => {
     if (caseId) {
       const selectedCase_ = cases.find(
-        ({ id }: { id: string }) => id === caseId
+        ({ id }: { id: string }) => id === caseId,
       );
       if (!selectedCase_) {
         console.log("Case not found");
@@ -125,7 +123,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
         ({ id, name }: { id: string; name: string }) => ({
           value: id,
           label: name,
-        })
+        }),
       ),
     }));
   }, [caseTypes]);
@@ -151,7 +149,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
 
     const foundCaseType = caseTypes.find(
       ({ id }: { id: string }) =>
-        id === (caseEdit.caseTypeId || selectedCase?.caseTypeId)
+        id === (caseEdit.caseTypeId || selectedCase?.caseTypeId),
     );
 
     if (!foundCaseType) return;
@@ -178,7 +176,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
       }) => ({
         value: id,
         label: `${names}: ${email || "<NULL>"}`,
-      })
+      }),
     );
 
     setOptions((prev) => ({
@@ -252,7 +250,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
     if (caseEdit.clientName) {
       inputErrors.clientNameError_ = nameValidator(
         caseEdit.clientName,
-        "Client name"
+        "Client name",
       );
     }
     if (caseEdit.clientTel) {
@@ -264,7 +262,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
     if (caseEdit.otherPartyName) {
       inputErrors.otherPartyNameError_ = nameValidator(
         caseEdit.otherPartyName,
-        "Name of secondary party"
+        "Name of secondary party",
       );
     }
     if (caseEdit.otherPartyTel) {
@@ -272,7 +270,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
     }
     if (caseEdit.otherPartyEmail) {
       inputErrors.otherPartyEmailError_ = emailValidator(
-        caseEdit.otherPartyEmail
+        caseEdit.otherPartyEmail,
       );
     }
     if (caseEdit.court) {
@@ -360,13 +358,13 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
             console.log(`ERROR: ` + JSON.stringify(res_));
             toast.error("OOPS: case not updated");
           }
-        }
+        },
       );
       if (_res?.success) {
         console.log(
           "SUCCESS: Case updated successfully\n > " +
             JSON.stringify(_res.success) +
-            "\n.............."
+            "\n..............",
         );
         await refreshData();
         toast.success("Case updated successfully!");
@@ -375,7 +373,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
         console.error(
           "ERROR: failed to update case - ih6\n" +
             JSON.stringify(_res) +
-            "\n.............."
+            "\n..............",
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
@@ -420,7 +418,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
           toast.error(httpCodes[res_?.status] ?? "Unknown error");
           return;
         }
-      }
+      },
     );
 
     if (!res) return;
@@ -429,7 +427,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
       console.log(
         "SUCCESS: case deleted\n > ",
         res.success,
-        "\n.............."
+        "\n..............",
       );
 
       toast.success("case deleted");
@@ -468,7 +466,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
             console.error(error_);
             toast.error(error_);
           }
-        }
+        },
       );
 
       if (!_res) return;
@@ -510,13 +508,13 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
             console.error(error_);
             toast.error(error_);
           }
-        }
+        },
       );
       if (_res?.success) {
         console.log(
           "SUCCESS: task deleted successfully\n > " +
             JSON.stringify(_res.success) +
-            "\n.............."
+            "\n..............",
         );
         toast.success("Task deleted successfully!");
         await refreshData();
@@ -525,7 +523,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
         console.error(
           "ERROR: failed to delete task\n > " +
             JSON.stringify(_res) +
-            "\n.............."
+            "\n..............",
         );
         toast.error(_res?.error ?? "No Response, check internet connection");
       }
@@ -620,8 +618,8 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
             <Label htmlFor="assignee" className="opacity-75">
               Assignee
             </Label>
-            {session?.user?.role === "system" ||
-            session?.user?.role === "admin" ? (
+            {session?.user.systemAdmin ? (
+              // || session?.user?.role === "admin"
               <Select
                 name="assignee"
                 value={caseEdit.assigneeId || ""}
@@ -650,7 +648,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
                   (req: AssigneeRequest) =>
                     req.caseId === selectedCase.id &&
                     req.assigneeId === session?.user?.id &&
-                    req.status === "PENDING"
+                    req.status === "PENDING",
                 )}
                 uiState={UIstate}
                 setUIstate={setUIstate}
@@ -797,7 +795,8 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
                         : options.clientParties.find(
                             (party) =>
                               party !==
-                              (caseEdit.clientParty || selectedCase.clientParty)
+                              (caseEdit.clientParty ||
+                                selectedCase.clientParty),
                           )
                     }
                     // disabled={!newCase.caseTypeID}
@@ -1027,7 +1026,7 @@ export default function CaseView(props: { params: Promise<{ caseId: string }> })
           />
         )}
       </CardContent>
-      {(session?.user?.role === "admin" ||
+      {(session?.user.systemAdmin ||
         selectedCase.assigneeId === session?.user?.id) && (
         <CardFooter className="border-t px-6 py-4 min-h-20">
           {UIstate === "loading" ? (

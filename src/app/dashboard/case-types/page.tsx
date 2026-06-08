@@ -26,7 +26,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "../providers";
@@ -150,20 +150,20 @@ export default function UsersPage() {
             toast.error(error_);
             return null;
           }
-        }
+        },
       );
       if (!response) {
         setUIstate("OK");
         return;
       }
-      
+
       // response is truthy
-      if (response.message) showWarningToast(response.message)
+      if (response.message) showWarningToast(response.message);
 
       console.log(
         "SUCCESS: user created\n > ",
         response.email,
-        "\n.............."
+        "\n..............",
       );
 
       toast.success("User created!");
@@ -244,7 +244,7 @@ export default function UsersPage() {
                 ({ id, name }: { id: string; name: string }) => ({
                   value: id,
                   label: name,
-                })
+                }),
               )}
               //
               placeholder="Select Institutions..."

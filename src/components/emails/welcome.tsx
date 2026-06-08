@@ -11,14 +11,14 @@ import {
   Text,
 } from "@react-email/components";
 import { main, container, text, button, anchor } from "./_styles";
-import { BASE_URL } from "@/helpers/getUrl";
+import { BASE_URL } from "@/lib/utils/getUrl";
 
 interface WelcomeEmailProps {
   name: string;
-  onboardLink: string;
+  onboardingLink: string;
 }
 
-const WelcomeHtml = ({ name, onboardLink }: WelcomeEmailProps) => {
+const WelcomeHtml = ({ name, onboardingLink }: WelcomeEmailProps) => {
   return (
     <Html>
       <Head />
@@ -42,7 +42,7 @@ const WelcomeHtml = ({ name, onboardLink }: WelcomeEmailProps) => {
               To finish setting up your account, create a new password using
               this link below:
             </Text>
-            <Button style={button} href={onboardLink}>
+            <Button style={button} href={onboardingLink}>
               Set password
             </Button>
             <Text style={text}>
@@ -64,14 +64,14 @@ const WelcomeHtml = ({ name, onboardLink }: WelcomeEmailProps) => {
   );
 };
 
-const welcomeEmailText = ({ name, onboardLink }: WelcomeEmailProps) =>
+const welcomeEmailText = ({ name, onboardingLink }: WelcomeEmailProps) =>
   `Hello ${name},
 Thank you for signing up to Lisa. We're excited to have you onboard! 
 Let's get you started into a new way of managing cases and improving 
 productivity.
 
 To finish setting up your account, create a new password using
-              this link: ${onboardLink}
+              this link: ${onboardingLink}
 
 The link is valid for only 1 hour. If you have any questions, feel free 
 to contact support via lisa@goweki.com
@@ -81,7 +81,14 @@ Team - Lisa`;
 
 WelcomeHtml.PreviewProps = {
   name: "Antonio",
-  onboardLink: "https://www.goweki.com",
+  onboardingLink: "https://www.goweki.com",
 } as WelcomeEmailProps;
 
-export { WelcomeHtml as WelcomeEmail, welcomeEmailText };
+const generateOnboardingMessage = (name: string, onboardingLink: string) => {
+  return {
+    react: <WelcomeHtml name={name} onboardingLink={onboardingLink} />,
+    text: welcomeEmailText({ name, onboardingLink }),
+  };
+};
+
+export { generateOnboardingMessage };

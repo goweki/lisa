@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cssHandlers";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Form,
@@ -52,8 +52,8 @@ export function AppearanceForm() {
   function onSubmit(data: AppearanceFormValues) {
     toast.success(
       `Form data:\n ${Object.entries(data).map(
-        ([key, value]) => "- " + key + " : " + value + "\n"
-      )}`
+        ([key, value]) => "- " + key + " : " + value + "\n",
+      )}`,
     );
   }
 

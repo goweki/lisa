@@ -17,7 +17,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { DataContext } from "@/app/dashboard/providers";
@@ -127,7 +127,7 @@ export default function InstitutionsPage() {
       };
 
       const fetchBody = Object.fromEntries(
-        Object.entries(_fetchBody).filter(([_, value]) => value !== undefined)
+        Object.entries(_fetchBody).filter(([_, value]) => value !== undefined),
       );
 
       // API call, using fetch
@@ -145,7 +145,7 @@ export default function InstitutionsPage() {
             setUIstate("OK");
             return;
           }
-        }
+        },
       );
       if (!res) return;
       // res is truthy
@@ -153,7 +153,7 @@ export default function InstitutionsPage() {
         console.log(
           "SUCCESS: institution created\n > ",
           res.success.name,
-          "\n.............."
+          "\n..............",
         );
         toast.success("Institution initialized");
         await refreshData();

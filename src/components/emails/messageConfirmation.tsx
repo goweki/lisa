@@ -11,7 +11,7 @@ import {
   Text,
 } from "@react-email/components";
 import { main, container, text, highlight } from "./_styles";
-import { BASE_URL } from "@/helpers/getUrl";
+import { BASE_URL } from "@/lib/utils/getUrl";
 
 interface MessageEmailProps {
   name: string;
@@ -34,12 +34,10 @@ const ConfirmHtml = ({ name, message }: MessageEmailProps) => {
           <Section>
             <Text style={text}>Hello {name},</Text>
             <Text style={text}>
-              Thank you for contacting Lisa. We&apos;ve received your
-              message and will get back to you with a response in the coming days.
+              Thank you for contacting Lisa. We&apos;ve received your message
+              and will get back to you with a response in the coming days.
             </Text>
-            <Text style={text}>
-              Find a copy of your message below:
-            </Text>
+            <Text style={text}>Find a copy of your message below:</Text>
             <Text style={{ ...highlight, marginBottom: "1.5rem" }}>
               {message}
             </Text>
@@ -67,4 +65,11 @@ ConfirmHtml.PreviewProps = {
   message: "Hello Lisa",
 } as MessageEmailProps;
 
-export { ConfirmHtml as ConfirmEmail, confirmEmailText as confirmEmailText };
+function generateConfirmationMessage(name: string, message: string) {
+  return {
+    react: <ConfirmHtml name={name} message={message} />,
+    text: confirmEmailText({ name, message: message }),
+  };
+}
+
+export { generateConfirmationMessage };

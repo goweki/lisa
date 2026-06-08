@@ -132,3 +132,11 @@ export function deepEqual(a: any, b: any): boolean {
 
   return false;
 }
+
+// check if value is a key, given an object
+export function isKeyOf<T extends object>(
+  key: string | number | symbol,
+  obj: T,
+): key is keyof T {
+  return key in obj;
+}

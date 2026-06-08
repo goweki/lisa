@@ -26,7 +26,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { CaseStatus } from "@prisma/client";
 
@@ -64,7 +64,7 @@ export default function TasksLayout({
       [name, type, description]
         .join(" ")
         .toLowerCase()
-        .includes(searchPhrase.value?.toLowerCase())
+        .includes(searchPhrase.value?.toLowerCase()),
     );
     setFiltTasks(filtTasks || []);
   }, [searchPhrase, tasks]);

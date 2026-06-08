@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { ButtonPrimary, ButtonDestructive } from "@/components/atoms/buttons";
 import { InputText } from "@/components/atoms/inputs";
 import { SVGcell, SVGemail, SVGuser } from "@/components/atoms/svgs";
-import { emailValidator, nameValidator } from "@/helpers/inputValidators";
+import { emailValidator, nameValidator } from "@/lib/utils/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { def_Input } from "@/types/custom";
 
@@ -40,8 +40,9 @@ export function ReqDemoModal({
     try {
       const body = {
         subject: "INTEREST IN LISA",
-        text: `The below user has expressed interest in Lisa via website \nName: ${firstName.value
-          }  \nEmail: ${email.value}, ${tel.value ? `\nTel: ${tel.value} ` : ``}`,
+        text: `The below user has expressed interest in Lisa via website \nName: ${
+          firstName.value
+        }  \nEmail: ${email.value}, ${tel.value ? `\nTel: ${tel.value} ` : ``}`,
       };
       const fetchOptions = {
         method: "POST",
@@ -60,15 +61,15 @@ export function ReqDemoModal({
             toast.error(error_);
             return null;
           }
-        }
+        },
       );
       if (!response) {
         return;
       }
       console.log(
         "SUCCESS: info sent\n > " +
-        JSON.stringify(response) +
-        "\n.............."
+          JSON.stringify(response) +
+          "\n..............",
       );
       toast.success(response);
       setFirstName(def_Input);

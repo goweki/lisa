@@ -26,7 +26,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { EntityStatus } from "@prisma/client";
 
@@ -76,7 +76,7 @@ export default function UsersLayout({
   }, [searchPhrase, users]);
 
   //if not admin, re-route to dashboard
-  if (session?.user?.role !== "system" && session?.user?.role !== "admin") {
+  if (!session?.user?.systemAdmin) {
     return router.push("/dashboard");
   }
 
@@ -138,7 +138,7 @@ export default function UsersLayout({
                         {userInsts
                           ?.map(({ institutionId }) => {
                             const institution_ = institutions?.find(
-                              ({ id }) => id === institutionId
+                              ({ id }) => id === institutionId,
                             );
                             return institution_?.name;
                           })

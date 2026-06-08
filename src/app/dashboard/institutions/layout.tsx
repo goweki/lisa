@@ -25,7 +25,7 @@ import {
   emailValidator,
   nameValidator,
   telValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { httpCodes } from "@/lib/configs";
 import { Institution } from "@/types/models";
 

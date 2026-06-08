@@ -17,7 +17,7 @@ import {
   firmNameValidator,
   nameValidator,
   passwordValidator,
-} from "@/helpers/inputValidators";
+} from "@/lib/utils/inputValidators";
 import { ButtonPrimary } from "@/components/atoms/buttons";
 import { Loader } from "@/components/atoms/loader";
 
@@ -38,7 +38,7 @@ export default function RegisterPage() {
       if (error_)
         setUIstate(
           qParamsErrors[error_ as keyof typeof qParamsErrors] ||
-          qParamsErrors.Default
+            qParamsErrors.Default,
         );
     } else setUIstate("OK");
   }, [searchParams]);
@@ -70,7 +70,7 @@ export default function RegisterPage() {
       > email - ${email.value} 
       > names - ${names.value}
       > firm -${firm.value}
-      ..................`
+      ..................`,
     );
     const fetchOptions = {
       method: "POST",
@@ -93,7 +93,7 @@ export default function RegisterPage() {
           setUIstate("OK");
           return null;
         }
-      }
+      },
     );
 
     if (sendResetToken) {

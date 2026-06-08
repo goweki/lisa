@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { useContext, useEffect, useState } from "react";
 import { User } from "@prisma/client";
-import { emailValidator, nameValidator } from "@/helpers/inputValidators";
+import { emailValidator, nameValidator } from "@/lib/utils/inputValidators";
 import toast from "react-hot-toast";
 import { InputTel } from "@/components/ui/input-tel";
 import { isValidPhoneNumber } from "react-phone-number-input";
@@ -191,7 +191,7 @@ export function ProfileForm() {
             toast.error("Error updating profile");
             return null;
           }
-        }
+        },
       );
       if (!res) return;
       //res is truthy
